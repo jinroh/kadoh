@@ -42,7 +42,7 @@ sio.sockets.on('connection', function(socket) {
       console.error(msg.dst + " does not exist");
     }
     console.log(clients[msg.dst], msg);
-    sio.sockets.socket(clients[msg.dst]).emit('message', msg.msg);
+    sio.sockets.socket(clients[msg.dst]).emit('message', msg);
   });
   
   socket.on('disconnect', function() {
