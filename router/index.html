@@ -20,7 +20,9 @@
 
 	});
 	
-	socket.on('')
+	socket.on('message', function(msg){
+	  $('#received').append('<p><b>'+msg.src+'</b> : '+msg.msg+'</p');
+	});
   
 	$('#form').submit(function(){
 		var msg = {};
@@ -45,7 +47,7 @@
 				<input type="submit" value="Send">
 			</form>
 		<h2>Messages received :</h2>
-			<div id='reveived'>
+			<div id='received'>
 				
 			</div>
 		
