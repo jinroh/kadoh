@@ -36,12 +36,13 @@ sio.sockets.on('connection', function(socket) {
   });
   
   socket.on('message', function(msg) {
-    msg.src = id;
+    msg.src = addr;
     
     if(!clients[msg.dst]) {
       console.error(msg.dst + " does not exist");
     }
-    sio.sockets.socket(clients[msg.dst]).emit('message', msg);
+    console.log(clients[msg.dst], msg);
+    sio.sockets.socket(clients[msg.dst]).emit('message', msg.msg);
   });
   
   socket.on('disconnect', function() {
