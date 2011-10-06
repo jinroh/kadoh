@@ -1,1 +1,1 @@
-# KadOH
+# KadOH (Kademlia Over HTTP)
