@@ -3,6 +3,7 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 
 <script>
+$(function(){
   var socket = io.connect();
   socket.on('connect', function() {
     socket.emit('register');
@@ -33,6 +34,10 @@
 		
     event.preventDefault();
 	});
+  
+  
+});
+  
 
 
 </script>
