@@ -1,55 +1,65 @@
 # Server-side
 - run the server on specified port
+
 ```js
 rt = new Router(8080)
 ```
 - start/stop the router
+
 ```js
-	rt.start();
-	rt.stop();
+rt.start();
+rt.stop();
 ```
 - have access to all logged clients
+
 ```js
 rt.getClients(); // {ip:port,id} list
 ```
 - register a callback to the clients list update
+
 ```js
-	rt.on('newclient', fn(clientid));
-	rt.on('leaveclient', fn(clientid));
-	rt.on('listupdate', fn(clientid));
-	//...
+rt.on('newclient', fn(clientid));
+rt.on('leaveclient', fn(clientid));
+rt.on('listupdate', fn(clientid));
+//...
 ```
 - get a client socket
+
 ```js
-	rt.getClientSocket(id or ip:port);
+rt.getClientSocket(id or ip:port);
 ```
 - broadcast to all clients
+
 ```js
-	rt.broadcast(message);
+rt.broadcast(message);
 ```
 - a way to send to a client
+
 ```js
-	rt.send("ip:port", message);
+rt.send("ip:port", message);
 ```
 
 # Client-side
 - open a connection
+
 ```js
-	con = new Connection("server.com:port");
+con = new Connection("server.com:port");
 ```
 - send a message 
+
 ```js
-	con.send(message);
+con.send(message);
 ```
 - receive messages
+
 ```js
-	con.listen(fn(message));
+con.listen(fn(message));
 ```
 
 # Protocol spec.
 ```js
-	message = { dst : "ip:port",
-					src : "ip:port",  //added by the server
-					msg : 	....
-				 };
+message = { dst : "ip:port",
+				src : "ip:port",  //added by the server
+				msg : 	....
+			 };
 ```
