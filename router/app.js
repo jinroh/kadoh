@@ -29,18 +29,24 @@ sio.sockets.on('connection', function(socket) {
   socket.on('register', function() {
     socket.registered = true;
     if(!clients[addr]) {
-      clients[addr] = socket;
+      clients[addr] = socket.id;
       socket.emit('clients-up', clients);
       socket.broadcast.emit('clients-up', clients);
     }
   });
   
   socket.on('message', function(msg) {
-    console.log(msg);
-  })
+    msg.src = addr;
+    
+    if(!clients[msg.dst]) {
+      console.error(msg.dst + " does not exist");
+    }
+    console.log(clients[msg.dst], msg);
+    sio.sockets.socket(clients[msg.dst]).emit('message', msg.msg);
+  });
   
   socket.on('disconnect', function() {
     delete clients[addr];
     socket.broadcast.emit('clients-up', clients);
-  })
+  });
 });
