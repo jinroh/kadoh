@@ -1,12 +1,7 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  var socket = io.connect('http://localhost:8080');
+  var socket = io.connect();
   socket.on('connect', function() {
-    socket.emit('register');
-  });
-  
-  socket.on('registered', function() {
-    alert(socket.get('id'));
   });
   
   socket.on('disconnect', function() {
