@@ -27,7 +27,7 @@ $(function(){
   
 	$('#form').submit(function(event){
 		var msg = {};
-		msg.dest = $('#form>[name=dest]').val(); // IP:PORT
+		msg.dst = $('#form>[name=dest]').val(); // IP:PORT
 		msg.msg = $('#form > input[name=text]').val();
 		
 		socket.emit('message', msg);
