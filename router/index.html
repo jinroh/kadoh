@@ -16,7 +16,7 @@ $(function(){
 		$('#form>select').empty()
 											.append('<option value="all">All</option>');
 		for(ip in msg){
-			$('#form>select').append('	<option value="ip">' + ip + '</option>');
+			$('#form>select').append('	<option value="'+ip+'">' + ip + '</option>');
 		}
 
 	});
