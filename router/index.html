@@ -24,14 +24,14 @@
 	  $('#received').append('<p><b>'+msg.src+'</b> : '+msg.msg+'</p');
 	});
   
-	$('#form').submit(function(){
+	$('#form').submit(function(event){
 		var msg = {};
 		msg.dest = $('#form>[name=dest]').val(); // IP:PORT
 		msg.msg = $('#form > input[name=text]').val();
 		
 		socket.emit('message', msg);
 		
-		return false;
+    event.preventDefault();
 	});
 
 
