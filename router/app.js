@@ -2,7 +2,6 @@
 var app = require('http').createServer(handler)
   , sio = require('socket.io').listen(app)
   , fs  = require('fs')
-  , clients = {}
 
 app.listen(8080, function() {
   var addr = app.address();
@@ -22,22 +21,26 @@ function handler (req, res) {
   });
 }
 
+var clients = {};
 sio.sockets.on('connection', function(socket) {
-  var remote_addr = socket.handshake.address;
-  // var id          = remote_addr.address + ':' + remote_addr.port;
-
-  var id = 'foo';
-  console.log(socket.remoteAddress);
-  socket.set('id', id, function() {
-    console.log(id);
-    socket.emit('registered');
+  var addr = socket.handshake.address.address + ':' + socket.handshake.address.port;
+  socket.registered = false;
+  
+  socket.on('register', function() {
+    socket.registered = true;
+    if(!clients[addr]) {
+      clients[addr] = socket;
+      socket.emit('clients-up', clients);
+      socket.broadcast.emit('clients-up', clients);
+    }
   });
   
-  socket.on('message', function(socket) {
-    console.log(socket.get('id'));
-  });
+  socket.on('message', function(msg) {
+    console.log(msg);
+  })
   
   socket.on('disconnect', function() {
-    
+    delete clients[addr];
+    socket.broadcast.emit('clients-up', clients);
   })
 });
