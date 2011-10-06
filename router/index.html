@@ -12,49 +12,38 @@ $(function(){
   socket.on('disconnect', function() {
   });
   
-	socket.on('clients-up', function(msg){
-		$('#form>select').empty()
-											.append('<option value="all">All</option>');
-		for(ip in msg){
-			$('#form>select').append('	<option value="'+ip+'">' + ip + '</option>');
-		}
+  socket.on('clients-up', function(msg){
+    $('#form>select').empty().append('<option value="all">All</option>');
+    for(ip in msg){
+      $('#form>select').append('	<option value="'+ip+'">' + ip + '</option>');
+    }
+  });
 
-	});
-	
-	socket.on('message', function(msg){
-	  $('#received').append('<p><b>'+msg.src+'</b> : '+msg.msg+'</p');
-	});
+  socket.on('message', function(msg){
+    $('#received').append('<p><b>'+msg.src+'</b> : '+msg.msg+'</p');
+  });
   
-	$('#form').submit(function(event){
-		var msg = {};
-		msg.dst = $('#form>[name=dest]').val(); // IP:PORT
-		msg.msg = $('#form > input[name=text]').val();
-		
-		socket.emit('message', msg);
-		
+  $('#form').submit(function(event){
+    var msg = {};
+    msg.dst = $('#form>[name=dest]').val(); // IP:PORT
+    msg.msg = $('#form > input[name=text]').val();
+
+    socket.emit('message', msg);
+
     event.preventDefault();
-	});
-  
-  
+  });
 });
-  
-
-
 </script>
-	<body>
-		
-		<h2>Send message to node :</h2>
-			<form id='form'>
-				<select name='dest'>
-					<option value='all'>All</option>
-				</select>
-				<input type=text name='text'>
-				<input type="submit" value="Send">
-			</form>
-		<h2>Messages received :</h2>
-			<div id='received'>
-				
-			</div>
-		
-	</body>
+<body>
+<h2>Send message to node :</h2>
+<form id='form'>
+  <select name='dest'>
+    <option value='all'>All</option>
+  </select>
+  <input type=text name='text'>
+  <input type="submit" value="Send">
+</form>
+<h2>Messages received :</h2>
+<div id='received'></div>
+</body>
 </html>
