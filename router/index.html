@@ -11,14 +11,16 @@
   socket.on('disconnect', function() {
   });
   
-	socket.on('clients_up', function(msg){
+	socket.on('clients-up', function(msg){
 		$('#form>select').empty()
 											.append('<option value="all">All</option>');
 		for(ip in msg){
-			$('#form>select').append('	<option value="ip">ip</option>');
+			$('#form>select').append('	<option value="ip">' + ip + '</option>');
 		}
 
-	})
+	});
+	
+	socket.on('')
   
 	$('#form').submit(function(){
 		var msg = {};
