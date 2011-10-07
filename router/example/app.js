@@ -1,9 +1,10 @@
 // Dependencies
 var app = require('http').createServer(handler)
-  , sio = require('socket.io').listen(app)
   , fs  = require('fs')
+  , router = require('../lib/router').listen(app);
 
-app.listen(5858, function() {
+
+app.listen(8080, function() {
   var addr = app.address();
   console.log('listening on http://' + addr.address + ':' + addr.port);
 });
@@ -20,29 +21,3 @@ function handler (req, res) {
     res.end(data);
   });
 }
-
-var clients = {};
-sio.sockets.on('connection', function(socket) {
-  var addr = socket.handshake.address.address + ':' + socket.handshake.address.port;
-
-  if(!clients[addr]) {
-    clients[addr] = socket.id;
-    socket.emit('clients-up', clients);
-    socket.broadcast.emit('clients-up', clients);
-  }
-  
-  socket.on('message', function(msg) {
-    msg.src = addr;
-    
-    if(!clients[msg.dst]) {
-      console.error(msg.dst + " does not exist");
-    }
-    console.log(clients[msg.dst], msg);
-    sio.sockets.socket(clients[msg.dst]).emit('message', msg);
-  });
-  
-  socket.on('disconnect', function() {
-    delete clients[addr];
-    socket.broadcast.emit('clients-up', clients);
-  });
-});
