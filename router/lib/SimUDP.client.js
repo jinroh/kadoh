@@ -1,5 +1,9 @@
-var SimUDP = (function(global){
-	
+
+/*! SimUDP.client 
+*/
+
+window.SimUDP = (function(global) {
+  
 	//Dependencies
 	var io  //=....socketio
 	//private
@@ -14,7 +18,7 @@ var SimUDP = (function(global){
     * con = new SimUDP("server.com:port");
     *
     */
-  Constructor = function(host, details){
+  Constructor = function(host, details) {
     var socket = io.connect(host, details);
     socket.on('connect', function() {
       socket.emit('register');
@@ -34,7 +38,7 @@ var SimUDP = (function(global){
     *          });
     *
     */
-	Constructor.prototype.send = function(message){
+	Constructor.prototype.send = function(message) {
 	  //TODO : check message
 	  this.socket.emit('SimUDP', message);
 	};
@@ -45,15 +49,14 @@ var SimUDP = (function(global){
     * con.listen(fn(message));
     *
     */
-	Constructor.prototype.listen = function(fn){
+	Constructor.prototype.listen = function(fn) {
 	  //TODO
 	  var f = fn;
-	  socket.on('SimUDP', function(msg){
+	  socket.on('SimUDP', function(msg) {
 	    f(msg);
 	  });
 	};
-	
-	return Constructor;
+		
+		return Constructor;
 }(this));
 
-window.SimUDP = SimUDP;
