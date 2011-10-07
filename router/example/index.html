@@ -3,24 +3,18 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 
 <script>
-$(function(){
+$(function() {
   var socket = io.connect();
-  socket.on('connect', function() {
-    socket.emit('register');
-  });
-
-  socket.on('disconnect', function() {
-  });
   
-  socket.on('clients-up', function(msg){
+  socket.on('clients-up', function(msg) {
     $('#form>select').empty().append('<option value="all">All</option>');
-    for(ip in msg){
+    for(ip in msg) {
       $('#form>select').append('	<option value="'+ip+'">' + ip + '</option>');
     }
   });
 
-  socket.on('message', function(msg){
-    $('#received').append('<p><b>'+msg.src+'</b> : '+msg.msg+'</p');
+  socket.on('message', function(msg) {
+    $('#received').append('<p><b>' + msg.src + '</b> : ' + msg.msg + '</p');
   });
   
   $('#form').submit(function(event){

@@ -24,16 +24,12 @@ function handler (req, res) {
 var clients = {};
 sio.sockets.on('connection', function(socket) {
   var addr = socket.handshake.address.address + ':' + socket.handshake.address.port;
-	socket.registered = false;
-  
-  socket.on('register', function() {
-    socket.registered = true;
-    if(!clients[addr]) {
-      clients[addr] = socket.id;
-      socket.emit('clients-up', clients);
-      socket.broadcast.emit('clients-up', clients);
-    }
-  });
+
+  if(!clients[addr]) {
+    clients[addr] = socket.id;
+    socket.emit('clients-up', clients);
+    socket.broadcast.emit('clients-up', clients);
+  }
   
   socket.on('message', function(msg) {
     msg.src = addr;
