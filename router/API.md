@@ -43,7 +43,7 @@ rt.send("ip:port", message);
 - open a connection
 
 ```js
-con = new Connection("server.com:port");
+con = new SimUDP("server.com:port");
 ```
 - send a message 
 
