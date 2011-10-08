@@ -44,7 +44,7 @@ function Router(server, options) {
   });
   
   this.routing();
-  console.log('The router is running and listening on port ' + server.address().address + ':' + server.address().port);
+  // console.log('The router is running and listening on port ' + server.address().address + ':' + server.address().port);
 };
 
 
