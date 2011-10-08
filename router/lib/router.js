@@ -1,5 +1,6 @@
 var http = require('http')
   , sio = require('socket.io')
+  , url = require('url')
   , fs = require('fs');
 
 exports.version = '0.1';
@@ -29,7 +30,7 @@ function Router(server, options) {
   this.clients = {};
   
   this.server = server;
-  this.sio = sio.listen(server);
+  this.io = sio.listen(server);
   this.sockets = sio.sockets;
   
   this.old_listeners = server.listeners('request');
@@ -51,14 +52,15 @@ function Router(server, options) {
 Router.prototype.requestHandler = function(req, res) {
   var self = this;
   
-  if (Router.handled_files.indexOf(req.url) != -1) {
-    fs.readFile(__dirname + req.url, function(err, data) {
+  var path = url.parse(req.url).pathname;
+  if (Router.handled_files.indexOf(path) != -1) {
+    fs.readFile(__dirname + path, function(err, data) {
       if (err) {
         res.writeHead(500);
-        return res.end('Error loading ' + req.url);
+        return res.end('Error loading ' + path);
       }
 
-      console.log(req.url + ' served');
+      console.log(path + ' served');
       res.writeHead(200);
       return res.end(data);
     });
@@ -72,18 +74,19 @@ Router.prototype.requestHandler = function(req, res) {
 
 Router.prototype.routing = function() {
   var self = this;
-  this.sio.sockets.on('connection', function(socket) {
-    var addr = socket.handshake.address.address + ':' + socket.handshake.address.port;
+  this.io.sockets.on('connection', function(client) {
+    client.address.socket = client.handshake.address.address + ':' + client.handshake.address.port;
     
     if(!self.clients[addr]) {
-      self.clients[addr] = socket.id;
+      self.clients[addr] = client.id;
     }
 
-    socket.on('message', function(msg) {
-      self.send(msg);
+    client.on('message', function(message) {
+      message.src = client.address.socket;
+      self.send(message);
     });
 
-    socket.on('disconnect', function() {
+    client.on('disconnect', function() {
       delete self.clients[addr];
     });
   });
@@ -107,7 +110,5 @@ Router.prototype.send = function(message) {
     return;
   }
   
-  message.src = src;
-  
-  this.sockets.socket(this.clients[message.dst]).emit('message', msg.msg);
+  this.getClientSocket(this.clients[message.dst]).emit('message', message);
 };
