@@ -1,6 +1,7 @@
 var http = require('http')
   , sio = require('socket.io')
   , url = require('url')
+  , path = require('path')
   , fs = require('fs');
 
 exports.version = '0.1';
@@ -53,15 +54,18 @@ function Router(server, options) {
 Router.prototype.requestHandler = function(req, res) {
   var self = this;
   
-  var path = url.parse(req.url).pathname;
-  if (Router.handled_files.indexOf(path) != -1) {
-    fs.readFile(__dirname + '/../dist/' + path, function(err, data) {
+  var pathname = path.normalize(url.parse(req.url).pathname);
+  console.log(pathname);
+  
+  if (Router.handled_files.indexOf(pathname) != -1) {
+    fs.readFile(__dirname + '/../dist' +  pathname, 
+    function(err, data) {
       if (err) {
         res.writeHead(500);
         return res.end('Error loading ' + path);
       }
 
-      console.log(path + ' served');
+      console.log(pathname + ' served');
       res.writeHead(200);
       return res.end(data);
     });
