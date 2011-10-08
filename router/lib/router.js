@@ -26,14 +26,13 @@ function Router(server, options) {
     var port = server;
     server = http.createServer();
     server.listen(port);
-    console.log('The router is running and listening on port ' + server.address().address + ':' + server.address().port);
   }
   
   this.clients = {};
   
   this.server = server;
   this.io = sio.listen(server);
-  this.sockets = sio.sockets;
+  this.sockets = this.io.sockets;
   
   this.old_listeners = server.listeners('request');
   server.removeAllListeners('request')
@@ -45,6 +44,7 @@ function Router(server, options) {
   });
   
   this.routing();
+  console.log('The router is running and listening on port ' + server.address().address + ':' + server.address().port);
 };
 
 
@@ -78,7 +78,7 @@ Router.prototype.requestHandler = function(req, res) {
 
 Router.prototype.routing = function() {
   var self = this;
-  this.io.sockets.on('connection', function(client) {
+  this.sockets.on('connection', function(client) {
     client.address.socket = client.handshake.address.address + ':' + client.handshake.address.port;
     
     if(!self.clients[addr]) {
