@@ -10,4 +10,21 @@ Message = function(args) {
     }
   }
 }
+var scktregex = /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\:[0-9]+/
+Message.prototype.__defineSetter__('src', function(src, port) {
+  if (typeof port != 'undefined') {
+    src = src + ':' + port;
+  }
+  
+  if (typeof src === 'string') {
+    
+    this.src = src;
+    return;
+  }
+  
+  console.error('unable to set ' + src + ' as the souce socket address');
+});
 
+Message.prototype.__defineSetter__('dst', function(dst) {
+  
+});
