@@ -55,7 +55,6 @@ Router.prototype.requestHandler = function(req, res) {
   var self = this;
   
   var pathname = path.normalize(url.parse(req.url).pathname);
-  console.log(pathname);
   
   if (Router.handled_files.indexOf(pathname) != -1) {
     fs.readFile(__dirname + '/../dist' +  pathname, 
