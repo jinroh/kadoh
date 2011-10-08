@@ -9,6 +9,7 @@ exports = module.exports = Router;
 
 Router.handled_files = [
   '/SimUDP.client.js'
+, '/SimUDP.client.min.js'
 ];
 
 exports.listen = function(server, options) {
@@ -54,7 +55,7 @@ Router.prototype.requestHandler = function(req, res) {
   
   var path = url.parse(req.url).pathname;
   if (Router.handled_files.indexOf(path) != -1) {
-    fs.readFile(__dirname + path, function(err, data) {
+    fs.readFile(__dirname + '/../dist/' + path, function(err, data) {
       if (err) {
         res.writeHead(500);
         return res.end('Error loading ' + path);
