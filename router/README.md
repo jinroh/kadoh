@@ -2,13 +2,7 @@
 - run the server on specified port
 
 ```js
-rt = new Router(8080)
-```
-- start/stop the router
-
-```js
-rt.start();
-rt.stop();
+rt = require('router').listen(8080)
 ```
 - have access to all logged clients
 
