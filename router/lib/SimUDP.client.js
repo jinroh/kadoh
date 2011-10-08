@@ -40,7 +40,7 @@ window.SimUDP = (function(global) {
     */
 	Constructor.prototype.send = function(message) {
 	  //TODO : check message
-	  this.socket.emit('SimUDP', message);
+	  this.socket.emit('message', message);
 	};
 	
 	/**
@@ -52,7 +52,7 @@ window.SimUDP = (function(global) {
 	Constructor.prototype.listen = function(fn) {
 	  //TODO
 	  var f = fn;
-	  socket.on('SimUDP', function(msg) {
+	  this.socket.on('message', function(msg) {
 	    f(msg);
 	  });
 	};

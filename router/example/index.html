@@ -5,7 +5,8 @@
 
 <script>
 $(function() {
-  var socket = io.connect();
+   socket = io.connect();
+   sudp = new SimUDP();
   
   socket.on('clients-up', function(msg) {
     $('#form>select').empty().append('<option value="all">All</option>');
@@ -14,7 +15,7 @@ $(function() {
     }
   });
 
-  socket.on('message', function(msg) {
+  sudp.listen( function(msg) {
     $('#received').append('<p><b>' + msg.src + '</b> : ' + msg.msg + '</p');
   });
   
@@ -23,8 +24,8 @@ $(function() {
     msg.dst = $('#form>[name=dest]').val(); // IP:PORT
     msg.msg = $('#form > input[name=text]').val();
 
-    socket.emit('message', msg);
-
+    sudp.send(msg);
+    
     event.preventDefault();
   });
 });
