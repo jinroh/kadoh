@@ -43,8 +43,9 @@ function Router(server, options) {
     self.requestHandler(req, res);
   });
   
-  this.routing();
-  // console.log('The router is running and listening on port ' + server.address().address + ':' + server.address().port);
+  this.sockets.on('connection', function(client) {
+    self.routing(client);
+  });
 };
 
 
@@ -76,23 +77,28 @@ Router.prototype.requestHandler = function(req, res) {
   }
 };
 
-Router.prototype.routing = function() {
+Router.prototype.routing = function(client) {
+  var ip_port = client.handshake.address.address + ':' + client.handshake.address.port;
+  
+  console.log(ip_port + ' connected');
+  
+  if(!this.clients[ip_port]) {
+    this.clients[ip_port] = client.id;
+  }
+
+  // Routing messages
   var self = this;
-  this.sockets.on('connection', function(client) {
-    client.address.socket = client.handshake.address.address + ':' + client.handshake.address.port;
+  client.on('message', function(message) {
+    message.src = ip_port;
+    self.send(message);
     
-    if(!self.clients[addr]) {
-      self.clients[addr] = client.id;
-    }
+    console.log('sending ' + message.msg + ' (' + message.src + ' --> ' + message.dst + ')');
+  });
 
-    client.on('message', function(message) {
-      message.src = client.address.socket;
-      self.send(message);
-    });
-
-    client.on('disconnect', function() {
-      delete self.clients[addr];
-    });
+  client.on('disconnect', function() {
+    delete self.clients[ip_port];
+    
+    console.log(ip_port + ' disconnected');
   });
 }
 
@@ -105,7 +111,10 @@ Router.prototype.getClientSocket = function(id) {
 };
 
 Router.prototype.broadcast = function(message) {
-  this.sockets.emit('message', message.msg);
+  if (typeof message != 'string') {
+    message = message.msg;
+  }
+  this.sockets.emit('message', message);
 };
 
 Router.prototype.send = function(message) {
