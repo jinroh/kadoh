@@ -5,13 +5,13 @@
 
 <script>
 $(function() {
-   socket = io.connect();
-   sudp = new SimUDP();
+  // socket = io.connect();
+  sudp = new SimUDP('localhost:8080');
   
-  socket.on('clients-up', function(msg) {
+  sudp.on('clients-up', function(msg) {
     $('#form>select').empty().append('<option value="all">All</option>');
     for(ip in msg) {
-      $('#form>select').append('	<option value="'+ip+'">' + ip + '</option>');
+      $('#form>select').append('	<option value="' + ip + '">' + ip + '</option>');
     }
   });
 

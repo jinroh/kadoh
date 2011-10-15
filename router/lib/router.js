@@ -100,7 +100,35 @@ Router.prototype.routing = function(client) {
     
     console.log(ip_port + ' disconnected');
   });
+  
+  console.log(self.callbacks);
+  for (var event in Router.events) {
+    for (var callback in Router.callbacks[event]) {
+      client.on(event, function(message) {
+        self.callbacks[callback].call(message);
+      });
+    }
+  }
 }
+
+Router.events = [
+  'newclient',
+  'leaveclient',
+  'listupdate'
+];
+Router.callbacks = {};
+
+Router.prototype.on = function(name, fn) {
+  if (Router.events.indexOf(name) != -1) {
+    if (Array.isArray(Router.callbacks[name])) {
+      Router.callbacks[name].push(fn);
+    } else {
+      Router.callbacks[name] = [fn];
+    }
+    return;
+  }
+  console.error('the event ' + name + ' does NOT exist');
+};
 
 Router.prototype.getClients = function() {
   return this.clients;
@@ -110,11 +138,8 @@ Router.prototype.getClientSocket = function(id) {
   return this.sockets.socket(id);
 };
 
-Router.prototype.broadcast = function(message) {
-  if (typeof message != 'string') {
-    message = message.msg;
-  }
-  this.sockets.emit('message', message);
+Router.prototype.broadcast = function(event, message) {
+  this.sockets.emit(event, message);
 };
 
 Router.prototype.send = function(message) {
