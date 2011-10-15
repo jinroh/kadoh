@@ -1,5 +1,6 @@
 // Dependencies
 var app = require('http').createServer(handler)
+  , sio = require('socket.io').listen(app)
   , fs  = require('fs')
   , io = require('socket.io')
   , router = require('../lib/router').listen(app);
