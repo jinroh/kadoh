@@ -4,8 +4,10 @@
     this.buckets = [new KBucket(0, Math.pow(2,160))];
   };
   
+  // Public
+  
   RoutingTable.prototype.distance = function(key_one, key_two) {
-    // key_one ^ key_two
+    // return key_one ^ key_two
   };
   
   RoutingTable.prototype.addContact = function(contact) {
@@ -15,14 +17,16 @@
     
     try {
       var kbucket = this.kbucketIndexFor(contact.id);
-      throw new Error('');
+      this.buckets[kbucket]
     }
     catch(e) {
       
     }
   };
 
-  RoutingTable.prototype.kbucketIndexFor(id) {
+  // Private
+  
+  RoutingTable.prototype._kbucketIndexFor = function(id) {
     for(kbucket in this.buckets) {
       if(this.buckets[kbucket].)
     }
