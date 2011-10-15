@@ -1,3 +1,4 @@
+Version 0.2
 # Server-side
 - run the server on specified port
 
@@ -12,15 +13,15 @@ rt.getClients(); // {ip:port,id} list
 - register a callback to the clients list update
 
 ```js
-rt.on('newclient', fn(clientid));
-rt.on('leaveclient', fn(clientid));
-rt.on('listupdate', fn(clientid));
+rt.on('newclient', fn(clientidip_port));
+rt.on('leaveclient', fn(clientidip_port));
+rt.on('listupdate', fn(clientip_port));
 //...
 ```
 - get a client socket
 
 ```js
-rt.getClientSocket(id or ip:port);
+rt.getClientSocket(ip:port);
 ```
 - broadcast to all clients
 
@@ -30,7 +31,7 @@ rt.broadcast(message);
 - a way to send to a client
 
 ```js
-rt.send("ip:port", message);
+rt.send( message);
 ```
 
 # Client-side

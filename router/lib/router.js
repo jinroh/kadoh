@@ -1,63 +1,148 @@
-var http = require('http')
-  , sio = require('socket.io')
-  , url = require('url')
-  , path = require('path')
-  , fs = require('fs');
-
-exports.version = '0.1';
-
-exports = module.exports = Router;
-
-Router.handled_files = [
-  '/SimUDP.client.js'
-, '/SimUDP.client.min.js'
-];
-
 exports.listen = function(server, options) {
   return new Router(server, options);
 };
 
-function Router(server, options) {
-  if (typeof server === 'undefined') {
-    server = 8080;
-  }
+var Router = (function () {
   
-  if (typeof server === 'number') {
-    var port = server;
-    server = http.createServer();
-    server.listen(port);
-  }
+  /*****************************************$
+  *       Dependencies and Constants        $
+  */
   
-  this.clients = {};
+  var http = require('http')
+    , sio = require('socket.io')
+    , url = require('url')
+    , path = require('path')
+    , fs = require('fs');
+    
+  var  _Events = [
+        'newclient'
+      , 'leaveclient'
+      , 'listupdate'
+    ]
+    , _Handledfiles = [
+        '/SimUDP.client.js'
+      , '/SimUDP.client.min.js'
+    ];
+    
   
-  this.server = server;
-  this.io = sio.listen(server);
-  this.sockets = this.io.sockets;
+  /*****************************************$
+  *         Routing Messages                $
+  */
+  var send = function(message) {
+    this._routeMessage(message);
+  };
   
-  this.old_listeners = server.listeners('request');
-  server.removeAllListeners('request')
+  var broadcast = function(message){
+    this._sockets.emit('message', message);
+  };
   
-  var self = this;
-  
-  server.on('request', function (req, res) {
-    self.requestHandler(req, res);
-  });
-  
-  this.sockets.on('connection', function(client) {
-    self.routing(client);
-  });
-};
+  var _routeMessage = function(message) {
+    if(!message.dst) {
+      console.error("No dst in message");
+      return;
+    } else {
+      var socket = this.getClientSocket(message.dst);
+      socket.emit('message', message);
+    }
+  };
 
+  /*****************************************$
+  *         Managing clients                $
+  */
 
-/**
- * Checks whether a request is about a static files
- */
-Router.prototype.requestHandler = function(req, res) {
-  var self = this;
+  var getClients = function() {
+    return this._clients;
+  };
   
-  var pathname = path.normalize(url.parse(req.url).pathname);
+  var getClientSocket = function(ip_port) {
+    if(typeof this._clients[ip_port] != 'undefined'){
+      id = this._clients[ip_port];
+      return this._getClientSocketbyId(id);
+    }
+    else {
+      console.err("Client "+ip_port+" is not in list.");
+      return false;
+    }
+  };
   
-  if (Router.handled_files.indexOf(pathname) != -1) {
+  var _getClientSocketbyId = function(id) {
+    return this._sockets.socket(id);
+  };
+    
+  var _registerClient = function(client) {
+    var ip_port = _extractip_port(client);
+    
+    this._addClient(ip_port, client.id);
+    
+    var self = this;
+    
+    client.on('disconnect', function() {
+      self._removeClient(ip_port);
+    });
+    
+    client.on('message', function(message){
+      message.src = ip_port;
+      self._routeMessage(message);
+    });
+  };
+  
+  var _addClient = function(ip_port, id) {
+    
+    if(!this._clients[ip_port]) {
+      
+      this._clients[ip_port] = id;
+      console.log(ip_port + ' connected');
+      
+      this._callCallbacks("newclient", ip_port);
+      this._callCallbacks("listupdate", ip_port);
+      
+    }
+  };
+  
+  var _removeClient = function(ip_port) {
+   
+      delete this._clients[ip_port] ;
+      console.log(ip_port + ' disconnected');
+      
+      this._callCallbacks("leaveclient", ip_port);
+      this._callCallbacks("listupdate", ip_port);
+      
+    
+  };
+  
+  var _extractip_port = function(client) {
+    return client.handshake.address.address + ':' + client.handshake.address.port;
+  };
+  
+  /*****************************************$
+  *         Serving client-side code        $
+  */
+  
+  var _redirectRequests = function(server) {
+    old_listeners =  server.listeners('request');
+    server.removeAllListeners('request');
+    
+    var self = this;
+    server.on('request', function(req, res){
+      if(_isRequestHandled(req)){
+        _serveRequest(req, res);
+                
+      } else {
+        for (var i = 0, l = old_listeners.length; i < l; i++) {
+          old_listeners[i].call(server, req, res);
+      }
+    }
+    });
+  };
+  
+  var _isRequestHandled = function(req){
+    var pathname = path.normalize(url.parse(req.url).pathname);
+    return (_Handledfiles.indexOf(pathname) != -1) ? true : false;
+  };
+  
+  var _serveRequest = function(req, res) {
+    var pathname = path.normalize(url.parse(req.url).pathname);
+    
     fs.readFile(__dirname + '/../dist' +  pathname, 
     function(err, data) {
       if (err) {
@@ -69,84 +154,108 @@ Router.prototype.requestHandler = function(req, res) {
       res.writeHead(200);
       return res.end(data);
     });
-  }
-  else {
-    for (var i = 0, l = this.old_listeners.length; i < l; i++) {
-      this.old_listeners[i].call(this.server, req, res);
-    }
-  }
-};
-
-Router.prototype.routing = function(client) {
-  var ip_port = client.handshake.address.address + ':' + client.handshake.address.port;
+  };
   
-  console.log(ip_port + ' connected');
+  /*****************************************$
+  *          Callbacks handling             $
+  */
   
-  if(!this.clients[ip_port]) {
-    this.clients[ip_port] = client.id;
-  }
-
-  // Routing messages
-  var self = this;
-  client.on('message', function(message) {
-    message.src = ip_port;
-    self.send(message);
+  var on = function(eventname, fn){
+    //check if eventname is accepted
+    if (_Events.indexOf(eventname) != -1) {
+        this._callbacks[eventname].push(fn);
+      } else {
+        console.error('the event ' + eventname + ' does NOT exist');
+      }
+  };
+  
+  var _initCallbacks = function() {
+    var cb = {};
+     for(var i in _Events) {
+       cb[_Events[i]] = [];
+     };
+     return cb;
+  };
+  
+  var _callCallbacks =  function(eventname, passed_arg){
+    //check if event exists
+    if(typeof this._callbacks[eventname] === 'undefined') {
+      console.error('the event ' + eventname + ' does NOT exist');
+      
+      } else {
+        
+        //extract callbacks associated to the event
+        var eventcallbacks = this._callbacks[eventname];
+        
+        if(eventcallbacks.length != 0) {
+          //execute each callbacks by passing the argument
+          for(var i in eventcallbacks) {
+              eventcallbacks[i](passed_arg);
+          }
+        }
+      }
+  };
+  
+  
+  /*****************************************$
+  *         Constructor and prototype      $
+  */
+  
+  Router = function (server, options){
     
-    console.log('sending ' + message.msg + ' (' + message.src + ' --> ' + message.dst + ')');
-  });
+    //if server is undefined or a number create one
+      if (typeof server === 'undefined') {
+        server = 8080;
+      }
 
-  client.on('disconnect', function() {
-    delete self.clients[ip_port];
-    
-    console.log(ip_port + ' disconnected');
-  });
-  
-  console.log(self.callbacks);
-  for (var event in Router.events) {
-    for (var callback in Router.callbacks[event]) {
-      client.on(event, function(message) {
-        self.callbacks[callback].call(message);
+      if (typeof server === 'number') {
+        var port = server;
+        server = http.createServer();
+        server.listen(port);
+      }
+      this._server = server;
+      
+    //then delegates requests concerning our client-side source files
+      var _old_listeners = {};
+      _redirectRequests(this._server);
+      
+    //start socket.io for our server
+      this._io = sio.listen(this._server);
+      this._sockets = this._io.sockets;
+      
+    //start callbacks system
+      this._callbacks = _initCallbacks();
+      
+    //start client management
+      this._clients = {};
+      var self = this;
+      this._sockets.on('connection', function(client){
+        self._registerClient(client);
       });
-    }
-  }
-}
-
-Router.events = [
-  'newclient',
-  'leaveclient',
-  'listupdate'
-];
-Router.callbacks = {};
-
-Router.prototype.on = function(name, fn) {
-  if (Router.events.indexOf(name) != -1) {
-    if (Array.isArray(Router.callbacks[name])) {
-      Router.callbacks[name].push(fn);
-    } else {
-      Router.callbacks[name] = [fn];
-    }
-    return;
-  }
-  console.error('the event ' + name + ' does NOT exist');
-};
-
-Router.prototype.getClients = function() {
-  return this.clients;
-};
-
-Router.prototype.getClientSocket = function(id) {
-  return this.sockets.socket(id);
-};
-
-Router.prototype.broadcast = function(event, message) {
-  this.sockets.emit(event, message);
-};
-
-Router.prototype.send = function(message) {
-  if(!this.clients[message.dst]) {
-    console.error(message.dst + " does not exist");
-    return;
-  }
+      
+  };
   
-  this.getClientSocket(this.clients[message.dst]).emit('message', message);
-};
+  Router.prototype = {
+    //Revealing public API
+      version           :   "0.2"
+    , constructor       :   Router
+    , on                :   on
+    , getClients        :   getClients
+    , getClientSocket   :   getClientSocket
+    , broadcast         :   broadcast
+    , send              :   send
+    
+    //Revealing private API
+    , _routeMessage     :   _routeMessage
+    
+    , _getClientSocketbyId : _getClientSocketbyId
+    , _registerClient   :   _registerClient
+    , _addClient        :   _addClient
+    , _removeClient     :   _removeClient
+    
+    , _callCallbacks    :   _callCallbacks
+  };
+  
+  return Router;
+  
+}());
