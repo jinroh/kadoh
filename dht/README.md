@@ -15,3 +15,19 @@
 
 ## Peer
 - Datas : ip:port, key, // *last-checked*
+
+# RPC functions
+
+## Protocol 
+ --> use the methode send from Reactor and deals with Timeouts
+- ping("ip_port", callback(error, data));
+- findNode("ip_port", key, callback(nodes));
+// findValue
+//	store
+- handleRPCQuery(query, res);
+	- _remotePing();
+	- _remoteFindNode();
+
+## Reactor
+- sendRPCQuery("ip_port",msg, function(error, responsemsg)) ;
+- listenRPCQuery(handleRPCquery(query, res));
