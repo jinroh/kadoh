@@ -4,5 +4,4 @@ k = 6;
 // Degree of parallelism for network calls
 alpha = 3
 
-//
 //timeout = 10

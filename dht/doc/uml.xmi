@@ -1,5 +1,5 @@
 <?xml version = '1.0' encoding = 'UTF-8' ?>
-<XMI xmi.version = '1.2' xmlns:UML = 'org.omg.xmi.namespace.UML' timestamp = 'Sun Oct 16 15:06:40 CEST 2011'>
+<XMI xmi.version = '1.2' xmlns:UML = 'org.omg.xmi.namespace.UML' timestamp = 'Sun Oct 16 15:20:39 CEST 2011'>
   <XMI.header>    <XMI.documentation>
       <XMI.exporter>ArgoUML (using Netbeans XMI Writer version 1.0)</XMI.exporter>
       <XMI.exporterVersion>0.32.2(6) revised on $Date: 2010-01-11 22:20:14 +0100 (Mon, 11 Jan 2010) $ </XMI.exporterVersion>
@@ -290,6 +290,71 @@
                 <UML:Class xmi.idref = '-64--88-1-1--3a17c01c:13307508918:-8000:0000000000000879'/>
               </UML:StructuralFeature.type>
             </UML:Attribute>
+            <UML:Operation xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CBD'
+              name = 'joinNetwork' visibility = 'public' isSpecification = 'false' ownerScope = 'instance'
+              isQuery = 'false' concurrency = 'sequential' isRoot = 'false' isLeaf = 'false'
+              isAbstract = 'false'>
+              <UML:BehavioralFeature.parameter>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CBE'
+                  name = 'return' isSpecification = 'false' kind = 'return'/>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CBF'
+                  name = 'bootstraps' isSpecification = 'false' kind = 'in'/>
+              </UML:BehavioralFeature.parameter>
+            </UML:Operation>
+            <UML:Operation xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC0'
+              name = 'findNode' visibility = 'public' isSpecification = 'false' ownerScope = 'instance'
+              isQuery = 'false' concurrency = 'sequential' isRoot = 'false' isLeaf = 'false'
+              isAbstract = 'false'>
+              <UML:BehavioralFeature.parameter>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC1'
+                  name = 'return' isSpecification = 'false' kind = 'return'/>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC2'
+                  name = 'key' isSpecification = 'false' kind = 'in'/>
+              </UML:BehavioralFeature.parameter>
+            </UML:Operation>
+            <UML:Operation xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC3'
+              name = 'findValue' visibility = 'public' isSpecification = 'false' ownerScope = 'instance'
+              isQuery = 'false' concurrency = 'sequential' isRoot = 'false' isLeaf = 'false'
+              isAbstract = 'false'>
+              <UML:BehavioralFeature.parameter>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC4'
+                  name = 'return' isSpecification = 'false' kind = 'return'/>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC5'
+                  name = 'key' isSpecification = 'false' kind = 'in'/>
+              </UML:BehavioralFeature.parameter>
+            </UML:Operation>
+            <UML:Operation xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC6'
+              name = 'ping' visibility = 'public' isSpecification = 'false' ownerScope = 'instance'
+              isQuery = 'false' concurrency = 'sequential' isRoot = 'false' isLeaf = 'false'
+              isAbstract = 'false'>
+              <UML:BehavioralFeature.parameter>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC7'
+                  name = 'return' isSpecification = 'false' kind = 'return'/>
+              </UML:BehavioralFeature.parameter>
+            </UML:Operation>
+            <UML:Attribute xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC8'
+              name = 'node_id' visibility = 'public' isSpecification = 'false' ownerScope = 'instance'
+              changeability = 'changeable' targetScope = 'instance'>
+              <UML:StructuralFeature.multiplicity>
+                <UML:Multiplicity xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CC9'>
+                  <UML:Multiplicity.range>
+                    <UML:MultiplicityRange xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CCA'
+                      lower = '1' upper = '1'/>
+                  </UML:Multiplicity.range>
+                </UML:Multiplicity>
+              </UML:StructuralFeature.multiplicity>
+            </UML:Attribute>
+            <UML:Operation xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CCB'
+              name = '_iterativeFind' visibility = 'public' isSpecification = 'false'
+              ownerScope = 'instance' isQuery = 'false' concurrency = 'sequential' isRoot = 'false'
+              isLeaf = 'false' isAbstract = 'false'>
+              <UML:BehavioralFeature.parameter>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CCC'
+                  name = 'return' isSpecification = 'false' kind = 'return'/>
+                <UML:Parameter xmi.id = '-64--88-1-1-f61d05a:1330cd65ef0:-8000:0000000000000CCD'
+                  name = 'key' isSpecification = 'false' kind = 'in'/>
+              </UML:BehavioralFeature.parameter>
+            </UML:Operation>
           </UML:Classifier.feature>
         </UML:Class>
         <UML:Class xmi.id = '-64--88-1-1--3a17c01c:13307508918:-8000:0000000000000C19'
