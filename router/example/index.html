@@ -1,0 +1,44 @@
+<html>
+<script src="/SimUDP.client.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+
+<script>
+$(function() {
+  // socket = io.connect();
+  sudp = new SimUDP();
+  
+  sudp.socket.on('clients-up', function(msg) {
+    $('#form>select').empty().append('<option value="all">All</option>');
+    for(ip in msg) {
+      $('#form>select').append('	<option value="' + ip + '">' + ip + '</option>');
+    }
+  });
+
+  sudp.listen( function(msg) {
+    $('#received').append('<p><b>' + msg.src + '</b> : ' + msg.msg + '</p');
+  });
+  
+  $('#form').submit(function(event){
+    var msg = {};
+    msg.dst = $('#form>[name=dest]').val(); // IP:PORT
+    msg.msg = $('#form > input[name=text]').val();
+
+    sudp.send(msg);
+    
+    event.preventDefault();
+  });
+});
+</script>
+<body>
+<h2>Send message to node :</h2>
+<form id='form'>
+  <select name='dest'>
+    <option value='all'>All</option>
+  </select>
+  <input type=text name='text'>
+  <input type="submit" value="Send">
+</form>
+<h2>Messages received :</h2>
+<div id='received'></div>
+</body>
+</html>
