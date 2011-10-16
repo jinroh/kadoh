@@ -13,8 +13,8 @@ rt.getClients(); // {ip:port,id} list
 - register a callback to the clients list update
 
 ```js
-rt.on('newclient', fn(clientidip_port));
-rt.on('leaveclient', fn(clientidip_port));
+rt.on('newclient', fn(clientip_port));
+rt.on('leaveclient', fn(clientip_port));
 rt.on('listupdate', fn(clientip_port));
 //...
 ```
