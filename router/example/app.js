@@ -1,7 +1,5 @@
-// Dependencies
 var app = require('http').createServer(handler)
   , fs  = require('fs')
-  , io = require('socket.io')
   , router = require('../lib/router').listen(app);
 
 
