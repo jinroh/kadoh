@@ -1,11 +1,11 @@
 var zombie = require('zombie')
-, assert = require('assert')
-, vows = require('vows')
-;
+  , assert = require('assert')
+  , vows = require('vows')
+  ;
 
 //Start the server :::
 var app = require('http').createServer(handler)
-, router = require('../lib/router').listen(app);
+  , router = require('../lib/router').listen(app);
 
 
 app.listen(8080, function() {
