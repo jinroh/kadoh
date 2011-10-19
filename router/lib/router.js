@@ -1,19 +1,29 @@
+/**
+  *
+  *
+  */
 exports.listen = function(server, options) {
   return new Router(server, options);
 };
 
+/**
+  * @class Router
+  * The router class
+  */
 var Router = (function () {
   
-  /*****************************************$
+  /*!****************************************$
   *       Dependencies and Constants        $
   */
   
+  /** @requires */
   var http = require('http')
     , sio = require('socket.io')
     , url = require('url')
     , path = require('path')
     , fs = require('fs');
-    
+  
+  /** @constant */  
   var  _Events = [
         'newclient'
       , 'leaveclient'
@@ -25,9 +35,22 @@ var Router = (function () {
     ];
     
   
-  /*****************************************$
+  /*!****************************************$
   *         Routing Messages                $
   */
+  
+  /** Send the `message` passed as parameter
+    * @memberOf Router
+    * @param {Message} message object
+    * @example 
+    * message = {
+    *             dst : "ip:port"
+    *           , src : "ip:port"
+    *           , msg : "content"
+    *            };
+    * Router.send(message);`
+    */
+    
   var send = function(message) {
     this._routeMessage(message);
   };
@@ -47,7 +70,7 @@ var Router = (function () {
     }
   };
 
-  /*****************************************$
+  /*!****************************************$
   *         Managing clients                $
   */
 
@@ -109,7 +132,7 @@ var Router = (function () {
     return client.handshake.address.address + ':' + client.handshake.address.port;
   };
   
-  /*****************************************$
+  /*!****************************************$
   *         Serving client-side code        $
   */
   
@@ -150,7 +173,7 @@ var Router = (function () {
     });
   };
   
-  /*****************************************$
+  /*!****************************************$
   *          Callbacks handling             $
   */
   
@@ -189,7 +212,7 @@ var Router = (function () {
   };
   
   
-  /*****************************************$
+  /*!****************************************$
   *         Constructor and prototype       $
   */
   
