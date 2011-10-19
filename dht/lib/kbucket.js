@@ -3,7 +3,7 @@
     min = (typeof min === 'undefined') ? 0 : min;
     max = (typeof max === 'undefined') ? Math.pow(2, 160) : max;
 
-    this.contacts = {};
+    this._peers = {};
   };
 
   KBucket.prototype.idInRange = function(id) {

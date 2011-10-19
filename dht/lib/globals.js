@@ -3,7 +3,8 @@
   global.k = 6;
 
   // Degree of parallelism for network calls
-  global.alpha = 3
+  global.alpha = 3;
 
-  //timeout = 10
+  // sha1 function
+  globals._sha1 = Crypto.SHA1;
 })(this);
