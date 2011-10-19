@@ -193,7 +193,7 @@ var Router = (function () {
   *         Constructor and prototype       $
   */
   
-  Router = function (server, options) {
+  var Router = function (server, options) {
     //if server is undefined or a number create one
     if (typeof server === 'undefined') {
       server = 8080;
