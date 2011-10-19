@@ -1,27 +1,32 @@
-window.SimUDP = function(host, details) {
+(function(global) {
 
-  var socket = window.io.connect(host, details);
-  socket.on('connect', function() {
-    socket.emit('register');
-  });
+  global.SimUDP = function(host, details) {
 
-  this.socket = socket;
-};
+    var socket = window.io.connect(host, details);
+    socket.on('connect', function() {
+      socket.emit('register');
+    });
 
-window.SimUDP.prototype = {
+    this.socket = socket;
+  };
+
+  global.SimUDP.prototype = {
     constructor : window.SimUDP
 
-  , version : "0.2"
+    , version : "0.2"
 
-  , send : function(message) {
+    , send : function(message) {
       this.socket.emit('message', message);
     }
 
-  , listen : function(fn) {
+    , listen : function(fn) {
       var f = fn;
       this.socket.on('message', function(msg) {
-      f(msg);
+        f(msg);
       });
     }
 
-};
+  };
+
+
+  }(this));
