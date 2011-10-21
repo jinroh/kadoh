@@ -34,7 +34,12 @@ var RoutingTable = Class.create({
     // find the kbucket for the peer
     try {
       var kbucket = this._kbucketFor(peer.id);
-      
+      if (this._isSplittable(kbucket)) {
+        
+      }
+      else {
+        // DROP ?
+      }
     }
     // if the kbucket is full, try to split it in two
     catch(e) {
@@ -81,6 +86,14 @@ var RoutingTable = Class.create({
     if (index)
       return this._kbuckets[index];
     return false;
+  },
+  
+  _isSplittable: function(kbucket) {
+    return kbucket.idInRange(this._parent_id);
+  },
+  
+  _splitKbucket: function(kbucket) {
+    
   }
   
 });

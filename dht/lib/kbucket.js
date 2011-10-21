@@ -12,17 +12,14 @@ var KBucket = Class.create({
   // Public
   
   addPeer: function(peer) {
-    var tuple = this._peerExists(peer);
+    var exists = this._peerExists(peer);
     // if the peer is already in the kbucket, delete it and append it at the end of the list
-    if (tuple != false) {
-      delete this._peer_ids[tuple.index];
-      
-      this._size = this._peer_ids.unshift(peer.getId());
+    if (exists != false) {
+      this._updatePeer(peer.getId());
     }
     // if it doesn't and the kbucket is not full, append it at the end of the list
     else if (this._size < _k) {
-      this._peers[peer.id] = peer;
-      this._size = this._peers_ids.unshift(peer.id);
+      this._appendPeer(peer);
     }
     else {
       console.error('The kbucket ' + this.toString() + 'is full');
@@ -41,6 +38,16 @@ var KBucket = Class.create({
   getPeers: function(number) {
     number = Math.max(0, Math.min(number, this._size));
     
+    var peers = []
+      , peer
+      , i = 0;
+    for (peer_id in this._peers_ids) {
+      if (i >= number)
+        break;
+        
+      peers.push(this._peers[peer_id]);
+      i++;
+    }
   },
   
   removePeer: function(peer) {
@@ -51,6 +58,8 @@ var KBucket = Class.create({
     
     delete this._peers_ids[tuple.index];
     delete this._peers[tuple.id];
+    
+    this._size = this._peers_ids.length;
     return true;
   },
 
@@ -62,11 +71,32 @@ var KBucket = Class.create({
     return (this._min <= distance) && (distance < this._max);
   },
   
+  getRange: function() {
+    return {
+        min: this._min
+      , max: this._max
+    }
+  },
+  
+  setRange: function(min, max) {
+    
+  },
+  
   toString: function() {
-    return '<' + this._min + ':' + this._max + '>';
+    return '<' + this._min + ':' + this._max + '><#' + this._size + '>';
   },
   
   // Private
+  
+  _updatePeer: function(peer_id) {
+    delete this._peer_ids[tuple.index];
+    this._size = this._peer_ids.unshift(peer.getId());
+  },
+  
+  _appendPeer: function(peer) {
+    this._peers[peer.id] = peer;
+    this._size = this._peers_ids.unshift(peer.getId());
+  },
   
   _peerExists: function(peer) {
     var peer_id, index;
