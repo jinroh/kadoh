@@ -7,7 +7,8 @@ var DIST_DIR = __dirname + '/../dist/';
 // LIST here the files to embed
 var LIB = [
     'globals'
-  , 'crypto'
+  , 'core/class'
+  , 'util/crypto'
   , 'node'
   , 'routingtable'
   , 'kbucket'
