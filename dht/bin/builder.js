@@ -37,7 +37,6 @@ for(i in LIB) {
     console.log('Build : success in adding ' + file);
   }
   catch(err) {
-    console.log(err);
     console.log('Build : unable to read ' + file); 
   }
   
