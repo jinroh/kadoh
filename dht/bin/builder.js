@@ -1,8 +1,11 @@
 var fs = require('fs')
-  , ugly = require('uglify-js')
+  , ugly = require('uglify-js');
+  
+var LIB_DIR = __dirname + '/../lib/';
+var DIST_DIR = __dirname + '/../dist/';
   
 // LIST here the files to embed
-lib = [
+var LIB = [
     'globals'
   , 'crypto'
   , 'node'
@@ -14,12 +17,13 @@ lib = [
 code = [];
 code_min = [];
 
-for(i in lib) {
+for(i in LIB) {
   
-  var file = lib[i];
+  var file = LIB[i] + '.js';
+  var path = LIB_DIR + file;
   
   try {
-    var content = fs.readFileSync(__dirname+ '/../lib/' + file + '.js', 'utf-8');
+    var content = fs.readFileSync(path, 'utf-8');
 
     code.push(content);
 
@@ -33,14 +37,15 @@ for(i in lib) {
     console.log('Build : success in adding ' + file);
   }
   catch(err) {
+    console.log(err);
     console.log('Build : unable to read ' + file); 
   }
   
 };
 
-fs.writeFileSync('./dist/KadOH.js', code.join('\n'), 'utf-8');
+fs.writeFileSync(DIST_DIR + 'KadOH.js', code.join('\n'), 'utf-8');
 console.log("Build : KadOH.js completed");
 
-fs.writeFileSync('./dist/KadOH.min.js', code_min.join('\n'), 'utf-8');
+fs.writeFileSync(DIST_DIR + 'KadOH.min.js', code_min.join('\n'), 'utf-8');
 console.log('Build : KadOH.min.js completed');
   
