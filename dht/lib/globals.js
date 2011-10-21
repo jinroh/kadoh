@@ -1,10 +1,8 @@
-(function(global) {
-  // Maximum number of contacts in a k-bucket
-  global.k = 6;
+// Maximum number of contacts in a k-bucket
+global._k = 6;
 
-  // Degree of parallelism for network calls
-  global.alpha = 3;
+// Degree of parallelism for network calls
+global._alpha = 3;
 
-  // sha1 function
-  globals._sha1 = Crypto.SHA1;
-})(this);
+// sha1 function
+global._digest = Crypto.digest.SHA1;

@@ -1,5 +1,6 @@
-var Node = (function() {
-  var Node = function(ip, port, id) {
+var Node = Class.create({
+  
+  initialize: function(ip, port, id) {
     if (typeof id === 'undefined') {
       this.id = this._generateId();
     } else {
@@ -7,19 +8,10 @@ var Node = (function() {
     }
     
     this._routing_table = new RoutingTable(this.id);
-  };
+  },
   
-  var _generateId = function() {
-    return _sha1(this.ip + ':' + this.port);
-  };
+  _generateId: function() {
+    return _digest(this.ip + ':' + this.port);
+  }
   
-  Node.prototype = {
-    // Public
-      constructor: Node
-      
-    // Private
-    , _generateId: _generateId
-  };
-  
-  return Node;
-})();
+});

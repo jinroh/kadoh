@@ -1,8 +1,9 @@
-var RoutingTable = (function() {
-  var RoutingTable = function(parent_id) {
+var RoutingTable = Class.create({
+  
+  initialize: function(parent_id) {
     this._parent_id = parent_id;
     this._kbuckets = [new KBucket(0, Math.pow(2,160))];
-  };
+  },
   
   // Public
   
@@ -15,9 +16,9 @@ var RoutingTable = (function() {
    * @return {String} distance between the two keys
    * @api public 
    */
-  var distance = function(key_one, key_two) {
+  distance: function(key_one, key_two) {
     // return key_one ^ key_two
-  };
+  },
   
   /**
    * Add a peer to the routing table
@@ -26,7 +27,7 @@ var RoutingTable = (function() {
    * @return {Void}
    * @api public 
    */
-  var addPeer = function(peer) {
+  addPeer: function(peer) {
     if (peer.id == this._parent_id) {
       return;
     }
@@ -38,7 +39,7 @@ var RoutingTable = (function() {
     // if the kbucket is full, try to split it in two
     catch(e) {
     }
-  };
+  },
 
   // Private
   
@@ -49,20 +50,9 @@ var RoutingTable = (function() {
    * @return {Integer} index for the `_kbuckets
    * @api private
    */
-  var _kbucketIndexFor = function(key) {
+  _kbucketIndexFor: function(key) {
     for(kbucket in this._kbuckets) {
     }
-  };
+  }
   
-  RoutingTable.prototype = {
-    // Public
-      constructor: RoutingTable
-    , addPeer: addPeer
-    , distance: distance
-    
-    // Private
-    , _kBucketIndexFor: _kBucketIndexFor
-  };
-  
-  return RoutingTable;
-})();
+});
