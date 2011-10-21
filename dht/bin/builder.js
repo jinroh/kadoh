@@ -6,7 +6,8 @@ var DIST_DIR = __dirname + '/../dist/';
   
 // LIST here the files to embed
 var LIB = [
-    'globals'
+    'core/class'
+  , 'globals'
   , 'crypto'
   , 'node'
   , 'routingtable'
