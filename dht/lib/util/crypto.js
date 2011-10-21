@@ -1,7 +1,5 @@
 var Crypto = global.Crypto = {};
 
-var base64map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
 var util = Crypto.util = {
   // Bit-wise rotate left
   rotl: function (n, b) {
@@ -65,45 +63,50 @@ var util = Crypto.util = {
       bytes.push(parseInt(hex.substr(c, 2), 16));
     return bytes;
   },
+  
+  // Return the bytes xor of two hexadecimal strings
+  XOR: function(hex1, hex2) {
+    if (hex1.length != hex2.length)
+      return;
+    
+    hex1 = util.hexToBytes(hex1);
+    hex2 = util.hexToBytes(hex2);
 
-  // Convert a byte array to a base-64 string
-  bytesToBase64: function (bytes) {
+    var xor = [];
+    for (var i = 0; i < key1.length; i++) {
+      xor.push(key1[i] ^ key2[i]);
+    }
+    return xor;
+  },
+  
+  distance: function(key1, key2) {
+    if (key1 === key2)
+      return 0;
+      
+    key1 = Crypto.util.hexToBytes(key1);
+    key2 = Crypto.util.hexToBytes(key2);
+    
+    var length = key1.length;
+    if (length != key2.length) {
+      console.error("distance between two different sized key");
+      return -1;
+    }
+    
+    var max_dist = length*8 - 1;
 
-    // Use browser-native function if it exists
-    if (typeof btoa == "function") return btoa(Binary.bytesToString(bytes));
-
-    for(var base64 = [], i = 0; i < bytes.length; i += 3) {
-      var triplet = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-      for (var j = 0; j < 4; j++) {
-        if (i * 8 + j * 6 <= bytes.length * 8)
-          base64.push(base64map.charAt((triplet >>> 6 * (3 - j)) & 0x3F));
-        else base64.push("=");
+    for (i = 0; i < length; i++) {
+      var diff = key1[i] ^ key2[i];
+      
+      if (diff) {
+        for (var j = 0; j < 7; j++)
+          if (diff >>> (7 - j))
+            break;
+        return max_dist - i*8 - j;
       }
     }
-
-    return base64.join("");
-
-  },
-
-  // Convert a base-64 string to a byte array
-  base64ToBytes: function (base64) {
-
-    // Use browser-native function if it exists
-    if (typeof atob == "function") return Binary.stringToBytes(atob(base64));
-
-    // Remove non-base-64 characters
-    base64 = base64.replace(/[^A-Z0-9+\/]/ig, "");
-
-    for (var bytes = [], i = 0, imod4 = 0; i < base64.length; imod4 = ++i % 4) {
-      if (imod4 == 0) continue;
-      bytes.push(((base64map.indexOf(base64.charAt(i - 1)) & (Math.pow(2, -2 * imod4 + 8) - 1)) << (imod4 * 2)) |
-                 (base64map.indexOf(base64.charAt(i)) >>> (6 - imod4 * 2)));
-    }
-
-    return bytes;
-
+    return max_dist;
   }
-
+  
 };
 
 var charenc = Crypto.charenc = {};

@@ -6,9 +6,9 @@ var DIST_DIR = __dirname + '/../dist/';
   
 // LIST here the files to embed
 var LIB = [
-    'core/class'
-  , 'globals'
-  , 'crypto'
+    'globals'
+  , 'core/class'
+  , 'util/crypto'
   , 'node'
   , 'routingtable'
   , 'kbucket'
@@ -38,7 +38,6 @@ for(i in LIB) {
     console.log('Build : success in adding ' + file);
   }
   catch(err) {
-    console.log(err);
     console.log('Build : unable to read ' + file); 
   }
   
