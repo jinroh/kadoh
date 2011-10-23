@@ -151,10 +151,10 @@
 
   // Digest (SHA1)
 
-  var digest = Crypto.digest = Class().statics({
+  Crypto.digest = Class().statics({
 
     SHA1: function(message, options) {
-      var digestbytes = Crypto.util.wordsToBytes(digest._sha1(message));
+      var digestbytes = Crypto.util.wordsToBytes(Crypto.digest._sha1(message));
       return options && options.asBytes ? digestbytes : options && options.asString ? Crypto.charenc.Binary.bytesToString(digestbytes) : Crypto.util.bytesToHex(digestbytes);
     },
 
