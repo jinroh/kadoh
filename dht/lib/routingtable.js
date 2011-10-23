@@ -31,10 +31,15 @@ var RoutingTable = Class.create({
       return;
     }
     
+    var kbucket_index = this._kbucketIndexFor(peer.id);
+    var kbucket = this._kbuckets[kbucket_index];
+    
     // find the kbucket for the peer
     try {
-      var kbucket_index = this._kbucketIndexFor(peer.id);
-      var kbucket = this._kbuckets[kbucket_index];
+      kbucket.addPeer(peer);
+    }
+    // if the kbucket is full, try to split it in two
+    catch(e) {
       if (kbucket.isSplittable()) {
         var new_kbucket = kbucket.split();
         new_kbucket.addPeer(peer);
@@ -44,9 +49,6 @@ var RoutingTable = Class.create({
       else {
         // DROP ?
       }
-    }
-    // if the kbucket is full, try to split it in two
-    catch(e) {
     }
   },
   
