@@ -1,17 +1,24 @@
-var Node = Class.create({
+(function(exports) {
   
-  initialize: function(ip, port, id) {
-    if (typeof id === 'undefined') {
-      this.id = this._generateId();
-    } else {
-      this.id = id;
+  var KadOH = exports;
+  var Class = KadOH.core.Class;
+  
+  KadOH.Node = Class.create({
+
+    initialize: function(ip, port, id) {
+      if (typeof id === 'undefined') {
+        this.id = this._generateId();
+      } else {
+        this.id = id;
+      }
+
+      this._routing_table = new RoutingTable(this.id);
+    },
+
+    _generateId: function() {
+      return _digest(this.ip + ':' + this.port);
     }
-    
-    this._routing_table = new RoutingTable(this.id);
-  },
+
+  });
   
-  _generateId: function() {
-    return _digest(this.ip + ':' + this.port);
-  }
-  
-});
+})('object' === typeof module ? module.exports : (this.KadOH = {}));

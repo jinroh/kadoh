@@ -1,15 +1,20 @@
-// Maximum number of contacts in a k-bucket
-global._k = 6;
+(function(exports) {
+  
+  var KadOH = exports;
+  
+  // Maximum number of contacts in a k-bucket
+  KadOH.globals._k = 6;
 
-// Degree of parallelism for network calls
-global._alpha = 3;
+  // Degree of parallelism for network calls
+  KadOH.globals._alpha = 3;
 
-// Size of the space in bits
-global._B = 160;
+  // Size of the space in bits
+  KadOH.globals._B = 160;
 
-// sha1 function
-global._digest = Crypto.digest.SHA1;
-
+  // sha1 function
+  KadOH.globals._digest = KadOH.util.Crypto.digest.SHA1;
+  
+})('object' === typeof module ? module.exports : (this.KadOH = {}));
 /*!
   * klass: a classical JS OOP façade
   * https://github.com/ded/klass
@@ -177,7 +182,13 @@ global._digest = Crypto.digest.SHA1;
       return bytes;
     },
 
-    // Return the bytes xor of two hexadecimal strings
+    /**
+     * Return the bytes XOR of two hexadecimal strings
+     *
+     * @param {String} hex1 the first hexadecimal string
+     * @param {String} hex2 the second hexadecimal string
+     * @return {Array} the bytes `Array` of the XOR
+     */
     XOR: function(hex1, hex2) {
       if (hex1.length != hex2.length)
         return;
@@ -193,7 +204,14 @@ global._digest = Crypto.digest.SHA1;
       }
       return xor;
     },
-
+    
+    /**
+     * Return the position of the first different bit between two hexadecimal strings
+     * 
+     * @param {String} hex1 the first hexadecimal string
+     * @param {String} hex2 the second hexadecimal string
+     * @return {Integer} the position of the bit
+     */
     distance: function(hex1, hex2) {
       if (hex1 === hex2)
         return 0;
@@ -261,10 +279,10 @@ global._digest = Crypto.digest.SHA1;
 
   // Digest (SHA1)
 
-  var digest = Crypto.digest = Class().statics({
+  Crypto.digest = Class().statics({
 
     SHA1: function(message, options) {
-      var digestbytes = Crypto.util.wordsToBytes(digest._sha1(message));
+      var digestbytes = Crypto.util.wordsToBytes(Crypto.digest._sha1(message));
       return options && options.asBytes ? digestbytes : options && options.asString ? Crypto.charenc.Binary.bytesToString(digestbytes) : Crypto.util.bytesToHex(digestbytes);
     },
 
@@ -334,325 +352,370 @@ global._digest = Crypto.digest.SHA1;
   });
 })('object' === typeof module ? module.exports : (this.KadOH = {}));
 
-var Node = Class.create({
+(function(exports) {
   
-  initialize: function(ip, port, id) {
-    if (typeof id === 'undefined') {
-      this.id = this._generateId();
-    } else {
-      this.id = id;
-    }
-    
-    this._routing_table = new RoutingTable(this.id);
-  },
+  var KadOH = exports;
+  var Class = KadOH.core.Class;
   
-  _generateId: function() {
-    return _digest(this.ip + ':' + this.port);
-  }
-  
-});
+  KadOH.Node = Class.create({
 
-var RoutingTable = Class.create({
-  
-  initialize: function(parent_id) {
-    this._parent_id = parent_id;
-    this._kbuckets = [new KBucket(0, _B, parent_id)];
-  },
-  
-  // Public
-  
-  /**
-   * Calculates the distance from 0 to B-1 between the parent id and the given key
-   * These keys are SHA1 hashes as hexadecimal `String`
-   *
-   * @param {String} key
-   * @return {String} distance between the two keys
-   * @api public 
-   */
-  distance: function(id) {
-    return Crypto.util.distance(this._parent_id, id);
-  },
-  
-  /**
-   * Add a peer to the routing table or update it if its already in
-   * 
-   * @param {Peer} peer object to add
-   * @return {Void}
-   * @api public 
-   */
-  addPeer: function(peer) {
-    if (peer.id == this._parent_id) {
-      return;
+    initialize: function(ip, port, id) {
+      if (typeof id === 'undefined') {
+        this.id = this._generateId();
+      } else {
+        this.id = id;
+      }
+
+      this._routing_table = new RoutingTable(this.id);
+    },
+
+    _generateId: function() {
+      return _digest(this.ip + ':' + this.port);
     }
-    
-    var kbucket_index = this._kbucketIndexFor(peer.id);
-    var kbucket = this._kbuckets[kbucket_index];
-    
-    // find the kbucket for the peer
-    try {
-      kbucket.addPeer(peer);
+
+  });
+  
+})('object' === typeof module ? module.exports : (this.KadOH = {}));
+
+(function(exports) {
+  
+  var KadOH = exports;
+  var Class = KadOH.core.Class;
+  
+  KadOH.RoutingTable = Class.create({
+
+    initialize: function(parent_id) {
+      this._parent_id = parent_id;
+      this._kbuckets = [new KBucket(0, _B, parent_id)];
+    },
+
+    // Public
+
+    /**
+     * Calculates the distance from 0 to B-1 between the parent id and the given key
+     * These keys are SHA1 hashes as hexadecimal `String`
+     *
+     * @param {String} key
+     * @return {String} distance between the two keys
+     * @api public 
+     */
+    distance: function(id) {
+      return Crypto.util.distance(this._parent_id, id);
+    },
+
+    /**
+     * Add a peer to the routing table or update it if its already in
+     * 
+     * @param {Peer} peer object to add
+     * @return {Void}
+     * @api public 
+     */
+    addPeer: function(peer) {
+      if (peer.id == this._parent_id) {
+        return;
+      }
+
+      var kbucket_index = this._kbucketIndexFor(peer.id);
+      var kbucket = this._kbuckets[kbucket_index];
+
+      // find the kbucket for the peer
+      try {
+        kbucket.addPeer(peer);
+      }
+      // if the kbucket is full, try to split it in two
+      catch(e) {
+        if (kbucket.isSplittable()) {
+          var new_kbucket = kbucket.split();
+          new_kbucket.addPeer(peer);
+
+          this._kbuckets.splice(kbucket_index + 1, 0, new_kbucket);
+        }
+        else {
+          // DROP ?
+        }
+      }
+    },
+
+    getPeer: function(id) {
+      var peer = this._kbucketFor(id).getPeer(id);
+      if (peer) {
+        return peer;
+      }
+      return false;
+    },
+
+    removePeer: function(peer) {
+      if (typeof peer === 'object') {
+        peer = peer.getId();
+      }
+      return this._kbucketFor(peer).removePeer(peer);
+    },
+
+    getKBuckets: function() {
+      return this._kbuckets;
+    },
+
+    howManyKBuckets: function() {
+      return this._kbuckets.length;
+    },
+
+    getParentId: function() {
+      return this._parent_id;
     }
-    // if the kbucket is full, try to split it in two
-    catch(e) {
-      if (kbucket.isSplittable()) {
-        var new_kbucket = kbucket.split();
-        new_kbucket.addPeer(peer);
-        
-        this._kbuckets.splice(kbucket_index + 1, 0, new_kbucket);
+
+    // Private
+
+    /**
+     * Find the appropriate KBucket index for a given key
+     *
+     * @param {String} key SHA1 hash
+     * @return {Integer} index for the `_kbuckets`
+     * @api private
+     */
+    _kbucketIndexFor: function(id) {
+      dist = this.distance(id);
+
+      for(var kbucket=0; kbucket < this._kbuckets.length; kbucket++) {
+        if (this._kbuckets[kbucket].distanceInRange(dist)) {
+          return kbucket;
+        }
+      }
+      return false;
+    },
+
+    _kbucketFor: function(id) {
+      var index = this._keybucketIndexFor(id);
+      if (index)
+        return this._kbuckets[index];
+      return false;
+    }
+
+  });
+  
+})('object' === typeof module ? module.exports : (this.KadOH = {}));
+
+(function(exports) {
+  
+  var KadOH = exports;
+  var Class = KadOH.core.Class;
+  
+  KadOH.KBucket = Class({
+
+    initialize: function(min, max, parent_id) {
+      this._min = (typeof min === 'undefined') ? 0  : min;
+      this._max = (typeof max === 'undefined') ? KadOH.globals._B : max;
+
+      this._parent_id = parent_id;
+      this._size = 0;
+      this._distances = [];
+      this._peers_ids = [];
+      this._peers = {};
+    },
+
+    // Public
+
+    addPeer: function(peer) {
+      var exists = this._peerExists(peer);
+      // if the peer is already in the kbucket, delete it and append it at the end of the list
+      if (exists != false) {
+        this._updatePeer(peer.getId());
+      }
+      // if it doesn't and the kbucket is not full, append it at the end of the list
+      else if (this._size < _k) {
+        this._appendPeer(peer);
       }
       else {
-        // DROP ?
+        console.error('The kbucket ' + this.toString() + 'is full');
+        throw new Error('FULL');
       }
-    }
-  },
-  
-  getPeer: function(id) {
-    var peer = this._kbucketFor(id).getPeer(id);
-    if (peer) {
-      return peer;
-    }
-    return false;
-  },
-  
-  removePeer: function(peer) {
-    if (typeof peer === 'object') {
-      peer = peer.getId();
-    }
-    return this._kbucketFor(peer).removePeer(peer);
-  },
-  
-  // Private
-  
-  /**
-   * Find the appropriate KBucket index for a given key
-   *
-   * @param {String} key SHA1 hash
-   * @return {Integer} index for the `_kbuckets`
-   * @api private
-   */
-  _kbucketIndexFor: function(id) {
-    dist = this.distance(id);
-    
-    for(var kbucket=0; kbucket < this._kbuckets.length; kbucket++) {
-      if (this._kbuckets[kbucket].distanceInRange(dist)) {
-        return kbucket;
+    },
+
+    getPeer: function(peer) {
+      var tuple = this._peerExists(peer)
+      if (tuple === false)
+        return false;
+
+      return this._peers[tuple.id];
+    },
+
+    getPeers: function(number) {
+      if (typeof number === 'undefined') {
+        return this._peers;
       }
-    }
-    return false;
-  },
-  
-  _kbucketFor: function(id) {
-    var index = this._keybucketIndexFor(id);
-    if (index)
-      return this._kbuckets[index];
-    return false;
-  }
-  
-});
 
-var KBucket = Class.create({
-  
-  initialize: function(min, max, parent_id) {
-    this._min = (typeof min === 'undefined') ? 0  : min;
-    this._max = (typeof max === 'undefined') ? _B : max;
-    
-    this._parent_id = parent_id;
-    this._size = 0;
-    this._distances = [];
-    this._peers_ids = [];
-    this._peers = {};
-  },
-  
-  // Public
-  
-  addPeer: function(peer) {
-    var exists = this._peerExists(peer);
-    // if the peer is already in the kbucket, delete it and append it at the end of the list
-    if (exists != false) {
-      this._updatePeer(peer.getId());
-    }
-    // if it doesn't and the kbucket is not full, append it at the end of the list
-    else if (this._size < _k) {
-      this._appendPeer(peer);
-    }
-    else {
-      console.error('The kbucket ' + this.toString() + 'is full');
-      throw new Error('FULL');
-    }
-  },
-  
-  getPeer: function(peer) {
-    var tuple = this._peerExists(peer)
-    if (tuple === false)
-      return false;
-    
-    return this._peers[tuple.id];
-  },
-  
-  getPeers: function(number) {
-    if (typeof number === 'undefined') {
-      return this._peers;
-    }
-    
-    number = Math.max(0, Math.min(number, this._size));
-    
-    var peers = []
-      , peer_id = 0
-      , i = 0;
-    for (peer_id=0; peer_id < this._size; peer_id++) {
-      if (i >= number)
-        break;
-        
-      peers.push(this._peers[peer_id]);
-      i++;
-    }
-    return peers;
-  },
-  
-  removePeer: function(peer) {
-    var tuple = this._peerExists(peer);
-    if (tuple === false) {
-      return false;
-    }
-    
-    delete this._peers_ids[tuple.index];
-    delete this._peers[tuple.id];
-    delete this._distances[tuple.id];
-    
-    this._size = this._peers_ids.length;
-    return true;
-  },
+      number = Math.max(0, Math.min(number, this._size));
 
-  idInRange: function(id, parent_id) {
-    return this.distanceInRange(Crypto.util.distance(id, parent_id));
-  },
-  
-  distanceInRange: function(distance) {
-    return (this._min <= distance) && (distance < this._max);
-  },
-  
-  getRange: function() {
-    return {
-        min: this._min
-      , max: this._max
-    }
-  },
-  
-  setRange: function(range) {
-    this._min = range.min;
-    this._max = range.max;
-  },
-  
-  setRangeMin: function(min) {
-    this._min = min;
-  },
-  
-  setRangeMax: function(max) {
-    this._max = max;
-  },
-  
-  split: function() {
-    var split_value = ( this._min + this._max ) / 2;
-    
-    var new_kbucket = new KBucket(this._min, split_value - 1, this._parent_id);
-    this.setRangeMin(split_value);
-    
-    var i;
-    var destroy_ids = [];
-    
-    for (i=0; i < this._size; i++) {
-      var peer_id = this._peers_ids[i];
-      var peer = this._peers[peer_id];
-      var distance = this._distances[peer_id];
-      
-      if (new_kbucket.distanceInRange(distance)) {
-        new_kbucket.addPeer(peer);
-        destroy_ids.push(peer_id);
+      var peers = []
+        , peer_id = 0
+        , i = 0;
+      for (peer_id=0; peer_id < this._size; peer_id++) {
+        if (i >= number)
+          break;
+
+        peers.push(this._peers[peer_id]);
+        i++;
       }
-    }
-    
-    for (i=0; i < destroy_ids.length; i++) {
-      this.removePeer(destroy_ids[i]);
-    }
-    
-    return new_kbucket;
-  },
-  
-  isSplittable: function() {
-    return this.idInRange(this._parent_id);
-  },
-  
-  toString: function() {
-    return '<' + this._min + ':' + this._max + '><#' + this._size + '>';
-  },
-  
-  // Private
-  
-  _updatePeer: function(peer_id) {
-    delete this._peer_ids[tuple.index];
-    this._size = this._peer_ids.unshift(peer.getId());
-  },
-  
-  _appendPeer: function(peer) {
-    var id = peer.getId();
-    this._peers[id] = peer;
-    this._size = this._peers_ids.unshift(id);
-    this._distances[id] = Crypto.util.distance(id, this._parent_id);
-  },
-  
-  _peerExists: function(peer) {
-    var peer_id, index;
-    
-    if (typeof peer === 'object') {
-      peer_id = peer.getId();
-      index = this._peers_ids.indexOf(peer_id);
-    } else {
-      peer_id = peer;
-      index = this._peers_ids.indexOf(peer);
-    }
-    
-    if (index === -1) {
-      return false;
-    }
-    
-    return {
-        index: index
-      , id: peer_id
-    };
-  }
-  
-});
+      return peers;
+    },
 
-var Peer = Class.create({
-  
-  initialize: function(ip, port, id) {
-    this._ip = ip;
-    this._port = port;
-    this._socket = ip + ':' + port;
-    
-    if (typeof id === 'undefined') {
-      this._id = this._generateId();
-    } else {
-      this._id = id;
+    removePeer: function(peer) {
+      var tuple = this._peerExists(peer);
+      if (tuple === false) {
+        return false;
+      }
+
+      delete this._peers_ids[tuple.index];
+      delete this._peers[tuple.id];
+      delete this._distances[tuple.id];
+
+      this._size = this._peers_ids.length;
+      return true;
+    },
+
+    idInRange: function(id, parent_id) {
+      return this.distanceInRange(Crypto.util.distance(id, parent_id));
+    },
+
+    distanceInRange: function(distance) {
+      return (this._min <= distance) && (distance < this._max);
+    },
+
+    getSize: function() {
+      return this._size;
+    },
+
+    getRange: function() {
+      return {
+          min: this._min
+        , max: this._max
+      }
+    },
+
+    setRange: function(range) {
+      this._min = range.min;
+      this._max = range.max;
+    },
+
+    setRangeMin: function(min) {
+      this._min = min;
+    },
+
+    setRangeMax: function(max) {
+      this._max = max;
+    },
+
+    split: function() {
+      var split_value = ( this._min + this._max ) / 2;
+
+      var new_kbucket = new KBucket(this._min, split_value - 1, this._parent_id);
+      this.setRangeMin(split_value);
+
+      var i;
+      var destroy_ids = [];
+
+      for (i=0; i < this._size; i++) {
+        var peer_id = this._peers_ids[i];
+        var peer = this._peers[peer_id];
+        var distance = this._distances[peer_id];
+
+        if (new_kbucket.distanceInRange(distance)) {
+          new_kbucket.addPeer(peer);
+          destroy_ids.push(peer_id);
+        }
+      }
+
+      for (i=0; i < destroy_ids.length; i++) {
+        this.removePeer(destroy_ids[i]);
+      }
+
+      return new_kbucket;
+    },
+
+    isSplittable: function() {
+      return this.idInRange(this._parent_id);
+    },
+
+    toString: function() {
+      return '<' + this._min + ':' + this._max + '><#' + this._size + '>';
+    },
+
+    // Private
+
+    _updatePeer: function(peer_id) {
+      delete this._peer_ids[tuple.index];
+      this._size = this._peer_ids.unshift(peer.getId());
+    },
+
+    _appendPeer: function(peer) {
+      var id = peer.getId();
+      this._peers[id] = peer;
+      this._size = this._peers_ids.unshift(id);
+      this._distances[id] = Crypto.util.distance(id, this._parent_id);
+    },
+
+    _peerExists: function(peer) {
+      var peer_id, index;
+
+      if (typeof peer === 'object') {
+        peer_id = peer.getId();
+        index = this._peers_ids.indexOf(peer_id);
+      } else {
+        peer_id = peer;
+        index = this._peers_ids.indexOf(peer);
+      }
+
+      if (index === -1) {
+        return false;
+      }
+
+      return {
+          index: index
+        , id: peer_id
+      };
     }
-  },
+
+  });
   
-  // Public
-  getId: function() {
-    return this._id;
-  },
+})('object' === typeof module ? module.exports : (this.KadOH = {}));
+
+(function(exports) {
   
-  getSocket: function() {
-    return this._socket;
-  },
+  var KadOH = exports;
+  var Class = KadOH.core.Class;
   
-  toString: function() {
-    return '<' + this._id + '; ' + this._socket + '>';
-  },
+  KadOH.Peer = Class.create({
+
+    initialize: function(ip, port, id) {
+      this._ip = ip;
+      this._port = port;
+      this._socket = ip + ':' + port;
+
+      if (typeof id === 'undefined') {
+        this._id = this._generateId();
+      } else {
+        this._id = id;
+      }
+    },
+
+    // Public
+    getId: function() {
+      return this._id;
+    },
+
+    getSocket: function() {
+      return this._socket;
+    },
+
+    toString: function() {
+      return '<' + this._id + '; ' + this._socket + '>';
+    },
+
+    // Private
+    _generateId: function() {
+      return _digest(this._socket); 
+    }
+
+  });
   
-  // Private
-  _generateId: function() {
-    return _digest(this._socket); 
-  }
   
-});
+})('object' === typeof module ? module.exports : (this.KadOH = {}));
