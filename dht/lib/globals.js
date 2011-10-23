@@ -1,6 +1,7 @@
 (function(exports) {
   
   var KadOH = exports;
+  KadOH.globals = {};
   
   // Maximum number of contacts in a k-bucket
   KadOH.globals._k = 6;
