@@ -1,10 +1,12 @@
 var KBucket = Class.create({
   
-  initialize: function(min, max) {
-    this._min = (typeof min === 'undefined') ? 0      : min;
-    this._max = (typeof max === 'undefined') ? (_B-1) : max;
+  initialize: function(min, max, parent_id) {
+    this._min = (typeof min === 'undefined') ? 0  : min;
+    this._max = (typeof max === 'undefined') ? _B : max;
     
+    this._parent_id = parent_id;
     this._size = 0;
+    this._distances = [];
     this._peers_ids = [];
     this._peers = {};
   },
@@ -36,35 +38,41 @@ var KBucket = Class.create({
   },
   
   getPeers: function(number) {
+    if (typeof number === 'undefined') {
+      return this._peers;
+    }
+    
     number = Math.max(0, Math.min(number, this._size));
     
     var peers = []
-      , peer
+      , peer_id = 0
       , i = 0;
-    for (peer_id in this._peers_ids) {
+    for (peer_id=0; peer_id < this._size; peer_id++) {
       if (i >= number)
         break;
         
       peers.push(this._peers[peer_id]);
       i++;
     }
+    return peers;
   },
   
   removePeer: function(peer) {
-    var tuple = this._peerExists(peer)
+    var tuple = this._peerExists(peer);
     if (tuple === false) {
       return false;
     }
     
     delete this._peers_ids[tuple.index];
     delete this._peers[tuple.id];
+    delete this._distances[tuple.id];
     
     this._size = this._peers_ids.length;
     return true;
   },
 
-  idInRange: function(id) {
-    
+  idInRange: function(id, parent_id) {
+    return this.distanceInRange(Crypto.util.distance(id, parent_id));
   },
   
   distanceInRange: function(distance) {
@@ -78,8 +86,48 @@ var KBucket = Class.create({
     }
   },
   
-  setRange: function(min, max) {
+  setRange: function(range) {
+    this._min = range.min;
+    this._max = range.max;
+  },
+  
+  setRangeMin: function(min) {
+    this._min = min;
+  },
+  
+  setRangeMax: function(max) {
+    this._max = max;
+  },
+  
+  split: function() {
+    var split_value = ( this._min + this._max ) / 2;
     
+    var new_kbucket = new KBucket(this._min, split_value - 1, this._parent_id);
+    this.setRangeMin(split_value);
+    
+    var i;
+    var destroy_ids = [];
+    
+    for (i=0; i < this._size; i++) {
+      var peer_id = this._peers_ids[i];
+      var peer = this._peers[peer_id];
+      var distance = this._distances[peer_id];
+      
+      if (new_kbucket.distanceInRange(distance)) {
+        new_kbucket.addPeer(peer);
+        destroy_ids.push(peer_id);
+      }
+    }
+    
+    for (i=0; i < destroy_ids.length; i++) {
+      this.removePeer(destroy_ids[i]);
+    }
+    
+    return new_kbucket;
+  },
+  
+  isSplittable: function() {
+    return this.idInRange(this._parent_id);
   },
   
   toString: function() {
@@ -94,8 +142,10 @@ var KBucket = Class.create({
   },
   
   _appendPeer: function(peer) {
-    this._peers[peer.id] = peer;
-    this._size = this._peers_ids.unshift(peer.getId());
+    var id = peer.getId();
+    this._peers[id] = peer;
+    this._size = this._peers_ids.unshift(id);
+    this._distances[id] = Crypto.util.distance(id, this._parent_id);
   },
   
   _peerExists: function(peer) {

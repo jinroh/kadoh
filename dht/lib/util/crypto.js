@@ -7,7 +7,7 @@
   KadOH.util = {};
   var Crypto = KadOH.util.Crypto = {};
 
-  Crypto.util = Class().statics({
+  var util = Crypto.util = Class().statics({
     // Bit-wise rotate left
     rotl: function (n, b) {
       return (n << b) | (n >>> (32 - b));
@@ -29,7 +29,7 @@
 
       // Else, assume array and swap all items
       for (var i = 0; i < n.length; i++)
-      n[i] = util.endian(n[i]);
+        n[i] = util.endian(n[i]);
       return n;
 
     },
@@ -51,7 +51,7 @@
     // Convert big-endian 32-bit words to a byte array
     wordsToBytes: function (words) {
       for (var bytes = [], b = 0; b < words.length * 32; b += 8)
-      bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
+        bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
       return bytes;
     },
 
@@ -67,7 +67,7 @@
     // Convert a hex string to a byte array
     hexToBytes: function (hex) {
       for (var bytes = [], c = 0; c < hex.length; c += 2)
-      bytes.push(parseInt(hex.substr(c, 2), 16));
+        bytes.push(parseInt(hex.substr(c, 2), 16));
       return bytes;
     },
 

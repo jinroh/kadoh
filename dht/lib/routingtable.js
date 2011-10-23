@@ -2,7 +2,7 @@ var RoutingTable = Class.create({
   
   initialize: function(parent_id) {
     this._parent_id = parent_id;
-    this._kbuckets = [new KBucket(0, _B-1)];
+    this._kbuckets = [new KBucket(0, _B, parent_id)];
   },
   
   // Public
@@ -31,18 +31,24 @@ var RoutingTable = Class.create({
       return;
     }
     
+    var kbucket_index = this._kbucketIndexFor(peer.id);
+    var kbucket = this._kbuckets[kbucket_index];
+    
     // find the kbucket for the peer
     try {
-      var kbucket = this._kbucketFor(peer.id);
-      if (this._isSplittable(kbucket)) {
+      kbucket.addPeer(peer);
+    }
+    // if the kbucket is full, try to split it in two
+    catch(e) {
+      if (kbucket.isSplittable()) {
+        var new_kbucket = kbucket.split();
+        new_kbucket.addPeer(peer);
         
+        this._kbuckets.splice(kbucket_index + 1, 0, new_kbucket);
       }
       else {
         // DROP ?
       }
-    }
-    // if the kbucket is full, try to split it in two
-    catch(e) {
     }
   },
   
@@ -73,7 +79,7 @@ var RoutingTable = Class.create({
   _kbucketIndexFor: function(id) {
     dist = this.distance(id);
     
-    for(kbucket in this._kbuckets) {
+    for(var kbucket=0; kbucket < this._kbuckets.length; kbucket++) {
       if (this._kbuckets[kbucket].distanceInRange(dist)) {
         return kbucket;
       }
@@ -86,14 +92,6 @@ var RoutingTable = Class.create({
     if (index)
       return this._kbuckets[index];
     return false;
-  },
-  
-  _isSplittable: function(kbucket) {
-    return kbucket.idInRange(this._parent_id);
-  },
-  
-  _splitKbucket: function(kbucket) {
-    
   }
   
 });
