@@ -3,7 +3,7 @@
   var KadOH = exports;
   var Class = KadOH.core.Class;
   
-  KadOH.Node = Class.create({
+  KadOH.Node = Class({
 
     initialize: function(ip, port, id) {
       if (typeof id === 'undefined') {

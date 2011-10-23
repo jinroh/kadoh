@@ -3,7 +3,7 @@
   var KadOH = exports;
   var Class = KadOH.core.Class;
   
-  KadOH.Peer = Class.create({
+  KadOH.Peer = Class({
 
     initialize: function(ip, port, id) {
       this._ip = ip;

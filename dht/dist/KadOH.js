@@ -1,20 +1,3 @@
-(function(exports) {
-  
-  var KadOH = exports;
-  
-  // Maximum number of contacts in a k-bucket
-  KadOH.globals._k = 6;
-
-  // Degree of parallelism for network calls
-  KadOH.globals._alpha = 3;
-
-  // Size of the space in bits
-  KadOH.globals._B = 160;
-
-  // sha1 function
-  KadOH.globals._digest = KadOH.util.Crypto.digest.SHA1;
-  
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
 /*!
   * klass: a classical JS OOP façade
   * https://github.com/ded/klass
@@ -355,9 +338,27 @@
 (function(exports) {
   
   var KadOH = exports;
+  KadOH.globals = {};
+  
+  // Maximum number of contacts in a k-bucket
+  KadOH.globals._k = 6;
+
+  // Degree of parallelism for network calls
+  KadOH.globals._alpha = 3;
+
+  // Size of the space in bits
+  KadOH.globals._B = 160;
+
+  // sha1 function
+  KadOH.globals._digest = KadOH.util.Crypto.digest.SHA1;
+  
+})('object' === typeof module ? module.exports : (this.KadOH = {}));
+(function(exports) {
+  
+  var KadOH = exports;
   var Class = KadOH.core.Class;
   
-  KadOH.Node = Class.create({
+  KadOH.Node = Class({
 
     initialize: function(ip, port, id) {
       if (typeof id === 'undefined') {
@@ -382,7 +383,7 @@
   var KadOH = exports;
   var Class = KadOH.core.Class;
   
-  KadOH.RoutingTable = Class.create({
+  KadOH.RoutingTable = Class({
 
     initialize: function(parent_id) {
       this._parent_id = parent_id;
@@ -683,7 +684,7 @@
   var KadOH = exports;
   var Class = KadOH.core.Class;
   
-  KadOH.Peer = Class.create({
+  KadOH.Peer = Class({
 
     initialize: function(ip, port, id) {
       this._ip = ip;

@@ -3,7 +3,7 @@
   var KadOH = exports;
   var Class = KadOH.core.Class;
   
-  KadOH.RoutingTable = Class.create({
+  KadOH.RoutingTable = Class({
 
     initialize: function(parent_id) {
       this._parent_id = parent_id;
