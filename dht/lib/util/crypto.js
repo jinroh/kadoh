@@ -67,7 +67,13 @@
       return bytes;
     },
 
-    // Return the bytes xor of two hexadecimal strings
+    /**
+     * Return the bytes XOR of two hexadecimal strings
+     *
+     * @param {String} hex1 the first hexadecimal string
+     * @param {String} hex2 the second hexadecimal string
+     * @return {Array} the bytes `Array` of the XOR
+     */
     XOR: function(hex1, hex2) {
       if (hex1.length != hex2.length)
         return;
@@ -83,7 +89,14 @@
       }
       return xor;
     },
-
+    
+    /**
+     * Return the position of the first different bit between two hexadecimal strings
+     * 
+     * @param {String} hex1 the first hexadecimal string
+     * @param {String} hex2 the second hexadecimal string
+     * @return {Integer} the position of the bit
+     */
     distance: function(hex1, hex2) {
       if (hex1 === hex2)
         return 0;
