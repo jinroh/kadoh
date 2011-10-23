@@ -39,6 +39,7 @@ for(i in LIB) {
   }
   catch(err) {
     console.log('Build : unable to read ' + file); 
+    console.log(err);
   }
   
 };
