@@ -1,12 +1,11 @@
 var vows = require('vows')
 , assert = require('assert');
 
-var Class = require('./class').core.Class;
-
+var Class = require('../lib/core/class').core.Class;
 
 vows.describe('Class system in KaDOH').addBatch({
   'When we require kadOH.core.Class': {
-    topic : function() { return require('./class').core.Class;},
+    topic : function() { return require('../lib/core/class').core.Class;},
 
     'it should be here' : function(Class){
       assert.isFunction(Class);
@@ -16,7 +15,7 @@ vows.describe('Class system in KaDOH').addBatch({
   'When I declare a Class' : {
     topic : function() {return new Class(function(n){this.n = n});},
 
-    '≤should be able to instanciate it' : function(aClass){
+    'should be able to instanciate it' : function(aClass){
       var foo = new aClass(3);
       assert.isObject(foo);
     },
@@ -33,4 +32,4 @@ vows.describe('Class system in KaDOH').addBatch({
     }
 
   }
-  }).export(module);
+}).export(module);

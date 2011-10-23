@@ -1,8 +1,8 @@
 var KBucket = Class.create({
   
   initialize: function(min, max, parent_id) {
-    this._min = (typeof min === 'undefined') ? 0      : min;
-    this._max = (typeof max === 'undefined') ? (_B-1) : max;
+    this._min = (typeof min === 'undefined') ? 0  : min;
+    this._max = (typeof max === 'undefined') ? _B : max;
     
     this._parent_id = parent_id;
     this._size = 0;
@@ -102,8 +102,8 @@ var KBucket = Class.create({
   split: function() {
     var split_value = ( this._min + this._max ) / 2;
     
-    var new_kbucket = new KBucket(split_value, this._max, this._parent_id);
-    this.setRangeMax(split_value);
+    var new_kbucket = new KBucket(this._min, split_value - 1, this._parent_id);
+    this.setRangeMin(split_value);
     
     var i;
     var destroy_ids = [];
