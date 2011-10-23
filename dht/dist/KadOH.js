@@ -111,13 +111,12 @@ global._digest = Crypto.digest.SHA1;
 (function(exports){
 
   var KadOH = exports;
-
   var Class = KadOH.core.Class;
-
+  
   KadOH.util = {};
   var Crypto = KadOH.util.Crypto = {};
 
-  var util = Crypto.util = Class().statics({
+  Crypto.util = Class().statics({
     // Bit-wise rotate left
     rotl: function (n, b) {
       return (n << b) | (n >>> (32 - b));
@@ -130,18 +129,15 @@ global._digest = Crypto.digest.SHA1;
 
     // Swap big-endian to little-endian and vice versa
     endian: function (n) {
-
       // If number given, swap endian
       if (n.constructor == Number) {
-        return util.rotl(n,  8) & 0x00FF00FF |
-        util.rotl(n, 24) & 0xFF00FF00;
+        return Crypto.util.rotl(n,  8) & 0x00FF00FF | Crypto.util.rotl(n, 24) & 0xFF00FF00;
       }
 
       // Else, assume array and swap all items
       for (var i = 0; i < n.length; i++)
-        n[i] = util.endian(n[i]);
+        n[i] = Crypto.util.endian(n[i]);
       return n;
-
     },
 
     // Generate an array of any length of random bytes
@@ -154,7 +150,7 @@ global._digest = Crypto.digest.SHA1;
     // Convert a byte array to big-endian 32-bit words
     bytesToWords: function (bytes) {
       for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
-      words[b >>> 5] |= bytes[i] << (24 - b % 32);
+        words[b >>> 5] |= bytes[i] << (24 - b % 32);
       return words;
     },
 
@@ -184,49 +180,53 @@ global._digest = Crypto.digest.SHA1;
     // Return the bytes xor of two hexadecimal strings
     XOR: function(hex1, hex2) {
       if (hex1.length != hex2.length)
-      return;
+        return;
 
-      hex1 = util.hexToBytes(hex1);
-      hex2 = util.hexToBytes(hex2);
+      if ('string' === typeof hex1)
+        hex1 = Crypto.util.hexToBytes(hex1);
+      if ('string' === typeof hex2)
+        hex2 = Crypto.util.hexToBytes(hex2);
 
       var xor = [];
-      for (var i = 0; i < key1.length; i++) {
-        xor.push(key1[i] ^ key2[i]);
+      for (var i = 0; i < hex1.length; i++) {
+        xor.push(hex1[i] ^ hex2[i]);
       }
       return xor;
     },
 
-    distance: function(key1, key2) {
-      if (key1 === key2)
-      return 0;
+    distance: function(hex1, hex2) {
+      if (hex1 === hex2)
+        return 0;
 
-      key1 = Crypto.util.hexToBytes(key1);
-      key2 = Crypto.util.hexToBytes(key2);
+      if ('string' === typeof hex1)
+        hex1 = Crypto.util.hexToBytes(hex1);
+      if ('string' === typeof hex2)
+        hex2 = Crypto.util.hexToBytes(hex2);
 
-      var length = key1.length;
-      if (length != key2.length) {
-        console.error("distance between two different sized key");
+      var length = hex1.length;
+      if (length != hex2.length) {
         return -1;
       }
 
-      var max_dist = length*8 - 1;
+      var max_dist = 8*length;
 
       for (i = 0; i < length; i++) {
-        var diff = key1[i] ^ key2[i];
+        var diff = hex1[i] ^ hex2[i];
 
         if (diff) {
-          for (var j = 0; j < 7; j++)
-          if (diff >>> (7 - j))
-          break;
-          return max_dist - i*8 - j;
+          for (var j = 0; j < 7; j++) {
+            if (diff >>> (7 - j))
+              break;
+          }
+          return max_dist - 8*i - j;
         }
       }
-      return max_dist;
+      return 0;
     }
 
   });
 
-  var charenc = Crypto.charenc = {};
+  Crypto.charenc = {};
   Crypto.charenc.Binary = Class().statics({
 
     // Convert a string to a byte array
@@ -249,12 +249,12 @@ global._digest = Crypto.digest.SHA1;
 
     // Convert a string to a byte array
     stringToBytes: function (str) {
-      return Binary.stringToBytes(unescape(encodeURIComponent(str)));
+      return Crypto.charenc.Binary.stringToBytes(unescape(encodeURIComponent(str)));
     },
 
     // Convert a byte array to a string
     bytesToString: function (bytes) {
-      return decodeURIComponent(escape(Binary.bytesToString(bytes)));
+      return decodeURIComponent(escape(Crypto.charenc.Binary.bytesToString(bytes)));
     }
 
   });
@@ -264,19 +264,16 @@ global._digest = Crypto.digest.SHA1;
   var digest = Crypto.digest = Class().statics({
 
     SHA1: function(message, options) {
-      var digestbytes = util.wordsToBytes(digest._sha1(message));
-      return options && options.asBytes ? digestbytes :
-      options && options.asString ? Binary.bytesToString(digestbytes) :
-      util.bytesToHex(digestbytes);
+      var digestbytes = Crypto.util.wordsToBytes(digest._sha1(message));
+      return options && options.asBytes ? digestbytes : options && options.asString ? Crypto.charenc.Binary.bytesToString(digestbytes) : Crypto.util.bytesToHex(digestbytes);
     },
 
     _sha1: function (message) {
-
       // Convert to byte array
-      if (message.constructor == String) message = UTF8.stringToBytes(message);
+      if (message.constructor == String) message = Crypto.charenc.UTF8.stringToBytes(message);
+      
       /* else, assume byte array already */
-
-      var m  = util.bytesToWords(message),
+      var m  = Crypto.util.bytesToWords(message),
       l  = message.length * 8,
       w  =  [],
       H0 =  1732584193,
@@ -311,33 +308,31 @@ global._digest = Crypto.digest.SHA1;
             j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
             (H1 ^ H2 ^ H3) - 899497514);
 
-            H4 =  H3;
-            H3 =  H2;
-            H2 = (H1 << 30) | (H1 >>> 2);
-            H1 =  H0;
-            H0 =  t;
-
-          }
-
-          H0 += a;
-          H1 += b;
-          H2 += c;
-          H3 += d;
-          H4 += e;
+          H4 =  H3;
+          H3  =  H2;
+          H2 = (H1 << 30) | (H1 >>> 2);
+          H1 =  H0;
+          H0 =  t;
 
         }
 
-        return [H0, H1, H2, H3, H4];
+        H0 += a;
+        H1 += b;
+        H2 += c;
+        H3 += d;
+        H4 += e;
 
-      },
+      }
 
-      // Package private blocksize
-      _blocksize: 16,
+      return [H0, H1, H2, H3, H4];
+    },
 
-      _digestsize: 20
-    });
+    // Package private blocksize
+    _blocksize: 16,
 
-    })('object' === typeof module ? module.exports : (this.KadOH = {}));
+    _digestsize: 20
+  });
+})('object' === typeof module ? module.exports : (this.KadOH = {}));
 
 var Node = Class.create({
   
