@@ -1,10 +1,13 @@
-(function(exports) {
-  var KadOH = exports;
-  KadOH.Crypto = {};
-  
-  var Crypto = KadOH.Crypto = {};
+(function(exports){
 
-  var util = Crypto.util = {
+  var KadOH = exports;
+
+  var Class = KadOH.core.Class;
+
+  KadOH.util = {};
+  var Crypto = KadOH.util.Crypto = {};
+
+  var util = Crypto.util = Class().statics({
     // Bit-wise rotate left
     rotl: function (n, b) {
       return (n << b) | (n >>> (32 - b));
@@ -21,7 +24,7 @@
       // If number given, swap endian
       if (n.constructor == Number) {
         return util.rotl(n,  8) & 0x00FF00FF |
-               util.rotl(n, 24) & 0xFF00FF00;
+        util.rotl(n, 24) & 0xFF00FF00;
       }
 
       // Else, assume array and swap all items
@@ -34,14 +37,14 @@
     // Generate an array of any length of random bytes
     randomBytes: function (n) {
       for (var bytes = []; n > 0; n--)
-        bytes.push(Math.floor(Math.random() * 256));
+      bytes.push(Math.floor(Math.random() * 256));
       return bytes;
     },
 
     // Convert a byte array to big-endian 32-bit words
     bytesToWords: function (bytes) {
       for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
-        words[b >>> 5] |= bytes[i] << (24 - b % 32);
+      words[b >>> 5] |= bytes[i] << (24 - b % 32);
       return words;
     },
 
@@ -71,72 +74,68 @@
     // Return the bytes xor of two hexadecimal strings
     XOR: function(hex1, hex2) {
       if (hex1.length != hex2.length)
-        return;
-      
-      if ('string' === typeof hex1)
-        hex1 = util.hexToBytes(hex1);
-      if ('string' === typeof hex2)
-        hex2 = util.hexToBytes(hex2);
+      return;
+
+      hex1 = util.hexToBytes(hex1);
+      hex2 = util.hexToBytes(hex2);
 
       var xor = [];
-      for (var i = 0; i < hex1.length; i++) {
-        xor.push(hex1[i] ^ hex2[i]);
+      for (var i = 0; i < key1.length; i++) {
+        xor.push(key1[i] ^ key2[i]);
       }
       return xor;
     },
 
-    distance: function(hex1, hex2) {
-      if (hex1 === hex2)
-        return 0;
-      
-      if ('string' === typeof hex1)
-        hex1 = util.hexToBytes(hex1);
-      if ('string' === typeof hex2)
-        hex2 = util.hexToBytes(hex2);
-      
-      var length = hex1.length;
-      if (length != hex2.length) {
+    distance: function(key1, key2) {
+      if (key1 === key2)
+      return 0;
+
+      key1 = Crypto.util.hexToBytes(key1);
+      key2 = Crypto.util.hexToBytes(key2);
+
+      var length = key1.length;
+      if (length != key2.length) {
+        console.error("distance between two different sized key");
         return -1;
       }
-      
-      var max_dist = 8*length;
+
+      var max_dist = length*8 - 1;
 
       for (i = 0; i < length; i++) {
-        var diff = hex1[i] ^ hex2[i];
+        var diff = key1[i] ^ key2[i];
 
         if (diff) {
-          for (var j = 0; j < 7; j++) {
-            if (diff >>> (7 - j))
-              break;
-          }
-          return max_dist - 8*i - j;
+          for (var j = 0; j < 7; j++)
+          if (diff >>> (7 - j))
+          break;
+          return max_dist - i*8 - j;
         }
       }
-      return 0;
+      return max_dist;
     }
 
-  };
+  });
 
   var charenc = Crypto.charenc = {};
-  var Binary = Crypto.charenc.Binary = {
+  Crypto.charenc.Binary = Class().statics({
 
     // Convert a string to a byte array
     stringToBytes: function (str) {
       for (var bytes = [], i = 0; i < str.length; i++)
-        bytes.push(str.charCodeAt(i) & 0xFF);
+      bytes.push(str.charCodeAt(i) & 0xFF);
       return bytes;
     },
 
     // Convert a byte array to a string
     bytesToString: function (bytes) {
       for (var str = [], i = 0; i < bytes.length; i++)
-        str.push(String.fromCharCode(bytes[i]));
+      str.push(String.fromCharCode(bytes[i]));
       return str.join("");
     }
 
-  };
+  });
 
-  var UTF8 = Crypto.charenc.UTF8 = {
+  Crypto.charenc.UTF8 = Class().statics({
 
     // Convert a string to a byte array
     stringToBytes: function (str) {
@@ -148,17 +147,17 @@
       return decodeURIComponent(escape(Binary.bytesToString(bytes)));
     }
 
-  };
+  });
 
   // Digest (SHA1)
 
-  var digest = Crypto.digest = {
+  var digest = Crypto.digest = Class().statics({
 
     SHA1: function(message, options) {
       var digestbytes = util.wordsToBytes(digest._sha1(message));
       return options && options.asBytes ? digestbytes :
-             options && options.asString ? Binary.bytesToString(digestbytes) :
-             util.bytesToHex(digestbytes);
+      options && options.asString ? Binary.bytesToString(digestbytes) :
+      util.bytesToHex(digestbytes);
     },
 
     _sha1: function (message) {
@@ -168,13 +167,13 @@
       /* else, assume byte array already */
 
       var m  = util.bytesToWords(message),
-          l  = message.length * 8,
-          w  =  [],
-          H0 =  1732584193,
-          H1 = -271733879,
-          H2 = -1732584194,
-          H3 =  271733878,
-          H4 = -1009589776;
+      l  = message.length * 8,
+      w  =  [],
+      H0 =  1732584193,
+      H1 = -271733879,
+      H2 = -1732584194,
+      H3 =  271733878,
+      H4 = -1009589776;
 
       // Padding
       m[l >> 5] |= 0x80 << (24 - l % 32);
@@ -183,10 +182,10 @@
       for (var i = 0; i < m.length; i += 16) {
 
         var a = H0,
-            b = H1,
-            c = H2,
-            d = H3,
-            e = H4;
+        b = H1,
+        c = H2,
+        d = H3,
+        e = H4;
 
         for (var j = 0; j < 80; j++) {
 
@@ -197,34 +196,35 @@
           }
 
           var t = ((H0 << 5) | (H0 >>> 27)) + H4 + (w[j] >>> 0) + (
-                   j < 20 ? (H1 & H2 | ~H1 & H3) + 1518500249 :
-                   j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
-                   j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
-                            (H1 ^ H2 ^ H3) - 899497514);
+            j < 20 ? (H1 & H2 | ~H1 & H3) + 1518500249 :
+            j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
+            j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
+            (H1 ^ H2 ^ H3) - 899497514);
 
-          H4 =  H3;
-          H3 =  H2;
-          H2 = (H1 << 30) | (H1 >>> 2);
-          H1 =  H0;
-          H0 =  t;
+            H4 =  H3;
+            H3 =  H2;
+            H2 = (H1 << 30) | (H1 >>> 2);
+            H1 =  H0;
+            H0 =  t;
+
+          }
+
+          H0 += a;
+          H1 += b;
+          H2 += c;
+          H3 += d;
+          H4 += e;
 
         }
 
-        H0 += a;
-        H1 += b;
-        H2 += c;
-        H3 += d;
-        H4 += e;
+        return [H0, H1, H2, H3, H4];
 
-      }
+      },
 
-      return [H0, H1, H2, H3, H4];
+      // Package private blocksize
+      _blocksize: 16,
 
-    },
+      _digestsize: 20
+    });
 
-    // Package private blocksize
-    _blocksize: 16,
-
-    _digestsize: 20
-  };
-})('object' === typeof module ? module.exports : (this.Crypto = {}));
+    })('object' === typeof module ? module.exports : (this.KadOH = {}));
