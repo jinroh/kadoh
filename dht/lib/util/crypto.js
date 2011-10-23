@@ -161,11 +161,10 @@
     },
 
     _sha1: function (message) {
-
       // Convert to byte array
       if (message.constructor == String) message = UTF8.stringToBytes(message);
+      
       /* else, assume byte array already */
-
       var m  = util.bytesToWords(message),
       l  = message.length * 8,
       w  =  [],
@@ -201,30 +200,28 @@
             j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
             (H1 ^ H2 ^ H3) - 899497514);
 
-            H4 =  H3;
-            H3 =  H2;
-            H2 = (H1 << 30) | (H1 >>> 2);
-            H1 =  H0;
-            H0 =  t;
-
-          }
-
-          H0 += a;
-          H1 += b;
-          H2 += c;
-          H3 += d;
-          H4 += e;
+          H4 =  H3;
+          H3  =  H2;
+          H2 = (H1 << 30) | (H1 >>> 2);
+          H1 =  H0;
+          H0 =  t;
 
         }
 
-        return [H0, H1, H2, H3, H4];
+        H0 += a;
+        H1 += b;
+        H2 += c;
+        H3 += d;
+        H4 += e;
 
-      },
+      }
 
-      // Package private blocksize
-      _blocksize: 16,
+      return [H0, H1, H2, H3, H4];
+    },
 
-      _digestsize: 20
-    });
+    // Package private blocksize
+    _blocksize: 16,
 
-    })('object' === typeof module ? module.exports : (this.KadOH = {}));
+    _digestsize: 20
+  });
+})('object' === typeof module ? module.exports : (this.KadOH = {}));
