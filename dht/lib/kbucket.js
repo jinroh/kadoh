@@ -58,13 +58,14 @@ var KBucket = Class.create({
   },
   
   removePeer: function(peer) {
-    var tuple = this._peerExists(peer)
+    var tuple = this._peerExists(peer);
     if (tuple === false) {
       return false;
     }
     
     delete this._peers_ids[tuple.index];
     delete this._peers[tuple.id];
+    delete this._distances[tuple.id];
     
     this._size = this._peers_ids.length;
     return true;
@@ -105,15 +106,21 @@ var KBucket = Class.create({
     this.setRangeMax(split_value);
     
     var i;
-    for (var i=0; i < this._size; i++) {
+    var destroy_ids = [];
+    
+    for (i=0; i < this._size; i++) {
       var peer_id = this._peers_ids[i];
       var peer = this._peers[peer_id];
       var distance = this._distances[peer_id];
       
       if (new_kbucket.distanceInRange(distance)) {
         new_kbucket.addPeer(peer);
-        this.removePeer(peer);
+        destroy_ids.push(peer_id);
       }
+    }
+    
+    for (i=0; i < destroy_ids.length; i++) {
+      this.removePeer(destroy_ids[i]);
     }
     
     return new_kbucket;
