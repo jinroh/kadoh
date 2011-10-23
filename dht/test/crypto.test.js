@@ -6,13 +6,13 @@ var Crypto = require('../lib/util/crypto').Crypto;
 var util = Crypto.util;
 var digest = Crypto.digest;
 
-var foo = Crypto.digest.SHA1('foo');
-var bar = Crypto.digest.SHA1('bar');
+var foo = digest.SHA1('foo');
+var bar = digest.SHA1('bar');
 
-vows.describe('Crypto').addBatch({
+vows.describe('Crypto module of the util directory').addBatch({
   'SHA1': {
     'When I ask for the `SHA1` function': {
-      topic: function() { return Crypto.digest.SHA1 },
+      topic: function() { return digest.SHA1 },
       'should be a function': function(sha1) {
         assert.isFunction(sha1);
       },
@@ -52,15 +52,11 @@ vows.describe('Crypto').addBatch({
       }
     }
   },
-  '`distance` function': {
-    'When I ask for the `distance` function': {
+  'distance function': {
+    'When I ask for the distance function': {
       topic: function() { return util.distance },
-      'should be a funtion': function(distance) {
+      'should be a function': function(distance) {
         assert.isFunction(distance);
-      },
-      'should return a positive number': function(distance) {
-        assert.isNumber(distance(foo, bar));
-        assert.isTrue(distance(foo,bar) > 0)
       },
       'and ask the distance between the same objects': {
         'should equal zero': function(distance) {
@@ -74,6 +70,10 @@ vows.describe('Crypto').addBatch({
         }
       },
       'and ask distances': {
+        'should return a positive number': function(distance) {
+          assert.isNumber(distance(foo, bar));
+          assert.isTrue(distance(foo,bar) > 0)
+        },
         'should return the good distances': function(distance) {
           var test = [36,0,5]
           
