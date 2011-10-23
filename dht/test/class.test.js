@@ -1,5 +1,5 @@
 var vows = require('vows')
-, assert = require('assert');
+  , assert = require('assert');
 
 var Class = require('../lib/core/class').core.Class;
 
