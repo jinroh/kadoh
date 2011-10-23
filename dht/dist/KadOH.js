@@ -386,7 +386,7 @@
 
     initialize: function(parent_id) {
       this._parent_id = parent_id;
-      this._kbuckets = [new KBucket(0, _B, parent_id)];
+      this._kbuckets = [new KBucket(0, KadOH.globals._B, parent_id)];
     },
 
     // Public
@@ -461,7 +461,7 @@
 
     getParentId: function() {
       return this._parent_id;
-    }
+    },
 
     // Private
 
@@ -521,7 +521,7 @@
         this._updatePeer(peer.getId());
       }
       // if it doesn't and the kbucket is not full, append it at the end of the list
-      else if (this._size < _k) {
+      else if (this._size < KadOH.globals._k) {
         this._appendPeer(peer);
       }
       else {

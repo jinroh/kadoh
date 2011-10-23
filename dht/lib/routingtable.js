@@ -82,7 +82,7 @@
 
     getParentId: function() {
       return this._parent_id;
-    }
+    },
 
     // Private
 
