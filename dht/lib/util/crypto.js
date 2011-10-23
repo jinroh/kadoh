@@ -88,18 +88,18 @@
     distance: function(key1, key2) {
       if (key1 === key2)
         return 0;
-
-        if ('string' === typeof hex1)
-          hex1 = util.hexToBytes(hex1);
-        if ('string' === typeof hex2)
-          hex2 = util.hexToBytes(hex2);
-
+      
+      if ('string' === typeof key1)
+        key1 = util.hexToBytes(key1);
+      if ('string' === typeof key2)
+        key2 = util.hexToBytes(key2);
+      
       var length = key1.length;
       if (length != key2.length) {
         return -1;
       }
-
-      var max_dist = length*8;
+      
+      var max_dist = 8*length;
 
       for (i = 0; i < length; i++) {
         var diff = key1[i] ^ key2[i];

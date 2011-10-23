@@ -2,7 +2,7 @@ var RoutingTable = Class.create({
   
   initialize: function(parent_id) {
     this._parent_id = parent_id;
-    this._kbuckets = [new KBucket(0, _B-1, parent_id)];
+    this._kbuckets = [new KBucket(0, _B, parent_id)];
   },
   
   // Public

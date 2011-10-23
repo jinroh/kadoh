@@ -58,8 +58,9 @@ vows.describe('Crypto').addBatch({
       'should be a funtion': function(distance) {
         assert.isFunction(distance);
       },
-      'should return a number': function(distance) {
+      'should return a positive number': function(distance) {
         assert.isNumber(distance(foo, bar));
+        assert.isTrue(distance(foo,bar) > 0)
       },
       'and ask the distance between the same objects': {
         'should equal zero': function(distance) {
