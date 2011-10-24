@@ -7,7 +7,7 @@
 
     initialize: function(parent_id) {
       this._parent_id = parent_id;
-      this._kbuckets = [new KBucket(0, KadOH.globals._B, parent_id)];
+      this._kbuckets = [new KadOH.KBucket(0, KadOH.globals._B, parent_id)];
     },
 
     // Public
@@ -21,7 +21,7 @@
      * @api public 
      */
     distance: function(id) {
-      return Crypto.util.distance(this._parent_id, id);
+      return KadOH.util.Crypto.util.distance(this._parent_id, id);
     },
 
     /**
@@ -32,11 +32,11 @@
      * @api public 
      */
     addPeer: function(peer) {
-      if (peer.id == this._parent_id) {
+      if (peer.getId() == this._parent_id) {
         return;
       }
 
-      var kbucket_index = this._kbucketIndexFor(peer.id);
+      var kbucket_index = this._kbucketIndexFor(peer.getId());
       var kbucket = this._kbuckets[kbucket_index];
 
       // find the kbucket for the peer
@@ -101,12 +101,12 @@
           return kbucket;
         }
       }
-      return false;
+      return -1;
     },
 
     _kbucketFor: function(id) {
-      var index = this._keybucketIndexFor(id);
-      if (index)
+      var index = this._kbucketIndexFor(id);
+      if (index != -1)
         return this._kbuckets[index];
       return false;
     }

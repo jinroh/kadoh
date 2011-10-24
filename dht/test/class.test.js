@@ -1,7 +1,7 @@
 var vows = require('vows')
   , assert = require('assert');
 
-var Class = require('../lib/core/class').core.Class;
+var Class = require('../dist/KadOH').core.Class;
 
 vows.describe('Class system in KaDOH').addBatch({
   'When we require kadOH.core.Class': {

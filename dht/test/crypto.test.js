@@ -2,7 +2,7 @@ var vows = require('vows')
   , assert = require('assert');
 
 // var Crypto = require('../lib/util/crypto').Crypto;
-var Crypto = require('../dist/KadOH.js').Crypto;
+var Crypto = require('../dist/KadOH.js').util.Crypto;
 
 var util = Crypto.util;
 var digest = Crypto.digest;

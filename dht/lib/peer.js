@@ -32,7 +32,7 @@
 
     // Private
     _generateId: function() {
-      return _digest(this._socket); 
+      return KadOH.globals._digest(this._socket); 
     }
 
   });

@@ -1,9 +1,10 @@
 var vows = require('vows')
   , assert = require('assert');
-  
-var globals = require('../lib/globals');
-var RoutingTable = require('../lib/routingtable');
-var SHA1 = require('../lib/util/crypto').digest.SHA1;
+
+var KadOH = require('../dist/KadOH');
+var globals = KadOH.globals;
+var RoutingTable = KadOH.RoutingTable;
+var SHA1 = KadOH.util.Crypto.digest.SHA1;
 
 var parent_id = SHA1('ip:port');
 
@@ -19,16 +20,16 @@ vows.describe('Routing Table system in KadOH').addBatch({
     
   },
   
-  'When I create of a Routing Table': {
+  'When I create a Routing Table': {
     
     topic: function() { return new RoutingTable(parent_id) },
   
     'should have one KBucket [0 -> _B]': function(routing_table) {
-      assert.equal(1, routing_table.howManyKBuckets);
-      var kbucket = routing_table.getKBuckets[0];
-      
-      assert.equal(0, kbucket.getMinRange());
-      assert.equal(globals._B, kbucket.getMaxRange());
+      assert.equal(1, routing_table.howManyKBuckets());
+      var kbucket = routing_table.getKBuckets()[0];
+
+      assert.equal(0, kbucket.getRange().min);
+      assert.equal(globals._B, kbucket.getRange().max);
     },
     
     'should have access to its parent ID': function(routing_table) {
@@ -38,16 +39,39 @@ vows.describe('Routing Table system in KadOH').addBatch({
     'and add a new Peer to it': {
       
       topic: function(routing_table) { 
-        routing_table.addPeer(new Peer('127.0.0.1', '12345'));
+        routing_table.addPeer(new KadOH.Peer('127.0.0.1', '12345'));
         return routing_table;
       },
       
       'should have a Peer in the KBucket': function(routing_table) {
-        assert.equal(1, routing_table.getKBuckets[0].getSize());
+        assert.equal(1, routing_table.getKBuckets()[0].getSize());
+      },
+      
+      'should be able to retrieve that peer': function(routing_table) {
+        var id = SHA1('127.0.0.1:12345');
+        var peer = routing_table.getPeer(id);
+        assert.equal(id, peer.getId());
+      },
+          
+      'and add another Peer to it': {
+      
+        topic: function(routing_table) { 
+          routing_table.addPeer(new KadOH.Peer('127.0.0.1', '54321'));
+          return routing_table;
+        },
+      
+        'should have two Peers in the KBucket': function(routing_table) {
+          assert.equal(2, routing_table.getKBuckets()[0].getSize());
+        },
+      
+        'should be able to retrieve that peer': function(routing_table) {
+          var id = SHA1('127.0.0.1:54321');
+          var peer = routing_table.getPeer(id);
+          assert.equal(id, peer.getId());
+        }
+        
       }
-
-      // ...
-
     }
+    
   }
-});
+}).export(module);

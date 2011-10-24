@@ -3,6 +3,8 @@
   var KadOH = exports;
   var Class = KadOH.core.Class;
   
+  var Crypto = KadOH.util.Crypto;
+  
   KadOH.KBucket = Class({
 
     initialize: function(min, max, parent_id) {
@@ -81,7 +83,7 @@
     },
 
     distanceInRange: function(distance) {
-      return (this._min <= distance) && (distance < this._max);
+      return (this._min < distance) && (distance <= this._max);
     },
 
     getSize: function() {
@@ -111,7 +113,7 @@
     split: function() {
       var split_value = ( this._min + this._max ) / 2;
 
-      var new_kbucket = new KBucket(this._min, split_value - 1, this._parent_id);
+      var new_kbucket = new KadOH.KBucket(this._min, split_value - 1, this._parent_id);
       this.setRangeMin(split_value);
 
       var i;
@@ -136,7 +138,7 @@
     },
 
     isSplittable: function() {
-      return this.idInRange(this._parent_id);
+      return (this._min === 0);
     },
 
     toString: function() {

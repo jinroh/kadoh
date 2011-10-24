@@ -387,7 +387,7 @@
 
     initialize: function(parent_id) {
       this._parent_id = parent_id;
-      this._kbuckets = [new KBucket(0, KadOH.globals._B, parent_id)];
+      this._kbuckets = [new KadOH.KBucket(0, KadOH.globals._B, parent_id)];
     },
 
     // Public
@@ -401,7 +401,7 @@
      * @api public 
      */
     distance: function(id) {
-      return Crypto.util.distance(this._parent_id, id);
+      return KadOH.util.Crypto.util.distance(this._parent_id, id);
     },
 
     /**
@@ -412,11 +412,11 @@
      * @api public 
      */
     addPeer: function(peer) {
-      if (peer.id == this._parent_id) {
+      if (peer.getId() == this._parent_id) {
         return;
       }
 
-      var kbucket_index = this._kbucketIndexFor(peer.id);
+      var kbucket_index = this._kbucketIndexFor(peer.getId());
       var kbucket = this._kbuckets[kbucket_index];
 
       // find the kbucket for the peer
@@ -481,12 +481,12 @@
           return kbucket;
         }
       }
-      return false;
+      return -1;
     },
 
     _kbucketFor: function(id) {
-      var index = this._keybucketIndexFor(id);
-      if (index)
+      var index = this._kbucketIndexFor(id);
+      if (index != -1)
         return this._kbuckets[index];
       return false;
     }
@@ -499,6 +499,8 @@
   
   var KadOH = exports;
   var Class = KadOH.core.Class;
+  
+  var Crypto = KadOH.util.Crypto;
   
   KadOH.KBucket = Class({
 
@@ -578,7 +580,7 @@
     },
 
     distanceInRange: function(distance) {
-      return (this._min <= distance) && (distance < this._max);
+      return (this._min < distance) && (distance <= this._max);
     },
 
     getSize: function() {
@@ -608,7 +610,7 @@
     split: function() {
       var split_value = ( this._min + this._max ) / 2;
 
-      var new_kbucket = new KBucket(this._min, split_value - 1, this._parent_id);
+      var new_kbucket = new KadOH.KBucket(this._min, split_value - 1, this._parent_id);
       this.setRangeMin(split_value);
 
       var i;
@@ -713,7 +715,7 @@
 
     // Private
     _generateId: function() {
-      return _digest(this._socket); 
+      return KadOH.globals._digest(this._socket); 
     }
 
   });
