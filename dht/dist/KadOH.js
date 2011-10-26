@@ -425,14 +425,18 @@
       }
       // if the kbucket is full, try to split it in two
       catch(e) {
-        if (kbucket.isSplittable()) {
+        if(kbucket.isSplittable(this.distance(peer.getId()))) {
           var new_kbucket = kbucket.split();
-          new_kbucket.addPeer(peer);
-
+          
+          // console.log('SPLITTING ROUTING TABLE : ' + kbucket + ' ' + new_kbucket);
           this._kbuckets.splice(kbucket_index + 1, 0, new_kbucket);
-        }
-        else {
-          // DROP ?
+          
+          if (new_kbucket.distanceInRange(this.distance(peer.getId()))) {
+            new_kbucket.addPeer(peer);
+          }
+          else {
+            // DROP ?
+          }
         }
       }
     },
@@ -521,7 +525,7 @@
       var exists = this._peerExists(peer);
       // if the peer is already in the kbucket, delete it and append it at the end of the list
       if (exists != false) {
-        this._updatePeer(peer.getId());
+        this._updatePeer(exists);
       }
       // if it doesn't and the kbucket is not full, append it at the end of the list
       else if (this._size < KadOH.globals._k) {
@@ -531,6 +535,8 @@
         console.error('The kbucket ' + this.toString() + 'is full');
         throw new Error('FULL');
       }
+      
+      return this;
     },
 
     getPeer: function(peer) {
@@ -564,15 +570,16 @@
     removePeer: function(peer) {
       var tuple = this._peerExists(peer);
       if (tuple === false) {
-        return false;
+        throw new Error(peer + ' does not exists');
+      } else {
+        delete this._peers_ids[tuple.index];
+        delete this._peers[tuple.id];
+        delete this._distances[tuple.id];
+
+        this._size--;
       }
 
-      delete this._peers_ids[tuple.index];
-      delete this._peers[tuple.id];
-      delete this._distances[tuple.id];
-
-      this._size = this._peers_ids.length;
-      return true;
+      return this;
     },
 
     idInRange: function(id, parent_id) {
@@ -597,14 +604,17 @@
     setRange: function(range) {
       this._min = range.min;
       this._max = range.max;
+      return this;
     },
 
     setRangeMin: function(min) {
       this._min = min;
+      return this;
     },
 
     setRangeMax: function(max) {
       this._max = max;
+      return this;
     },
 
     split: function() {
@@ -635,25 +645,27 @@
     },
 
     isSplittable: function() {
-      return this.idInRange(this._parent_id);
+      return (this._min === 0);
     },
 
     toString: function() {
-      return '<' + this._min + ':' + this._max + '><#' + this._size + '>';
+      return '<' + this._min + ':' + this._max + '><#' + this._peers_ids.length + '>';
     },
 
     // Private
 
-    _updatePeer: function(peer_id) {
-      delete this._peer_ids[tuple.index];
-      this._size = this._peer_ids.unshift(peer.getId());
+    _updatePeer: function(tuple) {
+      delete this._peers_ids[tuple.index];
+      this._peers_ids.unshift(tuple.id);
     },
 
     _appendPeer: function(peer) {
       var id = peer.getId();
       this._peers[id] = peer;
-      this._size = this._peers_ids.unshift(id);
+      this._peers_ids.unshift(id);
       this._distances[id] = Crypto.util.distance(id, this._parent_id);
+      
+      this._size++;
     },
 
     _peerExists: function(peer) {
@@ -701,6 +713,10 @@
     },
 
     // Public
+    getID: function() {
+      return this.getId();
+    },
+    
     getId: function() {
       return this._id;
     },

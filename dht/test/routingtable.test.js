@@ -68,8 +68,23 @@ vows.describe('Routing Table system in KadOH').addBatch({
           var id = SHA1('127.0.0.1:54321');
           var peer = routing_table.getPeer(id);
           assert.equal(id, peer.getId());
-        }
+        },
         
+        'and add _k elements to it': {
+        
+          topic: function(routing_table) {
+            var peers = [];
+          
+            for (var i = 0; i < KadOH.globals._k; i++) {
+              routing_table.addPeer(new KadOH.Peer('127.0.0.1', '' + (1025 + i)));
+            }
+            return routing_table;
+          },
+        
+          'should split the buckets': function(routing_table) {
+            assert.equal(2, routing_table.howManyKBuckets());
+          }
+        }
       }
     }
     

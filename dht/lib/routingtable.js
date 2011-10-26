@@ -45,14 +45,19 @@
       }
       // if the kbucket is full, try to split it in two
       catch(e) {
-        if (kbucket.isSplittable()) {
+        // if the kbucket is splittable split it and try again
+        if(kbucket.isSplittable(this.distance(peer.getId()))) {
           var new_kbucket = kbucket.split();
-          new_kbucket.addPeer(peer);
-
+          
+          // console.log('SPLITTING ROUTING TABLE : ' + kbucket + ' ' + new_kbucket);
           this._kbuckets.splice(kbucket_index + 1, 0, new_kbucket);
+          
+          this.addPeer(peer);
         }
+        // if the kbucket is not splittable, remove the least recently seen peer and add the new
         else {
-          // DROP ?
+          kbucket.removePeer(kbucket.getOldestPeers());
+          kbucket.addPeer(peer);
         }
       }
     },

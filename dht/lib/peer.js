@@ -18,6 +18,10 @@
     },
 
     // Public
+    getID: function() {
+      return this.getId();
+    },
+    
     getId: function() {
       return this._id;
     },
