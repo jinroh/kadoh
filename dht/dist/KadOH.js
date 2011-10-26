@@ -94,7 +94,7 @@
     return klass
   }();
 
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));
 
 (function(exports){
 
@@ -333,7 +333,7 @@
 
     _digestsize: 20
   });
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));
 
 (function(exports) {
   
@@ -352,7 +352,7 @@
   // sha1 function
   KadOH.globals._digest = KadOH.util.Crypto.digest.SHA1;
   
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));
 (function(exports) {
   
   var KadOH = exports;
@@ -369,14 +369,34 @@
 
       this._routing_table = new RoutingTable(this.id);
     },
+    
+    addPeer: function(peer) {
+      this._routing_table.addPeer(peer);
+    },
+    
+    removePeer: function(peer) {
+      this._routing_table.removePeer(peer);
+    },
+    
+    // RPC
+    
+    ping: function() {
+      
+    },
+    
+    findNode: function() {
+      
+    },
+    
+    // Private
 
     _generateId: function() {
-      return _digest(this.ip + ':' + this.port);
+      return KadOH.globals._digest(this.ip + ':' + this.port);
     }
 
   });
   
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));
 
 (function(exports) {
   
@@ -425,18 +445,20 @@
       }
       // if the kbucket is full, try to split it in two
       catch(e) {
+        // if the kbucket is splittable split it and try again
         if(kbucket.isSplittable(this.distance(peer.getId()))) {
           var new_kbucket = kbucket.split();
           
           // console.log('SPLITTING ROUTING TABLE : ' + kbucket + ' ' + new_kbucket);
           this._kbuckets.splice(kbucket_index + 1, 0, new_kbucket);
           
-          if (new_kbucket.distanceInRange(this.distance(peer.getId()))) {
-            new_kbucket.addPeer(peer);
-          }
-          else {
-            // DROP ?
-          }
+          this.addPeer(peer);
+        }
+        // if the kbucket is not splittable, remove the least recently seen peer and add the new
+        // @TODO optimisations
+        else {
+          kbucket.removePeer(kbucket.getOldestPeers());
+          kbucket.addPeer(peer);
         }
       }
     },
@@ -497,7 +519,7 @@
 
   });
   
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));
 
 (function(exports) {
   
@@ -523,17 +545,21 @@
 
     addPeer: function(peer) {
       var exists = this._peerExists(peer);
-      // if the peer is already in the kbucket, delete it and append it at the end of the list
+      // if the peer is already in the kbucket, delete it and append it at the beginning of the list
       if (exists != false) {
         this._updatePeer(exists);
       }
-      // if it doesn't and the kbucket is not full, append it at the end of the list
-      else if (this._size < KadOH.globals._k) {
-        this._appendPeer(peer);
-      }
+      // if it isn't
       else {
-        console.error('The kbucket ' + this.toString() + 'is full');
-        throw new Error('FULL');
+        //  and the kbucket is not full, add it at the beginning of the list
+        if (this.isFull()) {
+          this._appendPeer(peer);
+        }
+        // and the kbucket is full throw an error
+        else {
+          console.error('The kbucket ' + this.toString() + 'is full');
+          throw new Error('FULL');
+        }
       }
       
       return this;
@@ -546,24 +572,19 @@
 
       return this._peers[tuple.id];
     },
+    
+    getOldestPeer: function() {
+      return this._peers[this._peers_ids[this._size-1]];
+    },
 
     getPeers: function(number) {
-      if (typeof number === 'undefined') {
-        return this._peers;
-      }
-
+      var peers = [];
       number = Math.max(0, Math.min(number, this._size));
-
-      var peers = []
-        , peer_id = 0
-        , i = 0;
-      for (peer_id=0; peer_id < this._size; peer_id++) {
-        if (i >= number)
-          break;
-
-        peers.push(this._peers[peer_id]);
-        i++;
+      
+      for (var i=0; i < this._size; i++) {
+        peers.push(this._peers[this._peers_ids[i]]);
       }
+      
       return peers;
     },
 
@@ -572,11 +593,7 @@
       if (tuple === false) {
         throw new Error(peer + ' does not exists');
       } else {
-        delete this._peers_ids[tuple.index];
-        delete this._peers[tuple.id];
-        delete this._distances[tuple.id];
-
-        this._size--;
+        this._deletePeer(tuple);
       }
 
       return this;
@@ -648,6 +665,10 @@
       return (this._min === 0);
     },
 
+    isFull: function() {
+      return (this._size == KadOH.globals._k);
+    },
+
     toString: function() {
       return '<' + this._min + ':' + this._max + '><#' + this._peers_ids.length + '>';
     },
@@ -657,6 +678,14 @@
     _updatePeer: function(tuple) {
       delete this._peers_ids[tuple.index];
       this._peers_ids.unshift(tuple.id);
+    },
+    
+    _deletePeer: function(tuple) {
+      delete this._peers_ids[tuple.index];
+      delete this._peers[tuple.id];
+      delete this._distances[tuple.index];
+
+      this._size--;
     },
 
     _appendPeer: function(peer) {
@@ -688,10 +717,10 @@
         , id: peer_id
       };
     }
-
+    
   });
   
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));
 
 (function(exports) {
   
@@ -737,4 +766,4 @@
   });
   
   
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));

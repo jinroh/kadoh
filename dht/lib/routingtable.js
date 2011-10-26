@@ -55,6 +55,7 @@
           this.addPeer(peer);
         }
         // if the kbucket is not splittable, remove the least recently seen peer and add the new
+        // @TODO optimisations
         else {
           kbucket.removePeer(kbucket.getOldestPeers());
           kbucket.addPeer(peer);
@@ -118,4 +119,4 @@
 
   });
   
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));

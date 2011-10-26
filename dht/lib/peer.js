@@ -42,4 +42,4 @@
   });
   
   
-})('object' === typeof module ? module.exports : (this.KadOH = {}));
+})('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));
