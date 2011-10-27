@@ -69,3 +69,17 @@ task('build', ['default'], function(){
   console.log('Build : KadOH.min.js completed');
   
 });
+
+desc('Test the DHT libs');
+task('test', ['build'], function() {
+  proc = require('child_process');
+  
+  proc.exec('vows test/* --spec', function(err, stdout, stderr) {
+    if (err) {
+      console.error('!ERROR!');
+      console.error(err.message);
+    }
+    else
+      console.log(stdout);
+  });
+});

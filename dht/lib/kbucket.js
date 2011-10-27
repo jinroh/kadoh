@@ -51,7 +51,7 @@
     },
     
     getOldestPeer: function() {
-      return this._peers[this._peers_ids[this._size-1]];
+      return this._peers[this._peers_ids[this._peers_ids.length-1]];
     },
 
     getPeers: function(number) {

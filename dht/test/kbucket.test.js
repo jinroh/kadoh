@@ -3,6 +3,7 @@ var vows = require('vows'),
 
 
 var KadOH = require('../dist/KadOH.js');
+var crypto = KadOH.util.Crypto.util
 var SHA1 = KadOH.globals._digest;
 
 var KBucket = KadOH.KBucket;
@@ -41,7 +42,6 @@ vows.describe('KBucket object in KadOH').addBatch({
     'and add a new Peer to it': {
       
       topic: function(kbucket) {
-        console.log(kbucket.getSize());
         return kbucket.addPeer(new Peer('127.0.0.1', 1234));
       },
       

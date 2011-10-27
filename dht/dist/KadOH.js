@@ -457,8 +457,8 @@
         // if the kbucket is not splittable, remove the least recently seen peer and add the new
         // @TODO optimisations
         else {
-          kbucket.removePeer(kbucket.getOldestPeer());
-          kbucket.addPeer(peer);
+          // kbucket.removePeer(kbucket.getOldestPeer());
+          // kbucket.addPeer(peer);
         }
       }
     },
@@ -574,7 +574,7 @@
     },
     
     getOldestPeer: function() {
-      return this._peers[this._peers_ids[this._size-1]];
+      return this._peers[this._peers_ids[this._peers_ids.length-1]];
     },
 
     getPeers: function(number) {
