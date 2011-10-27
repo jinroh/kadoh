@@ -457,7 +457,7 @@
         // if the kbucket is not splittable, remove the least recently seen peer and add the new
         // @TODO optimisations
         else {
-          kbucket.removePeer(kbucket.getOldestPeers());
+          kbucket.removePeer(kbucket.getOldestPeer());
           kbucket.addPeer(peer);
         }
       }
@@ -552,7 +552,7 @@
       // if it isn't
       else {
         //  and the kbucket is not full, add it at the beginning of the list
-        if (this.isFull()) {
+        if (!this.isFull()) {
           this._appendPeer(peer);
         }
         // and the kbucket is full throw an error

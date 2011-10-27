@@ -57,7 +57,7 @@
         // if the kbucket is not splittable, remove the least recently seen peer and add the new
         // @TODO optimisations
         else {
-          kbucket.removePeer(kbucket.getOldestPeers());
+          kbucket.removePeer(kbucket.getOldestPeer());
           kbucket.addPeer(peer);
         }
       }

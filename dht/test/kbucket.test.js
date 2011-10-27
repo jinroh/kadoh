@@ -41,6 +41,7 @@ vows.describe('KBucket object in KadOH').addBatch({
     'and add a new Peer to it': {
       
       topic: function(kbucket) {
+        console.log(kbucket.getSize());
         return kbucket.addPeer(new Peer('127.0.0.1', 1234));
       },
       
@@ -79,9 +80,9 @@ vows.describe('KBucket object in KadOH').addBatch({
          
          'should throw an Error': function(kbucket) {
            assert.throws(function() { kbucket.removePeer(SHA1('foo')); }, Error);
-         },
+         }
          
-       }
+        }
       }
     }
   }
@@ -90,7 +91,7 @@ vows.describe('KBucket object in KadOH').addBatch({
   'When I have a full kbucket': {
 
     topic: function() {
-      kbucket = new KBucket(min, max, parent_id);
+      var kbucket = new KBucket(min, max, parent_id);
       for (var i=0; i < KadOH.globals._k; i++) {
         kbucket.addPeer(new Peer('127.0.0.1', 1025+i));
       }
