@@ -1,5 +1,5 @@
-./dht/lib_test
-./dht/dist_test
+dht/lib_test
+dht/dist_test
 .DS_Store
 node_modules
 *~
