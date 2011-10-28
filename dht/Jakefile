@@ -70,7 +70,6 @@ task('build', ['default'], function(){
   
 });
 
-<<<<<<< HEAD
 desc('Building test');
 task('buildtest', ['default'], function(){
   
