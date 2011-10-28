@@ -69,3 +69,76 @@ task('build', ['default'], function(){
   console.log('Build : KadOH.min.js completed');
   
 });
+
+desc('Building test');
+task('buildtest', ['default'], function(){
+  
+  var fs = require('fs')
+    , ugly = require('uglify-js');
+    
+  var LIB_DIR = __dirname + '/lib_test/';
+  var KEYWORD_FOLDER = {test : (__dirname + '/lib_test/')};
+  var DIST_DIR = __dirname + '/dist_test/';
+
+  // LIST here the files to embed
+  var LIB = [
+     'module'
+  ];
+
+  code = [];
+  code_min = [];
+
+  for(i in LIB) {
+
+    var file = LIB[i] + '.js';
+    var path = LIB_DIR + file;
+
+    try {
+      var content = fs.readFileSync(path, 'utf-8');
+
+      code.push(content);
+
+      var ast = ugly.parser.parse(content);
+      ast = ugly.uglify.ast_mangle(ast)
+      ast = ugly.uglify.ast_squeeze(ast)
+      var min = ugly.uglify.gen_code(ast);
+
+      code_min.push(min);
+
+      console.log('Build : success in adding ' + file);
+    }
+    catch(err) {
+      console.log('Build : unable to read ' + file); 
+      console.log(err);
+    }
+
+  };
+
+  fs.writeFileSync(DIST_DIR + 'KadOH.js', code.join('\n'), 'utf-8');
+  console.log("Build : KadOH.js completed");
+
+  fs.writeFileSync(DIST_DIR + 'KadOH.min.js', code_min.join('\n'), 'utf-8');
+  console.log('Build : KadOH.min.js completed');
+  
+});
+//*************UTIL*********************
+
+var extractDep= function(code) {
+  var dep = [];
+  code = code.split('\n').forEach(function(line){
+    //extract : '// dep : [keyword]/path/to/lib
+    var extracted = line.match(/\s*\/\/\s*Dep\s*:\s*\[(.*)\](\S*)\s*.*/gi);
+    
+    if(extracted != null) {
+      keyword = extracted[0];
+      path = extracted[1];
+      
+      if(path.split('')[0]==='/') { path = path.split(''); path.shift();  path = path.join('');}
+      
+      dep.push(KEYWORD_FOLDER[keyword]+path);
+    }
+  });
+  
+  return dep;
+};
+
