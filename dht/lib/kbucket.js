@@ -29,7 +29,7 @@
       // if it isn't
       else {
         //  and the kbucket is not full, add it at the beginning of the list
-        if (this.isFull()) {
+        if (!this.isFull()) {
           this._appendPeer(peer);
         }
         // and the kbucket is full throw an error
@@ -51,7 +51,7 @@
     },
     
     getOldestPeer: function() {
-      return this._peers[this._peers_ids[this._size-1]];
+      return this._peers[this._peers_ids[this._peers_ids.length-1]];
     },
 
     getPeers: function(number) {

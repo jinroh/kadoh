@@ -70,6 +70,7 @@ task('build', ['default'], function(){
   
 });
 
+<<<<<<< HEAD
 desc('Building test');
 task('buildtest', ['default'], function(){
   
@@ -142,3 +143,17 @@ var extractDep= function(code) {
   return dep;
 };
 
+
+desc('Test the DHT libs');
+task('test', ['build'], function() {
+  proc = require('child_process');
+  
+  proc.exec('vows test/* --spec', function(err, stdout, stderr) {
+    if (err) {
+      console.error('!ERROR!');
+      console.error(err.message);
+    }
+    else
+      console.log(stdout);
+  });
+});

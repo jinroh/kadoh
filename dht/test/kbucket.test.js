@@ -3,6 +3,7 @@ var vows = require('vows'),
 
 
 var KadOH = require('../dist/KadOH.js');
+var crypto = KadOH.util.Crypto.util
 var SHA1 = KadOH.globals._digest;
 
 var KBucket = KadOH.KBucket;
@@ -79,9 +80,9 @@ vows.describe('KBucket object in KadOH').addBatch({
          
          'should throw an Error': function(kbucket) {
            assert.throws(function() { kbucket.removePeer(SHA1('foo')); }, Error);
-         },
+         }
          
-       }
+        }
       }
     }
   }
@@ -90,7 +91,7 @@ vows.describe('KBucket object in KadOH').addBatch({
   'When I have a full kbucket': {
 
     topic: function() {
-      kbucket = new KBucket(min, max, parent_id);
+      var kbucket = new KBucket(min, max, parent_id);
       for (var i=0; i < KadOH.globals._k; i++) {
         kbucket.addPeer(new Peer('127.0.0.1', 1025+i));
       }
