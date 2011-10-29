@@ -1,8 +1,13 @@
+// Dep: [KadOH]/core/class
+// Dep: [KadOH]/globals
+// Dep: [KadOH]/util/crypto
+// Dep: [KadOH]/peer
+
 (function(exports) {
   
   var KadOH = exports;
+
   var Class = KadOH.core.Class;
-  
   var Crypto = KadOH.util.Crypto;
   
   KadOH.KBucket = Class({

@@ -1,3 +1,5 @@
+// Dep: [KadOH]/core/class
+
 (function(exports){
 
   var KadOH = exports;

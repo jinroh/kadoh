@@ -1,3 +1,7 @@
+// Dep: [KadOH]/core/class
+// Dep: [KadOH]/routingtable
+// Dep: [KadOH]/globals
+
 (function(exports) {
   
   var KadOH = exports;

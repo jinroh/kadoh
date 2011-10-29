@@ -1,3 +1,6 @@
+// Dep: [KadOH]/core/class
+// Dep: [KadOH]/reactor
+
 function(exports) {
   
   var KadOH = exports;
@@ -6,7 +9,7 @@ function(exports) {
   KadOH.protocol = Class({
     
     initialize: function() {
-      this._reactor = new KadOH.reactor();
+      this._reactor = new KadOH.Reactor();
     },
     
     PING: function(callback) {

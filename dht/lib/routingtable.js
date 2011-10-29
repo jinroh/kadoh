@@ -1,3 +1,7 @@
+// Dep: [KadOH]/core/class
+// Dep: [KadOH]/util/crypto
+// Dep: [KadOH]/kbucket
+
 (function(exports) {
   
   var KadOH = exports;
