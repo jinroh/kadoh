@@ -10,24 +10,80 @@ var ENTRY_FILES = [
 
 var FS = require('fs');
 var PATH = require('path');
+var PROC = require('child_process');
+
 
 //**************DEFAULT********************
 desc('Say Hello to Kadoh');
-task('default', [], function(){
+task('default', [], function() {
   var exec  = require('child_process').exec;
 
   exec('cowsay Hello KadOH', function(error, stdout, stderr){
     if(stderr)
-    console.log('Hello KadOH');
-    else console.log(stdout);
+      console.log('Hello KadOH');
+    else
+      console.log(stdout);
     complete();
   });
 
-  }, true);
+}, true);
 
-  //**************BUILD****************
-  desc('Building and minifing the embedded code');
-  task('build', ['default'], function(){
+desc('Testing');
+task('test', [], function() {
+  jake.Task['test:node'].invoke();
+}, true);
+
+namespace('test', function() {
+  
+  desc('Testing in the browser');
+  task('browser', ['default'], function() {
+    PROC.exec('jasmine run', function(err, stdout, stderr) {
+      if(err)
+        console.error(err.message);
+    });
+    console.log('Server is running on http://localhost:8124');
+  });
+  
+  desc('Testing in node');
+  task('node', ['default'], function() {
+    jake.Task['build'].execute();
+
+    PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
+      if (err) {
+        console.error('!ERROR!');
+        console.error(err.message);
+      }
+      else
+        console.log(stdout);
+
+      complete();
+    });
+  });
+  
+});
+
+//**************BUILD****************
+desc('Building and minifing the embedded code');
+task('build', ['default'], function() {
+
+  var dep = new Dependencies();
+
+  ENTRY_FILES.forEach(function(file){
+    dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
+  });
+
+  FS.writeFileSync(DIST_DIR + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
+  console.log("Build : KadOH.js completed"); 
+
+  FS.writeFileSync(DIST_DIR + 'KadOH.min.js', buildCode(dep.Stack, true), 'utf-8');
+  console.log('Build : KadOH.min.js completed');
+
+});
+
+namespace('build', function(){
+  
+  desc('Building expanded the embedded code');
+  task('normal', ['default'], function(){
 
     var dep = new Dependencies();
 
@@ -37,134 +93,110 @@ task('default', [], function(){
 
     FS.writeFileSync(DIST_DIR + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
     console.log("Build : KadOH.js completed"); 
+  });
+
+  desc('Minifing the embedded code');
+  task('min', ['default'], function(){
+
+    var dep = new Dependencies();
+
+    ENTRY_FILES.forEach(function(file){
+      dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
+    });
 
     FS.writeFileSync(DIST_DIR + 'KadOH.min.js', buildCode(dep.Stack, true), 'utf-8');
     console.log('Build : KadOH.min.js completed');
-
   });
-  
-  namespace('build', function(){
-    
-    desc('Building expanded the embedded code');
-    task('normal', ['default'], function(){
-
-      var dep = new Dependencies();
-
-      ENTRY_FILES.forEach(function(file){
-        dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
-      });
-
-      FS.writeFileSync(DIST_DIR + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
-      console.log("Build : KadOH.js completed"); 
-    });
-
-    desc('Minifing the embedded code');
-    task('min', ['default'], function(){
-
-      var dep = new Dependencies();
-
-      ENTRY_FILES.forEach(function(file){
-        dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
-      });
-
-      FS.writeFileSync(DIST_DIR + 'KadOH.min.js', buildCode(dep.Stack, true), 'utf-8');
-      console.log('Build : KadOH.min.js completed');
-    });
-  });
+});
 
   //*************UTIL*********************
 
-  var buildCode = function(files, mini) {
-    mini = mini || false;
-    var code = [];
+var buildCode = function(files, mini) {
+  mini = mini || false;
+  var code = [];
 
-    for(i in files) {
+  for(i in files) {
 
-      path = files[i];
-      try {
-        var content = FS.readFileSync(path, 'utf-8');
+    path = files[i];
+    try {
+      var content = FS.readFileSync(path, 'utf-8');
 
-        if(mini) {
-          var ugly = require('uglify-js');
+      if(mini) {
+        var ugly = require('uglify-js');
 
-          var ast = ugly.parser.parse(content);
-          ast = ugly.uglify.ast_mangle(ast)
-          ast = ugly.uglify.ast_squeeze(ast)
-          var content = ugly.uglify.gen_code(ast);
+        var ast = ugly.parser.parse(content);
+        ast = ugly.uglify.ast_mangle(ast)
+        ast = ugly.uglify.ast_squeeze(ast)
+        var content = ugly.uglify.gen_code(ast);
 
-        }
-        code.push(content);
-
-        console.log('Build : added ' + PATH.basename(path));
       }
-      catch(err) {
-        console.log('Build : added ' + PATH.basename(path)); 
-        console.log(err);
-      }
+      code.push(content);
 
-    };
-    return code.join('\n');
-  }
-
-  var Dependencies = function() {
-    this.Stack = [];
-  };
-
-  Dependencies.prototype.extractDep= function(code, originpath) {
-
-    originpath = PATH.dirname(originpath);
-    var dep = [];
-
-    code.split('\n').forEach(function(line){
-      match = false;
-
-      if(extracted = /\s*\/\/\s*Dep\s*:\s*\[(.*)\](\S*)\s*.*/gi.exec(line)){
-        var rootpath = LIB_DIR[extracted[1].toLowerCase()];
-        var path = extracted[2];      
-        match = true;
-        // console.log(rootpath);
-      } else if(extracted = /\s*\/\/\s*Dep\s*:\s*(\S*)\s*.*/gi.exec(line)) {
-        var path = extracted[1];
-        var rootpath = originpath;
-        match = true;
-      }
-
-      if(match) {
-        path = (PATH.extname(path) == "") ? path+".js" : path;
-        dep.push(PATH.join(rootpath,path));
-      }
-    });
-    return dep;
-  };
-
-
-
-  Dependencies.prototype.addFile = function(filepath) {
-    filepath = (PATH.extname(filepath) == "") ? filepath+".js" : filepath;
-    try{
-      var code = FS.readFileSync(filepath, 'utf-8');
-    } catch(e){
-      console.log('The file '+filepath+' seems to be inexistant.')
-      return;
+      console.log('Build : added ' + PATH.basename(path));
+    }
+    catch(err) {
+      console.log('Build : added ' + PATH.basename(path)); 
+      console.log(err);
     }
 
-
-    var dep = this.extractDep(code, filepath);
-    
- 
-    if(this.Stack.indexOf(filepath) == -1) this.Stack.unshift(filepath);
-
-    for(i in dep) {
-     // console.log(PATH.basename(filepath) +">"+ PATH.basename(dep[i]))
-      index = this.Stack.indexOf(dep[i]);
-        if(index == -1){
-          this.addFile(dep[i]);
-        }
-        else {
-          this.Stack.splice(index,1);
-          this.addFile(dep[i]);
-        }
-      
-    }  //console.log(this.Stack.map(function(key){return PATH.basename(key)}));
-    
   };
+  return code.join('\n');
+}
+
+var Dependencies = function() {
+  this.Stack = [];
+};
+
+Dependencies.prototype.extractDep= function(code, originpath) {
+
+  originpath = PATH.dirname(originpath);
+  var dep = [];
+
+  code.split('\n').forEach(function(line){
+    match = false;
+
+    if(extracted = /\s*\/\/\s*Dep\s*:\s*\[(.*)\](\S*)\s*.*/gi.exec(line)){
+      var rootpath = LIB_DIR[extracted[1].toLowerCase()];
+      var path = extracted[2];      
+      match = true;
+      // console.log(rootpath);
+    } else if(extracted = /\s*\/\/\s*Dep\s*:\s*(\S*)\s*.*/gi.exec(line)) {
+      var path = extracted[1];
+      var rootpath = originpath;
+      match = true;
+    }
+
+    if(match) {
+      path = (PATH.extname(path) == "") ? path+".js" : path;
+      dep.push(PATH.join(rootpath,path));
+    }
+  });
+  return dep;
+};
+
+
+
+Dependencies.prototype.addFile = function(filepath) {
+  filepath = (PATH.extname(filepath) == "") ? filepath+".js" : filepath;
+  try{
+    var code = FS.readFileSync(filepath, 'utf-8');
+  } catch(e) {
+    console.log('The file '+filepath+' seems to be inexistant.')
+    return;
+  }
+
+  var dep = this.extractDep(code, filepath);
+
+  if(this.Stack.indexOf(filepath) == -1) this.Stack.unshift(filepath);
+
+  for(i in dep) {
+    index = this.Stack.indexOf(dep[i]);
+    if(index == -1){
+      this.addFile(dep[i]);
+    }
+    else {
+      this.Stack.splice(index,1);
+      this.addFile(dep[i]);
+    }
+  }
+};
