@@ -1,4 +1,22 @@
 .DS_Store
+
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
 node_modules
+npm-debug.log
+
+# argo-uml
 *~
-*.zargo
+
+# jasmine-node
+.monitor
+
+# alex
+dht/lib_test
+dht/dist_test
