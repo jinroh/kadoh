@@ -37,11 +37,16 @@ namespace('test', function() {
   
   desc('Testing in the browser');
   task('browser', ['default'], function() {
-    PROC.exec('jasmine run', function(err, stdout, stderr) {
-      if(err)
-        console.error(err.message);
+    var spawn = PROC.spawn;
+    var jasmine = spawn('jasmine', ['mon']);
+    
+    jasmine.stdout.on('data', function(data) {
+      console.log(data.toString());
     });
-    console.log('Server is running on http://localhost:8124');
+    
+    jasmine.stderr.on('data', function(data) {
+      console.error(data.toString());
+    });
   });
   
   desc('Testing in node');
