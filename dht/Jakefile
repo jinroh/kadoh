@@ -30,15 +30,10 @@ task('default', [], function() {
 
 desc('Testing');
 task('test', ['default'], function() {
-  var dep = new Dependencies();
-
-  ENTRY_FILES.forEach(function(file){
-    dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
-  });
-
-  FS.writeFileSync(SPEC_DIST + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
-  console.log("Build : KadOH.js completed"); 
-
+  
+  Build(SPEC_DIST + 'KadOH.js', false);
+  console.log('[Build] OK write spec/dist/KadOH.js complete');
+ 
   PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
     if (err) {
       console.error('!ERROR!');
@@ -55,6 +50,10 @@ namespace('test', function() {
   
   desc('Testing in the browser');
   task('browser', ['default'], function() {
+    
+    Build(SPEC_DIST + 'KadOH.js', false);
+    console.log('[Build] OK write spec/dist/KadOH.js complete');
+    
     var spawn = PROC.spawn;
     var jasmine = spawn('jasmine', ['mon']);
     
@@ -67,12 +66,13 @@ namespace('test', function() {
     });
     
         exec = require('child_process').exec,
-        flag = SPEC_DIST+'KadOH.js',
+        flag = (SPEC_DIST+'KadOH.js').replace(' ','\\ '), //escape
         timeout = 1000; // check every 1 second
 
       var cmd = 'find . -type f -newer ' + flag + ' -print';
       setInterval(function(){
         exec(cmd, function (error, stdout, stderr) {
+        //  console.log(stderr)
           var files = stdout.split(/\n/);
           
           files.pop(); // remove blank line ending and split
@@ -81,16 +81,11 @@ namespace('test', function() {
             if (files.length) {
               var files = files.filter(function(f){ return f.match(/(.js|.coffee)$/) });
               if (files.length) {
-                console.log('[Monitor] Rebuilding after changes');
+                console.log('[Monitor] Rebuilding after changes in ' +
+                          files.map(function(file){return PATH.basename(file)}).join(', '));
                 
-                  var dep = new Dependencies();
-                  
-                  ENTRY_FILES.forEach(function(file){
-                    dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
-                  });
-
-                  FS.writeFileSync(SPEC_DIST + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
-                  console.log("Build : KadOH.js completed");
+                 Build(SPEC_DIST + 'KadOH.js', false);
+                 console.log('[Build] OK write spec/dist/KadOH.js complete');
               }
             }
           }
@@ -104,18 +99,11 @@ namespace('test', function() {
 desc('Building and minifing the embedded code');
 task('build', ['default'], function() {
 
-  var dep = new Dependencies();
-
-  ENTRY_FILES.forEach(function(file){
-    dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
-  });
-
-  FS.writeFileSync(DIST_DIR + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
-  console.log("Build : KadOH.js completed"); 
-
-  FS.writeFileSync(DIST_DIR + 'KadOH.min.js', buildCode(dep.Stack, true), 'utf-8');
-  console.log('Build : KadOH.min.js completed');
-
+  Build(DIST_DIR + 'KadOH.js', false);
+  console.log('[Build] OK write dist/KadOH.js complete');
+  
+   Build(DIST_DIR + 'KadOH.min.js', true);
+   console.log('[Build] OK write dist/KadOH.min.js complete');
 });
 
 namespace('build', function(){
@@ -123,42 +111,38 @@ namespace('build', function(){
   desc('Building expanded the embedded code');
   task('normal', ['default'], function(){
 
-    var dep = new Dependencies();
-
-    ENTRY_FILES.forEach(function(file){
-      dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
-    });
-
-    FS.writeFileSync(DIST_DIR + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
-    console.log("Build : KadOH.js completed"); 
+    Build(DIST_DIR + 'KadOH.js', false);
+    console.log('[Build] OK write dist/KadOH.js complete');
   });
 
   desc('Minifing the embedded code');
   task('min', ['default'], function(){
 
-    var dep = new Dependencies();
-
-    ENTRY_FILES.forEach(function(file){
-      dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
-    });
-
-    FS.writeFileSync(DIST_DIR + 'KadOH.min.js', buildCode(dep.Stack, true), 'utf-8');
-    console.log('Build : KadOH.min.js completed');
+   Build(DIST_DIR + 'KadOH.min.js', true);
+   console.log('[Build] OK write dist/KadOH.min.js complete');
   });
 });
 
   //*************UTIL*********************
+var Build = function(where, mini) {
+  var mini = mini || false;
+  console.log('[Build] START' + (mini ? ' with mignify' : ''));
+  var dep = new Dependencies();
+  ENTRY_FILES.forEach(function(file){
+    dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
+  });
+  FS.writeFileSync(where, buildCode(dep.Stack, mini), 'utf-8');
+};
 
 var buildCode = function(files, mini) {
   mini = mini || false;
   var code = [];
+  var results = {success : [], fail : []};
 
   for(i in files) {
-
     path = files[i];
     try {
       var content = FS.readFileSync(path, 'utf-8');
-
       if(mini) {
         var ugly = require('uglify-js');
 
@@ -166,18 +150,19 @@ var buildCode = function(files, mini) {
         ast = ugly.uglify.ast_mangle(ast)
         ast = ugly.uglify.ast_squeeze(ast)
         var content = ugly.uglify.gen_code(ast);
-
       }
       code.push(content);
-
-      console.log('Build : added ' + PATH.basename(path));
+      results.success.push( PATH.basename(path));
     }
     catch(err) {
-      console.log('Build : added ' + PATH.basename(path)); 
-      console.log(err);
+      results.fail.push( PATH.basename(path));
     }
-
   };
+  
+  console.log('[Build] OK : '+results.success.join(', '));
+  if(results.fail.length)
+    console.log('[Build] read FAIL : '+results.fail.join(', '));
+    
   return code.join('\n');
 }
 
@@ -219,7 +204,7 @@ Dependencies.prototype.addFile = function(filepath) {
   try{
     var code = FS.readFileSync(filepath, 'utf-8');
   } catch(e) {
-    console.log('The file '+filepath+' seems to be inexistant.')
+    console.log('[Build] read FAIL : '+PATH.basename(filepath)+' not found.')
     return;
   }
 
