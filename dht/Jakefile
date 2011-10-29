@@ -1,4 +1,5 @@
 var DIST_DIR = __dirname + '/dist/';
+var SPEC_DIST = __dirname + '/spec/dist/';
 
 var LIB_DIR = {
   'kadoh': __dirname + '/lib'
@@ -47,6 +48,37 @@ namespace('test', function() {
     jasmine.stderr.on('data', function(data) {
       console.error(data.toString());
     });
+    
+        exec = require('child_process').exec,
+        flag = SPEC_DIST+'KadOH.js',
+        timeout = 1000; // check every 1 second
+
+      var cmd = 'find . -type f -newer ' + flag + ' -print';
+      setInterval(function(){
+        exec(cmd, function (error, stdout, stderr) {
+          var files = stdout.split(/\n/);
+          
+          files.pop(); // remove blank line ending and split
+          if (files.length) {
+
+            if (files.length) {
+              var files = files.filter(function(f){ return f.match(/(.js|.coffee)$/) });
+              if (files.length) {
+                console.log('[Monitor] Rebuilding after changes');
+                
+                  var dep = new Dependencies();
+                  
+                  ENTRY_FILES.forEach(function(file){
+                    dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
+                  });
+
+                  FS.writeFileSync(SPEC_DIST + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
+                  console.log("Build : KadOH.js completed");
+              }
+            }
+          }
+        });
+      }, timeout);    
   });
   
   desc('Testing in node');
