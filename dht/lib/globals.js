@@ -1,4 +1,4 @@
-// Dep: [KadOH].util.crypto
+// Dep: [KadOH]/util/crypto
 
 (function(exports) {
   
