@@ -1,6 +1,6 @@
 {
  "COMMENT":"Folders must end with a /",
- "src_dir"  : "/dist/",
+ "src_dir"  : "/spec/dist/",
  "spec_dir" : "/spec/",
 
  "server":{

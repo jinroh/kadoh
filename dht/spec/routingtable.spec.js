@@ -1,7 +1,7 @@
 describe('KBucket', function() {
   
   beforeEach(function() {
-    KadOH = (typeof require === 'function') ? require('../dist/KadOH.js') : KadOH;
+    KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : KadOH;
     RoutingTable = KadOH.RoutingTable;
     globals = KadOH.globals;
     

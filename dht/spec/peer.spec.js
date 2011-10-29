@@ -1,6 +1,6 @@
 describe('Peer', function() {  
   beforeEach(function() {
-    KadOH = (typeof require === 'function') ? require('../dist/KadOH.js') : KadOH;
+    KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : KadOH;
     Peer = KadOH.Peer;
     SHA1 = KadOH.globals._digest;
   });
