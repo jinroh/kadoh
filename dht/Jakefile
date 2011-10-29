@@ -1,4 +1,5 @@
 var DIST_DIR = __dirname + '/dist/';
+var SPEC_DIST = __dirname + '/spec/dist/';
 
 var LIB_DIR = {
   'kadoh': __dirname + '/lib'
@@ -11,7 +12,6 @@ var ENTRY_FILES = [
 var FS = require('fs');
 var PATH = require('path');
 var PROC = require('child_process');
-
 
 //**************DEFAULT********************
 desc('Say Hello to Kadoh');
@@ -29,8 +29,26 @@ task('default', [], function() {
 }, true);
 
 desc('Testing');
-task('test', [], function() {
-  jake.Task['test:node'].invoke();
+task('test', ['default'], function() {
+  var dep = new Dependencies();
+
+  ENTRY_FILES.forEach(function(file){
+    dep.addFile(PATH.join(LIB_DIR['kadoh'],file));
+  });
+
+  FS.writeFileSync(SPEC_DIST + 'KadOH.js',  buildCode(dep.Stack) , 'utf-8');
+  console.log("Build : KadOH.js completed"); 
+
+  PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
+    if (err) {
+      console.error('!ERROR!');
+      console.error(err.message);
+    }
+    else
+      console.log(stdout);
+
+    complete();
+  });
 }, true);
 
 namespace('test', function() {
@@ -48,23 +66,7 @@ namespace('test', function() {
       console.error(data.toString());
     });
   });
-  
-  desc('Testing in node');
-  task('node', ['default'], function() {
-    jake.Task['build'].execute();
 
-    PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
-      if (err) {
-        console.error('!ERROR!');
-        console.error(err.message);
-      }
-      else
-        console.log(stdout);
-
-      complete();
-    });
-  });
-  
 });
 
 //**************BUILD****************
