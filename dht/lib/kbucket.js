@@ -95,16 +95,14 @@
     getClosestPeer: function(id) {
       var min_xor;
       var closest;
-      console.log();
+
       for (var i = 0; i < this._size; i++) {
         var peer = this._peers[this._peers_ids[i]];
         var xor = Crypto.XOR(peer.getId(), this._parent_id);
         
-        console.log(peer.getSocket(), xor, '<', min_xor);
         if (this._greater(min_xor, xor)) {
           min_xor = xor;
           closest = peer;
-          console.log('closest:'+closest.getSocket());
         }
       }
       return closest;
