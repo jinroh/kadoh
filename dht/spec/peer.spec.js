@@ -6,8 +6,7 @@ describe('Peer', function() {
   });
   
   it('should be a function', function() {
-    expect(Peer).toBeDefined();
-    expect(typeof Peer).toBe('function');
+    expect(Peer).toBeFunction();
   });
   
   describe('When I instantiate a new Peer', function() {

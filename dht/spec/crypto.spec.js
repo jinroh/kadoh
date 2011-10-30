@@ -13,7 +13,7 @@ describe('Crypto', function() {
     });
     
     it('should be a function', function() {
-      expect(typeof sha1).toEqual('function');
+      expect(sha1).toBeFunction();
     });
     
     it('should return a string', function() {
@@ -33,11 +33,11 @@ describe('Crypto', function() {
     });
     
     it('should be a function', function() {
-      expect(typeof xor).toBe('function');
+      expect(xor).toBeFunction();
     });
     
     it('should return an array', function() {
-      expect(typeof xor('012', 'DEF')).toBe('object');
+      expect(xor('012', 'DEF')).toBeObject();
     });
     
     it('should return 20 bytes (=160/8) long `Array` for SHA1 HEX strings', function() {
@@ -61,7 +61,7 @@ describe('Crypto', function() {
     });
     
     it('should be a function', function() {
-      expect(typeof distance).toBe('function');
+      expect(distance).toBeFunction();
     });
       
     it('should me that the distance between the same objects is 0', function() {
@@ -83,7 +83,7 @@ describe('Crypto', function() {
     });
     
     it('should return the good distances', function() {
-      var test = [7,0,36]
+      var test = [7,0,36];
       
       for(var i=1; i < 256; i++) {
         if (i < 2)

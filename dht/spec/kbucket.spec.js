@@ -95,5 +95,13 @@ describe('KBucket', function() {
       expect(new_kbucket.getRange().max).toEqual(kbucket.getRange().min - 1);
     });
     
+    it('should change the KBucket\'s range min', function() {
+      old_range = kbucket.getRange();
+      kbucket.split();
+      
+      expect(kbucket.getRange().max).toEqual(old_range.max);
+      expect(kbucket.getRange().min).toEqual((old_range.max+old_range.min+1)/2);
+    });
+        
   });
 }); 
