@@ -61,6 +61,15 @@ describe('KBucket', function() {
       expect(kbucket.getNewestPeer()).toBe(peer1);
     });
     
+    it('should be able to give me the closest peer from a given ID', function() {
+      var peer1 = new Peer('foo', 123, Factory.distance(parent_id, 126));
+      var peer2 = new Peer('bar', 123, Factory.distance(parent_id, 127));
+      kbucket.addPeer(peer1);
+      kbucket.addPeer(peer2);
+      
+      expect(kbucket.getClosestPeer(parent_id)).toBe(peer1);
+    });
+    
   });
   
   describe('When I have a full KBucket', function() {
@@ -86,5 +95,13 @@ describe('KBucket', function() {
       expect(new_kbucket.getRange().max).toEqual(kbucket.getRange().min - 1);
     });
     
+    it('should change the KBucket\'s range min', function() {
+      old_range = kbucket.getRange();
+      kbucket.split();
+      
+      expect(kbucket.getRange().max).toEqual(old_range.max);
+      expect(kbucket.getRange().min).toEqual((old_range.max+old_range.min+1)/2);
+    });
+        
   });
 }); 

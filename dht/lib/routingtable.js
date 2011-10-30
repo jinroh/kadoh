@@ -36,7 +36,7 @@
      * @api public 
      */
     addPeer: function(peer) {
-      if (peer.getId() == this._parent_id) {
+      if (peer.getId() === this._parent_id) {
         return;
       }
 

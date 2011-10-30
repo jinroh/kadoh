@@ -9,8 +9,7 @@ describe('Class', function() {
   });
   
   it('should be a function', function() {
-    expect(Class).toBeDefined();
-    expect(typeof Class).toBe('function');
+    expect(Class).toBeFunction();
   });
   
   it('should be possible to instanciate it', function() {

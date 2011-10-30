@@ -1,5 +1,3 @@
-// Dep: [KadOH]/util/underscore
-
 /*!
   * klass: a classical JS OOP façade
   * https://github.com/ded/klass
