@@ -25,6 +25,13 @@
 
     // Public
 
+    /**
+     * Add then given Peer to the KBucket
+     * If the Peer is already in the KBucket, it will be updated
+     *
+     * @param {Peer} the peer to add or update
+     * @return {KBucket} self
+     */
     addPeer: function(peer) {
       var exists = this._peerExists(peer);
       // if the peer is already in the kbucket, delete it and append it at the beginning of the list
@@ -47,22 +54,67 @@
       return this;
     },
 
+    /**
+     * Get a Peer given an ID or a Peer object
+     * If the given Peer does not exists, `false` is returned  
+     * 
+     * @param {Peer,String} the Peer or its ID
+     * @return {Peer} the Peer or false if it isn't in the KBucket
+     */
     getPeer: function(peer) {
       var tuple = this._peerExists(peer);
       if (tuple === false)
-        return false;
+        return undefined;
 
       return this._peers[tuple.id];
     },
     
+    /**
+     * Get the latest seen Peer
+     *
+     * @return {Peer}
+     */
     getNewestPeer: function() {
       return this._peers[this._peers_ids[0]];
     },
     
+    /**
+     * Get the least recent Peer
+     *
+     * @return {Peer}
+     */
     getOldestPeer: function() {
       return this._peers[this._peers_ids[this._peers_ids.length-1]];
     },
-
+    
+    /**
+     * Get the closest peer in the KBucket to the given id
+     *
+     * @return {Peer}
+     */
+    getClosestPeer: function(id) {
+      var min_xor;
+      var closest;
+      console.log();
+      for (var i = 0; i < this._size; i++) {
+        var peer = this._peers[this._peers_ids[i]];
+        var xor = Crypto.XOR(peer.getId(), this._parent_id);
+        
+        console.log(peer.getSocket(), xor, '<', min_xor);
+        if (this._greater(min_xor, xor)) {
+          min_xor = xor;
+          closest = peer;
+          console.log('closest:'+closest.getSocket());
+        }
+      }
+      return closest;
+    },
+    
+    /**
+     * Get all the peers from the KBucket
+     *
+     * @param {Integer} number fixes the number of peers to get
+     */
     getPeers: function(number) {
       var peers = [];
       number = Math.max(0, Math.min(number, this._size));
@@ -73,7 +125,12 @@
       
       return peers;
     },
-
+    
+    /**
+     * Remove a given peer from the KBucket given the Peer objet or its ID
+     *
+     * @param {Peer,String}
+     */
     removePeer: function(peer) {
       var tuple = this._peerExists(peer);
       if (tuple === false) {
@@ -85,18 +142,38 @@
       return this;
     },
 
-    idInRange: function(id, parent_id) {
-      return this.distanceInRange(Crypto.distance(id, parent_id));
+    /**
+     * Check wether or not the given ID is in range of the KBucket
+     *
+     * @return {Boolean}
+     */
+    idInRange: function(id) {
+      return this.distanceInRange(Crypto.distance(id, this._parent_id));
     },
-
+    
+    /**
+     * Check wether or not a given distance is in range of the KBucket
+     *
+     * @return {Boolean}
+     */
     distanceInRange: function(distance) {
       return (this._min <= distance) && (distance <= this._max);
     },
 
+    /**
+     * Get the number of peers in the KBucket
+     *
+     * @return {Integer}
+     */
     getSize: function() {
       return this._size;
     },
 
+    /**
+     * Get an `Object` with the `min` and `max` values of the KBucket's range
+     *
+     * @return {Object}
+     */
     getRange: function() {
       return {
           min: this._min
@@ -104,22 +181,45 @@
       };
     },
 
+    /**
+     * Set the range of the KBucket
+     *
+     * @param {Object}
+     * @return {KBucket} self
+     */
     setRange: function(range) {
       this._min = range.min;
       this._max = range.max;
       return this;
     },
 
+    /**
+     * Set the range min of the KBucket
+     *
+     * @param {Integer}
+     * @return {KBucket} self
+     */
     setRangeMin: function(min) {
       this._min = min;
       return this;
     },
-
+    
+    /**
+     * Set the range max of the KBucket
+     *
+     * @param {Integer}
+     * @return {KBucket} self
+     */
     setRangeMax: function(max) {
       this._max = max;
       return this;
     },
 
+    /**
+     * Split the KBucket range in half (higher range) and return a new KBucket with the lower range
+     *
+     * @return {KBucket}
+     */
     split: function() {
       var split_value = ( this._min + this._max + 1 ) / 2;
 
@@ -147,10 +247,20 @@
       return new_kbucket;
     },
 
+    /**
+     * Check wether or not the KBucket is splittable
+     *
+     * @return {Boolean}
+     */
     isSplittable: function() {
       return (this._min === 1);
     },
 
+    /**
+     * Check wether or not the KBucket is full
+     *
+     * @return {Boolean}
+     */
     isFull: function() {
       return (this._size == KadOH.globals._k);
     },
@@ -202,6 +312,22 @@
           index: index
         , id: peer_id
       };
+    },
+    
+    _greater: function(x, y) {
+      if (typeof y === 'undefined')
+        return false;
+      else if (typeof x === 'undefined')
+        return true;
+      
+      var i = x.length - 1;
+      for (; i>=0; i--) {
+        if (x[i] > y[i])
+          return true;
+        else if (x[i] < y[i])
+          return false;
+      }
+      return false;
     }
     
   });

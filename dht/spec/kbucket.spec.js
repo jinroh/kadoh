@@ -61,6 +61,15 @@ describe('KBucket', function() {
       expect(kbucket.getNewestPeer()).toBe(peer1);
     });
     
+    it('should be able to give me the closest peer from a given ID', function() {
+      var peer1 = new Peer('foo', 123, Factory.distance(parent_id, 126));
+      var peer2 = new Peer('bar', 123, Factory.distance(parent_id, 127));
+      kbucket.addPeer(peer1);
+      kbucket.addPeer(peer2);
+      
+      expect(kbucket.getClosestPeer(parent_id)).toBe(peer1);
+    });
+    
   });
   
   describe('When I have a full KBucket', function() {
