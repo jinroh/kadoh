@@ -11,7 +11,7 @@
       this._rpcs = [];
     },
     
-    newRPC: function(rpc_method, callback) {
+    deferred: function(rpc_method, callback) {
       
     }
     

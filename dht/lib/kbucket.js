@@ -158,14 +158,14 @@
     // Private
 
     _updatePeer: function(tuple) {
-      delete this._peers_ids[tuple.index];
+      this._peers_ids.splice(tuple.index, 1);
       this._peers_ids.unshift(tuple.id);
     },
     
     _deletePeer: function(tuple) {
-      delete this._peers_ids[tuple.index];
+      this._peers_ids.splice(tuple.index, 1);
+      this._distances.splice(tuple.index, 1);
       delete this._peers[tuple.id];
-      delete this._distances[tuple.index];
 
       this._size--;
     },
