@@ -1,7 +1,7 @@
 // Dep: [KadOH]/core/class
 // Dep: [KadOH]/reactor
 
-function(exports) {
+(function(exports) {
   
   var KadOH = exports;
   var Class = KadOH.core.Class;
