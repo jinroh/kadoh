@@ -16,5 +16,5 @@
 
   // sha1 function
   KadOH.globals._digest = KadOH.util.Crypto.digest.SHA1;
-  
+
 })('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));

@@ -38,8 +38,7 @@ task('test', ['default'], function() {
       console.error('!ERROR!');
       console.error(err.message);
     }
-    else
-      console.log(stdout);
+    console.log(stdout);
 
     complete();
   });

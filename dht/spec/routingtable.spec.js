@@ -12,7 +12,7 @@ describe('KBucket', function() {
   });
   
   it('should be a function', function() {
-    expect(typeof RoutingTable).toBe('function');
+    expect(RoutingTable).toBeFunction();
   });
   
   describe('when I instanciate a new RoutingTable', function() {
@@ -43,7 +43,7 @@ describe('KBucket', function() {
     
   });
   
-  describe('when a add more than _k elements to it', function() {
+  describe('when I a add more than _k elements to it', function() {
     
     it('should split', function() {
        for (var i = 0; i < KadOH.globals._k; i++) {

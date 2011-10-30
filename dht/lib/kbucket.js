@@ -39,7 +39,7 @@
         }
         // and the kbucket is full throw an error
         else {
-          console.error('The kbucket ' + this.toString() + 'is full');
+          console.log('The kbucket ' + this.toString() + 'is full');
           throw new Error('FULL');
         }
       }
@@ -82,7 +82,7 @@
     },
 
     idInRange: function(id, parent_id) {
-      return this.distanceInRange(Crypto.util.distance(id, parent_id));
+      return this.distanceInRange(Crypto.distance(id, parent_id));
     },
 
     distanceInRange: function(distance) {
@@ -174,7 +174,7 @@
       var id = peer.getId();
       this._peers[id] = peer;
       this._peers_ids.unshift(id);
-      this._distances[id] = Crypto.util.distance(id, this._parent_id);
+      this._distances[id] = Crypto.distance(id, this._parent_id);
       
       this._size++;
     },

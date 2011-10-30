@@ -25,7 +25,7 @@
      * @api public 
      */
     distance: function(id) {
-      return KadOH.util.Crypto.util.distance(this._parent_id, id);
+      return KadOH.util.Crypto.distance(this._parent_id, id);
     },
 
     /**

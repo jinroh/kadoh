@@ -5,10 +5,9 @@
   var KadOH = exports;
   var Class = KadOH.core.Class;
   
-  KadOH.util = {};
-  var Crypto = KadOH.util.Crypto = {};
+  KadOH.util = KadOH.util ? KadOH.util : {};
 
-  Crypto.util = Class().statics({
+  var Crypto = KadOH.util.Crypto = {
     // Bit-wise rotate left
     rotl: function (n, b) {
       return (n << b) | (n >>> (32 - b));
@@ -23,12 +22,12 @@
     endian: function (n) {
       // If number given, swap endian
       if (n.constructor == Number) {
-        return Crypto.util.rotl(n,  8) & 0x00FF00FF | Crypto.util.rotl(n, 24) & 0xFF00FF00;
+        return Crypto.rotl(n,  8) & 0x00FF00FF | Crypto.rotl(n, 24) & 0xFF00FF00;
       }
 
       // Else, assume array and swap all items
       for (var i = 0; i < n.length; i++)
-        n[i] = Crypto.util.endian(n[i]);
+        n[i] = Crypto.endian(n[i]);
       return n;
     },
 
@@ -81,9 +80,9 @@
         return;
 
       if ('string' === typeof hex1)
-        hex1 = Crypto.util.hexToBytes(hex1);
+        hex1 = Crypto.hexToBytes(hex1);
       if ('string' === typeof hex2)
-        hex2 = Crypto.util.hexToBytes(hex2);
+        hex2 = Crypto.hexToBytes(hex2);
 
       var xor = [];
       for (var i = 0; i < hex1.length; i++) {
@@ -104,9 +103,9 @@
         return 0;
 
       if ('string' === typeof hex1)
-        hex1 = Crypto.util.hexToBytes(hex1);
+        hex1 = Crypto.hexToBytes(hex1);
       if ('string' === typeof hex2)
-        hex2 = Crypto.util.hexToBytes(hex2);
+        hex2 = Crypto.hexToBytes(hex2);
 
       var length = hex1.length;
       if (length != hex2.length) {
@@ -129,56 +128,57 @@
       return 0;
     }
 
-  });
-
+  };
+  
+  
   Crypto.charenc = {};
-  Crypto.charenc.Binary = Class().statics({
-
+  Crypto.charenc.Binary = {
+  
     // Convert a string to a byte array
     stringToBytes: function (str) {
       for (var bytes = [], i = 0; i < str.length; i++)
       bytes.push(str.charCodeAt(i) & 0xFF);
       return bytes;
     },
-
+  
     // Convert a byte array to a string
     bytesToString: function (bytes) {
       for (var str = [], i = 0; i < bytes.length; i++)
       str.push(String.fromCharCode(bytes[i]));
       return str.join("");
     }
-
-  });
-
-  Crypto.charenc.UTF8 = Class().statics({
-
+  
+  };
+  
+  Crypto.charenc.UTF8 = {
+  
     // Convert a string to a byte array
     stringToBytes: function (str) {
       return Crypto.charenc.Binary.stringToBytes(unescape(encodeURIComponent(str)));
     },
-
+  
     // Convert a byte array to a string
     bytesToString: function (bytes) {
       return decodeURIComponent(escape(Crypto.charenc.Binary.bytesToString(bytes)));
     }
-
-  });
-
+  
+  };
+  
   // Digest (SHA1)
-
-  Crypto.digest = Class().statics({
-
+  
+  Crypto.digest = {
+  
     SHA1: function(message, options) {
-      var digestbytes = Crypto.util.wordsToBytes(Crypto.digest._sha1(message));
-      return options && options.asBytes ? digestbytes : options && options.asString ? Crypto.charenc.Binary.bytesToString(digestbytes) : Crypto.util.bytesToHex(digestbytes);
+      var digestbytes = Crypto.wordsToBytes(Crypto.digest._sha1(message));
+      return options && options.asBytes ? digestbytes : options && options.asString ? Crypto.charenc.Binary.bytesToString(digestbytes) : Crypto.bytesToHex(digestbytes);
     },
-
+  
     _sha1: function (message) {
       // Convert to byte array
       if (message.constructor == String) message = Crypto.charenc.UTF8.stringToBytes(message);
       
       /* else, assume byte array already */
-      var m  = Crypto.util.bytesToWords(message),
+      var m  = Crypto.bytesToWords(message),
       l  = message.length * 8,
       w  =  [],
       H0 =  1732584193,
@@ -186,55 +186,55 @@
       H2 = -1732584194,
       H3 =  271733878,
       H4 = -1009589776;
-
+  
       // Padding
       m[l >> 5] |= 0x80 << (24 - l % 32);
       m[((l + 64 >>> 9) << 4) + 15] = l;
-
+  
       for (var i = 0; i < m.length; i += 16) {
-
+  
         var a = H0,
         b = H1,
         c = H2,
         d = H3,
         e = H4;
-
+  
         for (var j = 0; j < 80; j++) {
-
+  
           if (j < 16) w[j] = m[i + j];
           else {
             var n = w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16];
             w[j] = (n << 1) | (n >>> 31);
           }
-
+  
           var t = ((H0 << 5) | (H0 >>> 27)) + H4 + (w[j] >>> 0) + (
             j < 20 ? (H1 & H2 | ~H1 & H3) + 1518500249 :
             j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
             j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
             (H1 ^ H2 ^ H3) - 899497514);
-
+  
           H4 =  H3;
           H3  =  H2;
           H2 = (H1 << 30) | (H1 >>> 2);
           H1 =  H0;
           H0 =  t;
-
+  
         }
-
+  
         H0 += a;
         H1 += b;
         H2 += c;
         H3 += d;
         H4 += e;
-
+  
       }
-
+  
       return [H0, H1, H2, H3, H4];
     },
-
+  
     // Package private blocksize
     _blocksize: 16,
-
+  
     _digestsize: 20
-  });
+  };
 })('object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}));

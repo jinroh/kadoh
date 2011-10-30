@@ -29,7 +29,7 @@ describe('Crypto', function() {
   describe('XOR', function() {
     
     beforeEach(function() {
-      xor = Crypto.util.XOR;
+      xor = Crypto.XOR;
     });
     
     it('should be a function', function() {
@@ -57,7 +57,7 @@ describe('Crypto', function() {
   describe('Distance', function() {
     
     beforeEach(function() {
-      distance = Crypto.util.distance;
+      distance = Crypto.distance;
     });
     
     it('should be a function', function() {
