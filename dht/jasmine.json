@@ -2,6 +2,10 @@
  "COMMENT":"Folders must end with a /",
  "src_dir"  : "/spec/dist/",
  "spec_dir" : "/spec/",
+ 
+ "mon" : {
+   "build_cmd" : "jake build:test"
+ },
 
  "server":{
    "port": 8124

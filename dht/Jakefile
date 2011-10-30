@@ -51,42 +51,21 @@ namespace('test', function() {
     
     Build(SPEC_DIST + 'KadOH.js', false);
     
+    // var jasmine = require('jasmine-runner');
+    // jasmine.run({command : 'mon', cwd : __dirname, args : []});
+    
     var spawn = PROC.spawn;
-    var jasmine = spawn('jasmine', ['mon']);
-    
-    jasmine.stdout.on('data', function(data) {
-      console.log(data.toString());
-    });
-    
-    jasmine.stderr.on('data', function(data) {
-      console.error(data.toString());
-    });
-    
-    exec = require('child_process').exec,
-    flag = (SPEC_DIST + 'KadOH.js').replace(' ','\\ '), //escape
-    timeout = 1000; // check every 1 second
-
-    var cmd = 'find . -type f -newer ' + flag + ' -print';
-    setInterval(function() {
-      exec(cmd, function (error, stdout, stderr) {
-        var files = stdout.split(/\n/);
-          
-        files.pop(); // remove blank line ending and split
-        if (files.length) {
-
-          if (files.length) {
-            var files = files.filter(function(f){ return f.match(/(.js|.coffee)$/) });
-            if (files.length) {
-              console.log('[Monitor] Rebuilding after changes in ' +
-                          files.map(function(file){return PATH.basename(file)}).join(', '));
-                
-              Build(SPEC_DIST + 'KadOH.js', false);
-              console.log('[Build] OK write spec/dist/KadOH.js complete');
-            }
-          }
-        }
+      var jasmine = spawn('jasmine', ['mon']);
+      
+      jasmine.stdout.on('data', function(data) {
+        //suppress blank line
+        (data = data.toString().split(/\n/)).pop()
+        console.log(data.join('\n'));
       });
-    }, timeout);    
+      
+      jasmine.stderr.on('data', function(data) {
+        console.error(data.toString());
+      });
   });
 
 });
@@ -107,7 +86,12 @@ namespace('build', function() {
 
   desc('Minifying the embedded code');
   task('min', ['default'], function() {
-   Build(DIST_DIR + 'KadOH.min.js', true);
+    Build(DIST_DIR + 'KadOH.min.js', true);
+  });
+  
+  desc('Building code for test');
+  task('test', [], function(){
+    Build(SPEC_DIST + 'KadOH.js', false);
   });
   
 });
