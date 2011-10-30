@@ -11,7 +11,7 @@
 
     initialize: function(parent_id) {
       this._parent_id = parent_id;
-      this._kbuckets = [new KadOH.KBucket(0, KadOH.globals._B, parent_id)];
+      this._kbuckets = [new KadOH.KBucket(1, KadOH.globals._B, parent_id)];
     },
 
     // Public
@@ -105,7 +105,6 @@
      */
     _kbucketIndexFor: function(id) {
       dist = this.distance(id);
-
       for(var kbucket=0; kbucket < this._kbuckets.length; kbucket++) {
         if (this._kbuckets[kbucket].distanceInRange(dist)) {
           return kbucket;

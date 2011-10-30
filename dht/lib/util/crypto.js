@@ -114,15 +114,15 @@
 
       var max_dist = 8*length;
 
-      for (i = 0; i < length; i++) {
+      for (var i = length - 1; i >= 0; i--) {
         var diff = hex1[i] ^ hex2[i];
-
+      
         if (diff) {
           for (var j = 0; j < 7; j++) {
             if (diff >>> (7 - j))
               break;
           }
-          return max_dist - 8*i - j;
+          return max_dist - 8*(length-i-1) - j;
         }
       }
       return 0;

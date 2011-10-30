@@ -24,4 +24,23 @@
       }
     });
   });
+
+  var self = this;
+  Factory = {
+    distance: function(id, distance) {
+      if (distance === 0) {
+        return id;
+      }
+      
+      var KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : self.KadOH;
+
+      var bytes = KadOH.util.Crypto.hexToBytes(id);
+      var index = Math.floor((distance-1)/8);
+      var shift = 7 - ((distance-1) % 8);
+      
+      bytes[index] = bytes[index] ^ (0xFF>>>shift);
+      
+      return KadOH.util.Crypto.bytesToHex(bytes);
+    }
+  };
 })();

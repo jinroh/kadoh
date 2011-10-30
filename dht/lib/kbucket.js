@@ -13,12 +13,12 @@
   KadOH.KBucket = Class({
 
     initialize: function(min, max, parent_id) {
-      this._min = (typeof min === 'undefined') ? 0  : min;
+      this._min = (typeof min === 'undefined') ? 1 : min;
       this._max = (typeof max === 'undefined') ? KadOH.globals._B : max;
 
       this._parent_id = parent_id;
       this._size = 0;
-      this._distances = [];
+      this._distances = {};
       this._peers_ids = [];
       this._peers = {};
     },
@@ -28,7 +28,7 @@
     addPeer: function(peer) {
       var exists = this._peerExists(peer);
       // if the peer is already in the kbucket, delete it and append it at the beginning of the list
-      if (exists != false) {
+      if (exists !== false) {
         this._updatePeer(exists);
       }
       // if it isn't
@@ -39,7 +39,7 @@
         }
         // and the kbucket is full throw an error
         else {
-          console.log('The kbucket ' + this.toString() + 'is full');
+          // console.log('The kbucket ' + this.toString() + 'is full');
           throw new Error('FULL');
         }
       }
@@ -48,11 +48,15 @@
     },
 
     getPeer: function(peer) {
-      var tuple = this._peerExists(peer)
+      var tuple = this._peerExists(peer);
       if (tuple === false)
         return false;
 
       return this._peers[tuple.id];
+    },
+    
+    getNewestPeer: function() {
+      return this._peers[this._peers_ids[0]];
     },
     
     getOldestPeer: function() {
@@ -86,7 +90,7 @@
     },
 
     distanceInRange: function(distance) {
-      return (this._min < distance) && (distance <= this._max);
+      return (this._min <= distance) && (distance <= this._max);
     },
 
     getSize: function() {
@@ -97,7 +101,7 @@
       return {
           min: this._min
         , max: this._max
-      }
+      };
     },
 
     setRange: function(range) {
@@ -117,7 +121,7 @@
     },
 
     split: function() {
-      var split_value = ( this._min + this._max ) / 2;
+      var split_value = ( this._min + this._max + 1 ) / 2;
 
       var new_kbucket = new KadOH.KBucket(this._min, split_value - 1, this._parent_id);
       this.setRangeMin(split_value);
@@ -144,7 +148,7 @@
     },
 
     isSplittable: function() {
-      return (this._min === 0);
+      return (this._min === 1);
     },
 
     isFull: function() {
@@ -164,7 +168,7 @@
     
     _deletePeer: function(tuple) {
       this._peers_ids.splice(tuple.index, 1);
-      this._distances.splice(tuple.index, 1);
+      delete this._distances[tuple.id];
       delete this._peers[tuple.id];
 
       this._size--;

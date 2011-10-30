@@ -1,4 +1,4 @@
-describe('KBucket', function() {
+describe('Routing Table', function() {
   
   beforeEach(function() {
     KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : KadOH;
@@ -25,8 +25,8 @@ describe('KBucket', function() {
       expect(routing_table.howManyKBuckets()).toEqual(1);
       
       var kbucket = routing_table.getKBuckets()[0];
-      expect(kbucket.getRange().min).toBe(0);
-      expect(kbucket.getRange().max).toBe(globals._B);
+      expect(kbucket.getRange().min).toEqual(1);
+      expect(kbucket.getRange().max).toEqual(globals._B);
     });
     
     it('should be possible to add a new peer and to retrieve it', function() {
@@ -45,7 +45,7 @@ describe('KBucket', function() {
   
   describe('when I a add more than _k elements to it', function() {
     
-    it('should split', function() {
+    it('should split when entering random peers', function() {
        for (var i = 0; i < KadOH.globals._k; i++) {
         routing_table.addPeer(new Peer('127.0.0.1', (1025 + i)));
       }
