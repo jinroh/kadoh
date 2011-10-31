@@ -1,6 +1,6 @@
 {
     "name": "KadOH"
-  , "version": "0.1"
+  , "version": "0.1.0"
   , "description": "Kademlia over HTTP in Javascript"
   , "keywords":["p2p", "kad", "kademlia", "http", "node.js", "node", "javascript"]
   , "author": "Alexandre Lachèze <alexandre.lacheze@gmail.com> and Pierre Guilleminot <pierre.guilleminot@gmail.com>"
