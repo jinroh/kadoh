@@ -16,12 +16,12 @@ To run KadOH you need __[node.js]__ and __[npm]__ \(node's packet manager\) to b
 
 ### Clone the repository
 
-    git clone https://github.com/jinroh/kadoh.git
+    $ git clone https://github.com/jinroh/kadoh.git
     
 ### Install dependencies
 
-    cd kadoh
-    npm install
+    $ cd kadoh
+    $ npm install
     
 ### Build the source tree
 
