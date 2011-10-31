@@ -51,21 +51,28 @@ namespace('test', function() {
     
     Build(SPEC_DIST + 'KadOH.js', false);
     
-    // var jasmine = require('jasmine-runner');
-    // jasmine.run({command : 'mon', cwd : __dirname, args : []});
+    try{
+      var jasmine = require('jasmine-runner');
+      jasmine.run({command : 'mon', cwd : __dirname, args : []});
+      console.log('use jasmine-runner w/out command line');
+    }
+    catch(e){
+      
+      var spawn = PROC.spawn;
+        var jasmine = spawn('jasmine', ['mon']);
+        
+        jasmine.stdout.on('data', function(data) {
+          //suppress blank line
+          (data = data.toString().split(/\n/)).pop()
+          console.log(data.join('\n'));
+        });
+        
+        jasmine.stderr.on('data', function(data) {
+          console.error(data.toString());
+        });
+    }
     
-    var spawn = PROC.spawn;
-      var jasmine = spawn('jasmine', ['mon']);
-      
-      jasmine.stdout.on('data', function(data) {
-        //suppress blank line
-        (data = data.toString().split(/\n/)).pop()
-        console.log(data.join('\n'));
-      });
-      
-      jasmine.stderr.on('data', function(data) {
-        console.error(data.toString());
-      });
+
   });
 
 });
