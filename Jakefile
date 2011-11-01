@@ -7,8 +7,7 @@ var LIB_DIR = {
 };
 
 var ENTRY_FILES = [
-  'node',
-  'transport/SimUDP'
+  'node'
 ];
 
 var FS = require('fs');
