@@ -2,11 +2,13 @@ var DIST_DIR = __dirname + '/dist/';
 var SPEC_DIST = __dirname + '/spec/dist/';
 
 var LIB_DIR = {
-  'kadoh': __dirname + '/lib'
+  'kadoh': __dirname + '/lib/client',
+  'socket.io-client' : __dirname + '/node_modules/socket.io-client/dist'
 };
 
 var ENTRY_FILES = [
-  'node'
+  'node',
+  'transport/SimUDP'
 ];
 
 var FS = require('fs');
@@ -191,7 +193,7 @@ Dependencies.prototype.addFile = function(filepath) {
   }
 
   var dep = this.extractDep(code, filepath);
-
+  
   if(this.Stack.indexOf(filepath) == -1) this.Stack.unshift(filepath);
 
   for (i in dep) {
