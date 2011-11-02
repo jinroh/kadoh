@@ -1,7 +1,6 @@
 describe('Crypto', function() {
   
   beforeEach(function() {
-    KadOH  = (typeof require === 'function') ? require('./dist/KadOH.js') : KadOH;
     Crypto = KadOH.util.Crypto;
     
     SHA1 = Crypto.digest.SHA1;

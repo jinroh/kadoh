@@ -1,7 +1,6 @@
 describe('KBucket', function() {
   
   beforeEach(function() {
-    KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : KadOH;
     KBucket = KadOH.KBucket;
     
     SHA1 = KadOH.globals._digest;

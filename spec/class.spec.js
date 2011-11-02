@@ -1,7 +1,6 @@
 describe('Class', function() {
 
   beforeEach(function() {
-    KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : KadOH;
     Class = KadOH.core.Class;
     myClass = Class(function(n) {
       this.n = n;

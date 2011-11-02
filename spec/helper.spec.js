@@ -1,7 +1,6 @@
 describe('helper', function() {
   describe('factory', function() {
     it('should give me an id that is to right distance', function() {
-      var KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : self.KadOH;
       var distance = KadOH.util.Crypto.distance;
       
       var id = 'afba34a2a11ab13eeba5d0a7aa22bbb6120e177b';

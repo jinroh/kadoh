@@ -1,6 +1,5 @@
 describe('globals', function() {
   beforeEach(function() {
-    KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : KadOH;
     globals = KadOH.globals;
   });
   

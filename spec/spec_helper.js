@@ -1,5 +1,7 @@
 (function() {
   beforeEach(function () {
+    KadOH = (typeof require === 'function') ? require('./dist/KadOH.js') : KadOH;
+    
     this.addMatchers({
       toBeObject: function () {
         return typeof(this.actual) === 'object';
