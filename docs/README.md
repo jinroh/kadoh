@@ -40,6 +40,7 @@ Public API of `RPCMessage` :
 - `isMethod()`
 - `isError()`
 - `getMethod()`
+- `getResponse()`
 - `getType()` (`'method'`, `'response'` or `'error'`) 
 - `getParams()` (`[param1, param2, ...]`)
 - `getRPCID()`
