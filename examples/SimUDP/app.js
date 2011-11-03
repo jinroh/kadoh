@@ -13,7 +13,7 @@ function handler (req, res) {
   function (err, data) {
     if (err) {
       res.writeHead(500);
-      return res.end('Error loading fucking index.html');
+      return res.end('Error loading index.html');
     }
 
     res.writeHead(200);
