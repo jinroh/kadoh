@@ -15,6 +15,13 @@
       toBeFunction: function () {
         return typeof(this.actual) === 'function';
       },
+      toBeArray: function() {
+        if (typeof Array.isArray === 'function') {
+          return Array.isArray(this.actual);
+        } else {
+          return Object.prototype.toString.call(this.actual) === '[object Array]';
+        }
+      },
       toBeUnique: function () {
         return this.actual.length === undefined || this.actual.length === 1;
       },

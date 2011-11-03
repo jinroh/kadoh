@@ -26,4 +26,14 @@ describe('globals', function() {
     expect(globals._digest).toBeDefined();
     expect(globals._digest).toBeFunction();
   });
+  
+  it('should define a parser function', function() {
+    expect(globals._parse).toBeDefined();
+    expect(globals._parse).toBeFunction();
+  });
+  
+  it('should define all the RPC functions', function() {
+    expect(globals._rpcs).toBeDefined();
+    expect(globals._rpcs).toBeArray();
+  });
 });

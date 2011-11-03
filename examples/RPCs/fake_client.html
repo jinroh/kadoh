@@ -1,0 +1,51 @@
+<html>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<script type="text/javascript" src="/node_modules/socket.io-client/dist/socket.io.js"></script>
+<script type="text/javascript" src="/dist/KadOH.js"></script>
+
+<script type="text/javascript">
+$(function() {
+  var udp = window.KadOH.transport.SimUDP;
+  
+  var node = new KadOH.Node('127.0.0.1', 64839);
+  
+  udp.socket().on('clients-up', function(msg) {
+    $('#form>select').empty();
+    for(ip in msg) {
+      $('#form>select').append('<option value="' + ip + '">' + ip + '</option>');
+    }
+    // append a fake node
+    $('#form>select').append('<option value="127.0.0.1:33445">FAKE</option>')
+  });
+  
+  udp.listen( function(msg) {
+    $('#received').append('<p><b>' + msg.src + '</b> : ' + msg.msg + '</p');
+  });
+
+  $('#form').submit(function(event) {
+    var msg = {};
+    msg.dst = $('#form > [name=dest]').val(); // IP:PORT
+    
+    msg.msg = {};
+    msg.msg.rpc = 'PING';
+    // msg.msg.params = $('#form > input[name=text]').val();
+    
+    udp.send(msg);
+    
+    event.preventDefault();
+  });
+});
+</script>
+<body>
+<h2>Send message to node :</h2>
+<form id='form'>
+  <select name="dest">
+  </select>
+  <input type="submit" value="Ping" name="ping" id="ping">
+  <input type="text" name="text">
+  <input type="submit" value="Send">
+</form>
+<h2>Messages received :</h2>
+<div id='received'></div>
+</body>
+</html>
