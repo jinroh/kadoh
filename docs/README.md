@@ -1,17 +1,20 @@
 # Local management 
 
-## Routing table
-- Datas : list of k-buckets
-- addPeer(peer)
-- removePeer(peer)
-- findClosestPeers(key)
+## RoutingTable
 
-## K-bucket
+Handle the list of KBuckets
+
+- `addPeer(peer)`
+- `removePeer(peer)`
+- `findClosestPeers(key)`
+
+## KBucket
+
 - Datas : range-min, range-max, the k (or less) peers
-- addPeer(peer)
-- removePeer(peer)
-- isKeyInRange(key)
-- getPeers()
+- `addPeer(peer)`
+- `removePeer(peer)`
+- `isKeyInRange(key)`
+- `getPeers()`
 
 ## Peer
 - Datas : ip:port, key, // *last-checked*
@@ -19,16 +22,33 @@
 # RPC functions
 
 ## Protocol 
-use the methode send from Reactor and deals with Timeouts
 
-- ping("ip_port", callback(error, data));
-- findNode("ip_port", key, callback(nodes));
-- // findValue
-- // store
-- handleRPCQuery(query, res);
-	- _remotePing();
-	- _remoteFindNode();
+Abstract class to handle RPC messages (for instance in JSON-RPC or XML-RPC)
+
+Static function :
+
+- `buildRequest(request_name, params)` returns a valid `RPCMessage` object 
+- `buildRequest(raw_data)`
+
+Public API of `RPCMessage` :
+
+- `setRPCID(id)`
+- `stringify()`
+- `isResponse()`
+- `isMethod()`
+- `isError()`
+- `getMethod()`
+- `getType()` ('method', 'response' or 'error') 
+- `getParams()` (`[param1, param2, ...]`)
+- `getRPCID()`
+- `getError()` (`{code: -32601, message: 'Parse Error.'}`)
 
 ## Reactor
-- sendRPCQuery("ip_port", msg, function(error, responsemsg)) ;
-- listenRPCQuery(handleRPCquery(query, res));
+
+Maintains a list of `Deferreds` objects
+
+Public API to send RPCs :
+
+- `PING(dst)`
+- `FIND_NODE(id)`
+- `sendRPC(id, deffered, message)`
