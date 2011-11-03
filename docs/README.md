@@ -33,12 +33,15 @@ Static function :
 Public API of `RPCMessage` :
 
 - `setRPCID(id)`
+- `setSource(socket)`
+- `setDestination(socket)`
 - `stringify()`
 - `isResponse()`
 - `isMethod()`
 - `isError()`
 - `getMethod()`
-- `getType()` ('method', 'response' or 'error') 
+- `getResponse()`
+- `getType()` (`'method'`, `'response'` or `'error'`) 
 - `getParams()` (`[param1, param2, ...]`)
 - `getRPCID()`
 - `getError()` (`{code: -32601, message: 'Parse Error.'}`)

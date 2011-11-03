@@ -61,8 +61,9 @@ describe('KBucket', function() {
     });
     
     it('should be able to give me the closest peer from a given ID', function() {
-      var peer1 = new Peer('foo', 123, Factory.distance(parent_id, 126));
-      var peer2 = new Peer('bar', 123, Factory.distance(parent_id, 127));
+      var peer1 = new Peer('foo', 123, Factory.distance(parent_id, 5));
+      var peer2 = new Peer('bar', 123, Factory.distance(parent_id, 150));
+      
       kbucket.addPeer(peer1);
       kbucket.addPeer(peer2);
       

@@ -17,6 +17,11 @@ describe('globals', function() {
     expect(globals._alpha).toBeNumber();
   });
   
+  it('should define _beta', function() {
+    expect(globals._beta).toBeDefined();
+    expect(globals._beta).toBeNumber();
+  });
+  
   it('should define _B', function() {
     expect(globals._B).toBeDefined();
     expect(globals._B).toBeNumber();
