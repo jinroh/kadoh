@@ -31,15 +31,23 @@ describe('jsonrpc2', function() {
     it('should throw an error message at bad parse', function(){
       try{prot.parseRequest({'jsonrpc':'2.0', 'method': 'badmethod', 'id':'34'})
       var catched = false}
-      catch(mes){
+      catch(mes) {
         var catched =true;
         expect(mes).toBeDefined();
         expect(mes.stringify()).toBeDefined();
         expect(mes.stringify().error.code).toEqual(-32601);
         expect(mes.isError()).toBeTruthy();
-        }
+      }
       expect(catched).toBeTruthy();   
-    });  
+    });
+    
+    it('should be able to parse a response message', function() {
+    });
+    
+    it('should be able to parse an error message', function() {
+      
+    });
+    
   });
 
     

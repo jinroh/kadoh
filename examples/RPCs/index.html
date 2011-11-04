@@ -5,11 +5,19 @@
 
 <script type="text/javascript">
 $(function() {
-  var udp = window.KadOH.transport.SimUDP;
+  var KadOH = window.KadOH;
+  var udp = KadOH.transport.SimUDP;
   
-  node = new KadOH.Node('127.0.0.1', 64839);
+  udp.socket().on('ip_port', function() {
+    var socket = udp.getIPPort().split(':');
+    
+    node = new KadOH.Node(socket[0], socket[1]);
+    console.log('ME :' + node.getSocket());
+  });
   
   udp.socket().on('clients-up', function(msg) {
+    ips = msg;
+    
     $('#form>select').empty();
     for(ip in msg) {
       $('#form>select').append('<option value="' + ip + '">' + ip + '</option>');
@@ -18,7 +26,22 @@ $(function() {
     $('#form>select').append('<option value="127.0.0.1:33445">FAKE</option>')
   });
   
-  $('#form').submit(function(event) {
+  $('#join').click(function(event) {
+    var bootstraps = [];
+    for (ip in ips) {
+      bootstraps.push(ip.split(':'));
+    }
+    
+    try {
+      node.join(bootstraps);
+    }
+    catch(e) {
+      console.log(e);
+    }
+    event.preventDefault();
+  });
+  
+  $('#ping').click(function(event) {
     dst = $('#form > [name=dest]').val(); // IP:PORT
     
     try {
@@ -45,8 +68,7 @@ $(function() {
   <select name="dest">
   </select>
   <input type="submit" value="Ping" name="ping" id="ping">
-  <input type="text" name="text">
-  <input type="submit" value="Send">
+  <input type="submit" value="Join" name="join" id="join">
 </form>
 <h2>Messages received :</h2>
 <div id='received'></div>
