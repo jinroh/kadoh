@@ -33,4 +33,11 @@ describe('Peer', function() {
     
   });
   
+  it('should be possible to instanciate a peer using a triple', function() {
+    var peer = new Peer(['127.0.0.1', 1234]);
+    
+    expect(peer.getSocket()).toEqual('127.0.0.1:1234');
+    expect(peer.getId()).toEqual(SHA1('127.0.0.1:1234'));
+  });
+  
 });

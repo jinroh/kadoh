@@ -34,7 +34,7 @@ task('test', ['default'], function() {
   
   Build(SPEC_DIST + 'KadOH.js', false);
  
-  PROC.exec('jasmine-node spec --verbose', function(err, stdout, stderr) {
+  PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
     if (err) {
       console.error('!ERROR!');
       console.error(err.message);
