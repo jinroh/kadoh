@@ -18,7 +18,7 @@
       , "uglify-js": "~1.1"
     }
   , "devDependencies": {
-        "jasmine-runner": "0.2.9"
+        "jasmine-runner": "https://github.com/alexstrat/jasmine-tool/tarball/master"
       , "jasmine-node": "1.0.12"
     }
   , "engines": { "node": ">= 0.4.0" }
