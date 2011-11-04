@@ -1,0 +1,65 @@
+//**************DEFAULT********************
+var PATHS = {
+  'SimUDP'    : __dirname+'/../..'+'/lib/client/transport/simudp.js',
+  'socket.io' : __dirname+'/../..'+'/node_modules/socket.io-client/dist/socket.io.js',
+  
+  'dist'      : __dirname+'/dist/script.js'
+};
+
+var FS = require('fs');
+
+
+desc('Building for SimUDP Example');
+task('build', [], function() {
+  var code = [];
+  code[0] = FS.readFileSync(PATHS['socket.io'], 'utf-8');
+  code[1] = FS.readFileSync(PATHS['SimUDP'], 'utf-8');
+  
+  
+  FS.writeFileSync(PATHS['dist'], code.join('\n'), 'utf-8')
+
+});
+
+desc('Building for SimUDP Example');
+task('run', ['build'], function() {
+  
+  var app = require('http').createServer(handler)
+    , fs  = require('fs')
+    , url = require('url')
+    , path = require('path')
+    , router = require('../../lib/server/router').listen(app);
+
+
+  app.listen(8080, function() {
+    var addr = app.address();
+    console.log('listening on http://' + addr.address + ':' + addr.port);
+  });
+
+  function handler (req, res) {
+
+    var pathname = path.normalize(url.parse(req.url).pathname);
+    
+    if(pathname == '/script.js') {
+      var filepath = __dirname + '/dist/script.js';
+    } else {
+      var filepath = __dirname + '/dist/index.html';
+    }
+      fs.readFile(filepath,
+      function (err, data) {
+        if (err) {
+          res.writeHead(500);
+          return res.end('Error loading.');
+        }
+
+        res.writeHead(200);
+        res.end(data);
+      });
+  }
+
+  router.on("listupdate", function(){
+    var list = router.getClients();
+    router._sockets.emit("clients-up", list);
+  });
+
+
+});
