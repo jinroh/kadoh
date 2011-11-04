@@ -18,20 +18,18 @@ $(function() {
     $('#form>select').append('<option value="127.0.0.1:33445">FAKE</option>')
   });
   
-  udp.listen( function(msg) {
-    // $('#received').append('<p><b>' + msg.src + '</b> : ' + msg.msg + '</p');
-  });
-
   $('#form').submit(function(event) {
     dst = $('#form > [name=dest]').val(); // IP:PORT
     
     try {
-      node.reactor().PING(dst).then(function(pong) {
-        console.log(pong);
-      },
-      function(err) {
-        console.log(err); 
-      });
+      node.reactor().PING(dst).then(
+        function(pong) {
+          $('#received').append('<p><b>' + pong + '</b></p>');
+        },
+        function(err) {
+          $('#received').append('<p><b>' + err + '</b></p>');
+        }
+      );
     }
     catch(e) {
       console.log(e);
