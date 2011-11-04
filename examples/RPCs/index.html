@@ -7,7 +7,7 @@
 $(function() {
   var udp = window.KadOH.transport.SimUDP;
   
-  var node = new KadOH.Node('127.0.0.1', 64839);
+  node = new KadOH.Node('127.0.0.1', 64839);
   
   udp.socket().on('clients-up', function(msg) {
     $('#form>select').empty();
@@ -18,19 +18,22 @@ $(function() {
     $('#form>select').append('<option value="127.0.0.1:33445">FAKE</option>')
   });
   
-  udp.listen( function(msg) {
-    $('#received').append('<p><b>' + msg.src + '</b> : ' + msg.msg + '</p');
-  });
-
   $('#form').submit(function(event) {
-    var msg = {};
-    msg.dst = $('#form > [name=dest]').val(); // IP:PORT
+    dst = $('#form > [name=dest]').val(); // IP:PORT
     
-    msg.msg = {};
-    msg.msg.rpc = 'PING';
-    // msg.msg.params = $('#form > input[name=text]').val();
-    
-    udp.send(msg);
+    try {
+      node.reactor().PING(dst).then(
+        function(pong) {
+          $('#received').append('<p><b>' + pong + '</b></p>');
+        },
+        function(err) {
+          $('#received').append('<p><b>' + err + '</b></p>');
+        }
+      );
+    }
+    catch(e) {
+      console.log(e);
+    }
     
     event.preventDefault();
   });

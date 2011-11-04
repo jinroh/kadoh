@@ -31,7 +31,7 @@ rt.broadcast(message);
 - a way to send to a client
 
 ```js
-rt.send( message);
+rt.send(message);
 ```
 
 # Client-side
@@ -48,7 +48,7 @@ con.send(message);
 - receive messages
 
 ```js
-con.listen(fn(message));
+con.listen(fn, context);
 ```
 
 # Protocol spec.
