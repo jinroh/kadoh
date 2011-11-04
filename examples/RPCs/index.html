@@ -5,11 +5,11 @@
 
 <script type="text/javascript">
 $(function() {
-  var udp = window.KadOH.transport.SimUDP;
+  var udp = new window.KadOH.transport.SimUDP('/SimUDP');
   
   node = new KadOH.Node('127.0.0.1', 64839);
   
-  udp.socket().on('clients-up', function(msg) {
+  udp.socket.on('clients-up', function(msg) {
     $('#form>select').empty();
     for(ip in msg) {
       $('#form>select').append('<option value="' + ip + '">' + ip + '</option>');
