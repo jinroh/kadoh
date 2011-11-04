@@ -6,7 +6,7 @@
 <script type="text/javascript">
 $(function() {
   var KadOH = window.KadOH;
-  var udp = KadOH.transport.SimUDP;
+  var udp = new window.KadOH.transport.SimUDP('/SimUDP');
   
   udp.socket().on('ip_port', function() {
     var socket = udp.getIPPort().split(':');
@@ -15,9 +15,8 @@ $(function() {
     console.log('ME :' + node.getSocket());
   });
   
-  udp.socket().on('clients-up', function(msg) {
+  udp.socket.on('clients-up', function(msg) {
     ips = msg;
-    
     $('#form>select').empty();
     for(ip in msg) {
       $('#form>select').append('<option value="' + ip + '">' + ip + '</option>');
