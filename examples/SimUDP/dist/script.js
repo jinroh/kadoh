@@ -3761,9 +3761,11 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       console.warn('WARNING : socket.io not defined : no transport');
     return;
   }
-   KadOH.transport.SimUDP = function(server_name) {
-     this.socket = ('undefined' === typeof server) ? io.connect('/SimUDP') : io.connect(server_name+'/SimUDP');
-   } 
+  
+  KadOH.transport.SimUDP = function(server_name) {
+    this.socket = ('undefined' === typeof server_name) ? io.connect('/SimUDP') : io.connect(server_name+'/SimUDP');
+    
+  };
   
   KadOH.transport.SimUDP.prototype = {
     send : function(dst, message) {
@@ -3783,8 +3785,16 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       this.socket.on('message', fn);
     },
     
-    socket: function() {
-      return this.socket;
+    _whoami : function(fn, options) {
+      var options = options || {};
+      this.socket.emit('whoami');
+      this.socket.once('whoami', function(resp){
+        if(options.context){
+          fn.apply(options.context, resp)
+        } else{
+          fn(resp);
+        }
+      })
     }
   };
   

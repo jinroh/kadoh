@@ -7,6 +7,7 @@ socket.listen(function(message){
   var msg = message.msg;
   
   socket.send(src, 'Reply : '+msg);
+  console.log(socket.iam)
   
   });
 
