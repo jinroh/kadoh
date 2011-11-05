@@ -5,21 +5,38 @@
 
 <script type="text/javascript">
 $(function() {
+  var KadOH = window.KadOH;
   var udp = new window.KadOH.transport.SimUDP('/SimUDP');
   
-  node = new KadOH.Node('127.0.0.1', 64839);
+  // Init the node global object
+  function init(ip_port) {
+    var ip_port = ip_port.split(':');
+    
+    node = new KadOH.Node(ip_port[0], ip_port[1]);
+    console.log('ME :' + node.getSocket());
+  }
   
-  udp.socket.on('clients-up', function(msg) {
-    $('#form>select').empty();
-    for(ip in msg) {
-      $('#form>select').append('<option value="' + ip + '">' + ip + '</option>');
+  // Join the network using other clients as bootstraps
+  function onClickJoin(event) {
+    var bootstraps = [];
+    for (ip in ips) {
+      if(KadOH.globals._digest(ip) !== node.getId()) {
+        bootstraps.push(ip.split(':'));
+      }
     }
-    // append a fake node
-    $('#form>select').append('<option value="127.0.0.1:33445">FAKE</option>')
-  });
+    
+    try {
+      node.join(bootstraps);
+    }
+    catch(e) {
+      console.log(e);
+    }
+    event.preventDefault();
+  }
   
-  $('#form').submit(function(event) {
-    dst = $('#form > [name=dest]').val(); // IP:PORT
+  // Send a ping
+  function onClickPing(event) {
+    var dst = $('#form > [name=dest]').val(); // IP:PORT
     
     try {
       node.reactor().PING(dst).then(
@@ -36,7 +53,25 @@ $(function() {
     }
     
     event.preventDefault();
-  });
+  }
+  
+  // Update window.ips list
+  function onNewClient(msg) {
+    ips = msg;
+    
+    $('#form>select').empty();
+    for(ip in msg) {
+      $('#form>select').append('<option value="' + ip + '">' + ip + '</option>');
+    }
+    // append a fake node
+    $('#form>select').append('<option value="127.0.0.1:33445">FAKE</option>')
+  }
+  
+  // Init the node when receiving our ip and port
+  udp.socket.on('ip_port', init);
+  udp.socket.on('clients-up', onNewClient);
+  $('#join').click(onClickJoin);
+  $('#ping').click(onClickPing);
 });
 </script>
 <body>
@@ -45,8 +80,7 @@ $(function() {
   <select name="dest">
   </select>
   <input type="submit" value="Ping" name="ping" id="ping">
-  <input type="text" name="text">
-  <input type="submit" value="Send">
+  <input type="submit" value="Join" name="join" id="join">
 </form>
 <h2>Messages received :</h2>
 <div id='received'></div>
