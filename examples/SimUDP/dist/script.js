@@ -3789,4 +3789,4 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   };
   
 })( 'object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}), 
-    'object' === typeof this.io ? this.io        : false                         );
+    'object' === typeof this.io ? this.io        : (require ? require('socket.io-client') : false));
