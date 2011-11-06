@@ -3765,6 +3765,12 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   KadOH.transport.SimUDP = function(server_name) {
     this.socket = ('undefined' === typeof server_name) ? io.connect('/SimUDP') : io.connect(server_name+'/SimUDP');
     
+    this._whoami(
+      function(resp) {
+        this.iam = resp;
+      },
+      { context : this }
+    );
   };
   
   KadOH.transport.SimUDP.prototype = {
@@ -3786,15 +3792,15 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     },
     
     _whoami : function(fn, options) {
-      var options = options || {};
+      options = options || {};
       this.socket.emit('whoami');
-      this.socket.once('whoami', function(resp){
+      this.socket.once('whoami', function(resp) {
         if(options.context){
-          fn.apply(options.context, resp)
+          fn.apply(options.context, [resp]);
         } else{
           fn(resp);
         }
-      })
+      });
     }
   };
   

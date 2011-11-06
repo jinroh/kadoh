@@ -5,7 +5,7 @@
 <script>
 $(function() {
   // socket = io.connect();
-  sudp = new KadOH.transport.SimUDP('/SimUDP');
+  sudp = new KadOH.transport.SimUDP();
   
   sudp.socket.on('clients-up', function(msg) {
     $('#form>select').empty().append('<option value="all">All</option>');
