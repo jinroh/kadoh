@@ -29,7 +29,11 @@ $(function() {
     bootstraps.splice(0, bootstraps.length - number_of_bootstraps);
     
     try {
-      node.join(bootstraps);
+      node.join(bootstraps).then(
+        function(new_nodes) {
+          console.log(new_nodes);
+        }
+      );
     }
     catch(e) {
       console.log(e);
@@ -39,7 +43,7 @@ $(function() {
   
   // Send a ping
   function onClickPing(event) {
-    var dst = $('#form > [name=dest]').val(); // IP:PORT
+    var dst = $('#form [name=dest]').val(); // IP:PORT
     
     try {
       node.reactor().PING(dst).then(
@@ -62,12 +66,12 @@ $(function() {
   function onNewClient(msg) {
     ips = msg;
     
-    $('#form>select').empty();
-    for(ip in msg) {
-      $('#form>select').append('<option value="' + ip + '">' + ip + '</option>');
+    $('#form select').empty();
+    for (ip in msg) {
+      $('#form select').append('<option value="' + ip + '">' + ip + '</option>');
     }
     // append a fake node
-    $('#form>select').append('<option value="127.0.0.1:33445">FAKE</option>')
+    $('#form select').append('<option value="127.0.0.1:33445">FAKE</option>')
   }
   
   // Init the node when receiving our ip and port
@@ -80,10 +84,14 @@ $(function() {
 <body>
 <h2>Send message to node :</h2>
 <form id='form'>
-  <select name="dest">
-  </select>
-  <input type="submit" value="Ping" name="ping" id="ping">
-  <input type="submit" value="Join" name="join" id="join">
+  <p>
+    <input type="submit" value="Join" name="join" id="join">
+  </p>
+  <p>
+    <select name="dest">
+    </select>
+    <input type="submit" value="Ping" name="ping" id="ping">
+  </p>
 </form>
 <h2>Messages received :</h2>
 <div id='received'></div>
