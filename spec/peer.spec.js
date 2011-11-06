@@ -40,4 +40,13 @@ describe('Peer', function() {
     expect(peer.getId()).toEqual(SHA1('127.0.0.1:1234'));
   });
   
+  it('should be possible to test their equality', function() {
+    var peer1 = new Peer(['127.0.0.1', 1234]);
+    var peer2 = new Peer(['127.0.0.1', 1234]);
+    var peer3 = new Peer(['127.0.0.1', 1235]);
+    
+    expect(peer1.equals(peer2)).toBe(true);
+    expect(peer1.equals(peer3)).toBe(false);
+  });
+  
 });
