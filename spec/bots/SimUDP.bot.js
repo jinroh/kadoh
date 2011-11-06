@@ -7,11 +7,9 @@ socket.listen(function(message){
   var msg = message.msg;
   
   socket.send(src, 'Reply : '+msg);
-  console.log(socket.iam)
+  console.log(socket.iam);
   
   });
 
-//}, 30000);
-
-wait = require(__dirname+'/wait/wait.js').wait;
+var wait = require(__dirname+'/wait/wait.js').wait;
 wait();
