@@ -1,6 +1,5 @@
 <html>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-<script type="text/javascript" src="/node_modules/socket.io-client/dist/socket.io.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
 <script type="text/javascript" src="/dist/KadOH.js"></script>
 
 <script type="text/javascript">
@@ -20,10 +19,14 @@ $(function() {
   function onClickJoin(event) {
     var bootstraps = [];
     for (ip in ips) {
-      if(KadOH.globals._digest(ip) !== node.getId()) {
+      if (KadOH.globals._digest(ip) !== node.getId()) {
         bootstraps.push(ip.split(':'));
       }
     }
+    
+    // keep only some boostraps
+    var number_of_bootstraps = 1;
+    bootstraps.splice(0, bootstraps.length - number_of_bootstraps);
     
     try {
       node.join(bootstraps);
@@ -68,7 +71,7 @@ $(function() {
   }
   
   // Init the node when receiving our ip and port
-  udp.socket.on('ip_port', init);
+  udp._whoami(init);
   udp.socket.on('clients-up', onNewClient);
   $('#join').click(onClickJoin);
   $('#ping').click(onClickPing);
