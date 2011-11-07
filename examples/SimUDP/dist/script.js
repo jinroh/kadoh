@@ -3756,8 +3756,8 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   var KadOH = exports;  
   KadOH.transport =  KadOH.transport || {};
 
-  if(!io) {
-    if('object' == typeof console) 
+  if (!io) {
+    if ('object' == typeof console) 
       console.warn('WARNING : socket.io not defined : no transport');
     return;
   }
@@ -3784,20 +3784,20 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
         msg: message
       };
       
-      this.socket.emit('message', message);
+      this.socket.emit('packet', message);
     },
     
     listen : function(fn) {
-      this.socket.on('message', fn);
+      this.socket.on('packet', fn);
     },
     
     _whoami : function(fn, options) {
       options = options || {};
       this.socket.emit('whoami');
       this.socket.once('whoami', function(resp) {
-        if(options.context){
+        if (options.context){
           fn.apply(options.context, [resp]);
-        } else{
+        } else {
           fn(resp);
         }
       });
