@@ -3791,11 +3791,13 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       this.socket.on('packet', fn);
     },
     
+    // i think it doesn't work on iPhone...
+    // don't know why ??
     _whoami : function(fn, options) {
       options = options || {};
       this.socket.emit('whoami');
       this.socket.once('whoami', function(resp) {
-        if (options.context){
+        if (options.context) {
           fn.apply(options.context, [resp]);
         } else {
           fn(resp);
@@ -3805,4 +3807,4 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   };
   
 })( 'object' === typeof module ? module.exports : (this.KadOH = this.KadOH || {}), 
-    'object' === typeof this.io ? this.io        : (require ? require('socket.io-client') : false));
+    'object' === typeof this.io ? this.io       : (require ? require('socket.io-client') : false));
