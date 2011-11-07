@@ -3765,8 +3765,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   KadOH.transport.SimUDP = function(server_name) {
     this.socket = ('undefined' === typeof server_name) ? io.connect('/SimUDP') : io.connect(server_name+'/SimUDP');
     
-    this._whoami(
-      function(resp) {
+    this._whoami( function(resp) {
         this.iam = resp;
       },
       { context : this }
@@ -3789,6 +3788,10 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     
     listen : function(fn) {
       this.socket.on('packet', fn);
+    },
+
+    ready : function(fn) {
+      this.socket.once('connect', fn);;
     },
     
     // i think it doesn't work on iPhone...

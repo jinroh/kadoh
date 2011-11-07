@@ -7,6 +7,10 @@ $(function() {
   // socket = io.connect();
   sudp = new KadOH.transport.SimUDP();
 
+  sudp.ready(function() {
+    //alert('Im ready')
+  });
+
   sudp._whoami(function(iam){
     $('#iam').empty().append(iam);
   });
