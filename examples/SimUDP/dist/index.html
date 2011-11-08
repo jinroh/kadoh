@@ -22,7 +22,7 @@ $(function() {
     }
   });
 
-  sudp.listen( function(msg) {
+  sudp.listen(function(msg) {
     console.log(msg)
     $('#received').append('<p><b>' + msg.src + '</b> : ' + msg.msg + '</p');
   });

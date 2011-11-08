@@ -3753,8 +3753,8 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
 
 (function(exports, io) {
   
-  var KadOH = exports;  
-  KadOH.transport =  KadOH.transport || {};
+  var KadOH       = exports;  
+  KadOH.transport = KadOH.transport || {};
 
   if (!io) {
     if ('object' == typeof console) 
@@ -3762,8 +3762,9 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     return;
   }
   
-  KadOH.transport.SimUDP = function(server_name) {
-    this.socket = ('undefined' === typeof server_name) ? io.connect('/SimUDP') : io.connect(server_name+'/SimUDP');
+  KadOH.transport.SimUDP = function(server_name, options) {
+    server_name = (server_name || '') + '/SimUDP';
+    this.socket = io.connect(server_name, options);
     
     this._whoami( function(resp) {
         this.iam = resp;
@@ -3791,7 +3792,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     },
 
     ready : function(fn) {
-      this.socket.once('connect', fn);;
+      this.socket.once('connect', fn);
     },
     
     // i think it doesn't work on iPhone...

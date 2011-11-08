@@ -1,15 +1,22 @@
 var SimUDP = require(__dirname+'/../../lib/client/transport/simudp.js').transport.SimUDP;
 
-var socket = new SimUDP('http://0.0.0.0:8080');
+exports.Bot = function(name) {
+  this.name = name ? name : 'bot';
+};
 
-socket.listen(function(message){
-  var src = message.src;
-  var msg = message.msg;
-  
-  socket.send(src, 'Reply : '+msg);
-  console.log(socket.iam);
-  
-  });
+exports.Bot.prototype.run = function() {
+  this.socket = new SimUDP('http://0.0.0.0:8080', {'force new connection': true});
 
-var wait = require(__dirname+'/wait/wait.js').wait;
-wait();
+  var self = this;
+
+  this.socket.listen(function(message){
+    var src = message.src;
+    var msg = message.msg;
+    self.socket.send(src, 'RE:'+msg);
+    });
+};
+
+exports.Bot.prototype.ready = function(fn) {
+  
+  
+};
