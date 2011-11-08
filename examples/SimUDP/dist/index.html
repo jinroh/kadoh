@@ -6,6 +6,14 @@
 $(function() {
   // socket = io.connect();
   sudp = new KadOH.transport.SimUDP();
+
+  sudp.ready(function() {
+    //alert('Im ready')
+  });
+
+  sudp._whoami(function(iam){
+    $('#iam').empty().append(iam);
+  });
   
   sudp.socket.on('clients-up', function(msg) {
     $('#form>select').empty().append('<option value="all">All</option>');
@@ -34,6 +42,7 @@ $(function() {
 </script>
 <body>
 <h2>Send message to node :</h2>
+<p id='iam'>Waiting..</p>
 <form id='form'>
   <select name='dest'>
     <option value='all'>All</option>
