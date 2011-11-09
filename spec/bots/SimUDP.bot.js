@@ -9,11 +9,11 @@ exports.Bot.prototype.run = function() {
 
   var self = this;
 
-  this.socket.listen(function(message){
+  this.socket.listen(function(message) {
     var src = message.src;
     var msg = message.msg;
     self.socket.send(src, 'RE:'+msg);
-    });
+  });
 };
 
 exports.Bot.prototype.ready = function(fn) {
