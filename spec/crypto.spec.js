@@ -36,7 +36,6 @@ describe('Crypto', function() {
     });
 
     it('should return a sha1 hexadecimal string', function() {
-      console.log(randomSHA1());
       expect(typeof randomSHA1()).toBe('string');
       expect(randomSHA1().length).toBe(40);
     });
