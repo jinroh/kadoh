@@ -1,10 +1,16 @@
-var DIST_DIR = __dirname + '/dist/';
+var DIST_DIR  = __dirname + '/dist/';
 var SPEC_DIST = __dirname + '/spec/dist/';
 
 var LIB_DIR = {
-  'kadoh': __dirname + '/lib/client',
-  'socket.io-client' : __dirname + '/node_modules/socket.io-client/dist'
+  'kadoh'            : __dirname + '/lib/client',
+  'socket.io-client' : __dirname + '/node_modules/socket.io-client/dist',
+  'jquery'           : __dirname + '/lib/ext/jquery'
 };
+
+var NODE_BUILD_EXCLUDE = [
+  '[socket.io-client]/*', 
+  '[jQuery]/*'
+  ];
 
 var ENTRY_FILES = [
   'node'
@@ -34,7 +40,7 @@ namespace('test', function() {
   desc('Testing in node');
   task('node', ['default'], function() {
 
-  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : '[socket.io-client]/*'});
+  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
    
   PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
     if (err) {
@@ -85,7 +91,7 @@ desc('Building and minifing the embedded code');
 task('build', ['default'], function() {
   Build(DIST_DIR + 'KadOH.js', false);
   Build(DIST_DIR + 'KadOH.min.js', true);
-  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : '[socket.io-client]/*'});
+  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
 
 });
 
@@ -108,7 +114,7 @@ namespace('build', function() {
 
   desc('Building the code for node');
   task('node', ['default'], function() {
-    Build(DIST_DIR + 'KadOH.node.js', false, {exclude : '[socket.io-client]/*'});
+    Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
   });
   
 });
@@ -162,7 +168,6 @@ var buildCode = function(files, mini) {
 var Dependencies = function(options) {
   if(options && options.exclude) {
     options.exclude = (Array.isArray(options.exclude))? options.exclude : [options.exclude];
-
     this.exclude = options.exclude.map(function(exclusion) {
       var results = Dependencies.prototype.matchDepLine('// Dep : '+ exclusion);
       return {lib : results.lib, path: results.path};
@@ -170,6 +175,7 @@ var Dependencies = function(options) {
   } else {
     this.exclude = [];
   }
+
   this.Stack = [];
 };
 
