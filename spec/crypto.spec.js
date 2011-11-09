@@ -22,7 +22,25 @@ describe('Crypto', function() {
     it('should return a SHA1 digest of the given parameter in hexadecimal', function() {
       expect(sha1('DIGEST ME!')).toEqual('a2cfd6254f8dcfa189b0c1142056df9d3daca861');
     });
-    
+
+  });
+
+  describe('randomSHA1', function() {
+
+    beforeEach(function() {
+      randomSHA1 = Crypto.digest.randomSHA1;
+    });
+
+    it('should be a function', function() {
+      expect(randomSHA1).toBeFunction();
+    });
+
+    it('should return a sha1 hexadecimal string', function() {
+      console.log(randomSHA1());
+      expect(typeof randomSHA1()).toBe('string');
+      expect(randomSHA1().length).toBe(40);
+    });
+
   });
   
   describe('XOR', function() {
