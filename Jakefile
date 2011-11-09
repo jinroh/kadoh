@@ -25,7 +25,7 @@ desc('Say Hello to Kadoh');
 task('default', [], function() {
   var exec  = require('child_process').exec;
 
-  exec('cowsay -p Hello KadOH', function(error, stdout, stderr) {
+  exec('cowsay -f ghostbusters Hello KadOH', function(error, stdout, stderr) {
     if(stderr)
       console.log('Hello KadOH');
     else
