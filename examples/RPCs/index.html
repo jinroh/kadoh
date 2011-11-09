@@ -1,5 +1,5 @@
 <html>
-<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <script type="text/javascript" src="/dist/KadOH.js"></script>
 
 <script type="text/javascript">
@@ -44,7 +44,6 @@ $(function() {
   // Send a ping
   function onClickPing(event) {
     var dst = $('#form [name=dest]').val(); // IP:PORT
-    
     try {
       node.reactor().PING(dst).then(
         function(pong) {
