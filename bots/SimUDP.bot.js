@@ -1,4 +1,4 @@
-var SimUDP = require(__dirname+'/../../lib/client/transport/simudp.js').transport.SimUDP;
+var SimUDP = require(__dirname+'../lib/client/transport/simudp.js').transport.SimUDP;
 
 exports.Bot = function(name) {
   this.name = name ? name : 'bot';
