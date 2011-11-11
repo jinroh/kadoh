@@ -1,6 +1,6 @@
 //**************DEFAULT********************
 var PATHS = {
-  'SimUDP'    : __dirname+'/../..'+'/lib/client/transport/simudp.js',
+  'SimUDP'    : __dirname+'/../..'+'/lib/client/p2ptransport/simudp.js',
   'socket.io' : __dirname+'/../..'+'/node_modules/socket.io-client/dist/socket.io.js',
   
   'dist'      : __dirname+'/dist/script.js'

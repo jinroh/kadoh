@@ -3795,8 +3795,6 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       this.socket.once('connect', fn);
     },
     
-    // i think it doesn't work on iPhone...
-    // don't know why ??
     _whoami : function(fn, options) {
       options = options || {};
       this.socket.emit('whoami');

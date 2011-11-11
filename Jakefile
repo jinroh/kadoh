@@ -55,33 +55,19 @@ namespace('test', function() {
   
   desc('Testing in the browser');
   task('browser', ['default'], function() {
+
+    var bot_app = require('./bots/bot-server.js');
     
     Build(SPEC_DIST + 'KadOH.js', false);
 
-    var jasmine;
-
-    try{
-      jasmine = require('jasmine-runner');
-      jasmine.run({command : 'mon', cwd : __dirname, args : []});
-      console.log('use jasmine-runner w/out command line');
-    }
-    catch(e){
-      
-      var spawn = PROC.spawn;
-      jasmine = spawn('jasmine', ['mon']);
-        
-      jasmine.stdout.on('data', function(data) {
-        //suppress blank line
-        (data = data.toString().split(/\n/)).pop();
-        console.log(data.join('\n'));
-      });
-      
-      jasmine.stderr.on('data', function(data) {
-        console.error(data.toString());
-      });
-    }
+    var jasmine = require('jasmine-runner');
+    jasmine.run({ 
+                  command : 'mon' ,
+                  cwd     : __dirname ,
+                  args    : [],
+                  server  : bot_app
+                });
     
-
   });
 
 });

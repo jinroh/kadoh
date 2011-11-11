@@ -2,6 +2,7 @@ var express = require('express');
 
 var app = module.exports = express.createServer();
 app.use(express.bodyParser());
+app.use(express.logger('[BotServer] :method :url >> :status'));
 
 var BOTS = {};
 
@@ -41,9 +42,11 @@ var getBot = function(type, id) {
 	if(!id)
 		return BOTS[type];
 	else {
-		if(BOTS[type].indexOf(id) === -1)
+		if(!BOTS[type][id]) {
 			throw {name : 'NOT_FOUND', description : 'bot '+type+'('+id+') doesn\'t exist'};
-		return BOTS[type][id];
+		}
+		else
+			return BOTS[type][id];
 	}
 };
 
@@ -61,7 +64,9 @@ app.get('/bot/:type', function(req, res) {
 	try {
 		var bot = getBot(type);
 		res.json(bot);
+		return;
 	} catch(e) {
+		//console.log('hi'+e.description);
 		if(e.name === 'NOT_FOUND')
 			res.send(404);
 		else
@@ -72,24 +77,39 @@ app.get('/bot/:type', function(req, res) {
 app.get('/bot/:type/:id', function(req, res) {
 	var type	= req.params.type;
 	var id		= req.params.id;
+	if(!type) {
+		res.send(400); 
+		return;
+	}	
 	try {
 		var bot = getBot(type, id);
-		res.json(bot);
+		res.json(bot); 
+		return;
 	} catch(e) {
-		if(e.name === 'NOT_FOUND')
-			res.send(404);
-		else
-			res.send(500);
+		console.log(e.description);
+		if(e.name === 'NOT_FOUND') {
+			res.send(404); 
+			return;
+		}
+		else {
+			res.send(500); 
+			return;
+		}
 	}
 });
 
 app.post('/bot', function(req, res) {
 	var type	= req.body.type;
 	var ip_port	= req.body.ip_port;
+	if(! type || ! ip_port) {
+		res.send(400); 
+		return;
+	}
 	try {
-		var bot = resgiterBot(type, ip_port);
-		res.json(bot);
+		var bot = registerBot(type, ip_port);
+		res.json(bot); 
 	} catch(e) {
+		console.log(e);
 		res.send(500);
 	}
 });
