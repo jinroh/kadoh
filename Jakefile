@@ -25,7 +25,7 @@ desc('Say Hello to Kadoh');
 task('default', [], function() {
   var exec  = require('child_process').exec;
 
-  exec('cowsay -f ghostbusters Hello KadOH', function(error, stdout, stderr) {
+  exec('cowsay -f moofasa Hello KadOH', function(error, stdout, stderr) {
     if(stderr)
       console.log('Hello KadOH');
     else
@@ -61,12 +61,18 @@ namespace('test', function() {
     Build(SPEC_DIST + 'KadOH.js', false);
 
     var jasmine = require('jasmine-runner');
+    try{
+      
     jasmine.run({ 
                   command : 'mon' ,
                   cwd     : __dirname ,
                   args    : [],
                   server  : bot_app
                 });
+    } catch(e) {
+      console.log('catch');
+      console.log(e.stack);
+    }
     
   });
 

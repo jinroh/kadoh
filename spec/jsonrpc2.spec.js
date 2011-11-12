@@ -62,12 +62,12 @@ describe('jsonrpc2', function() {
     expect(mes).toBeObject();
     expect(mes.isRequest()).toBeTruthy();
     expect(mes.getMethod()).toEqual('PING');
+      var catched = false;
     try{
       prot.parseRPCMessage({'jsonrpc' : '2.0', 'method' : 'brigitte_bardot', 'id' : '5'});
-      var catched = false;
     }catch(e) {
-      var catched = true;
-      expect(e.code).toEqual(-32601)
+      catched = true;
+      expect(e.code).toEqual(-32601);
       expect(e.getRPCID()).toEqual('5');
     }
     expect(catched).toBeTruthy();
@@ -79,12 +79,12 @@ describe('jsonrpc2', function() {
     expect(mes).toBeObject();
     expect(mes.isResponse()).toBeTruthy();
     expect(mes.getResult()).toEqual('PONG');
+      var catched = false;
     try{
       prot.parseRPCMessage({'jsonrpc' : '2.0', 'result' : 'PONG', 'error' : 'foof','id' : '5'});
-      var catched = false;
     }catch(e) {
-      var catched = true;
-      expect(e.code).toEqual(-32600)
+      catched = true;
+      expect(e.code).toEqual(-32600);
       expect(e.getRPCID()).toEqual('5');
     }
     expect(catched).toBeTruthy();
