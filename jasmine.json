@@ -10,6 +10,10 @@
  "server":{
    "port": 8124
  },
+
+ "console_reporter" : {
+ 	"mute_passed" : true
+ },
  "externals":[
   "https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js",
   "https://github.com/velesin/jasmine-jquery/raw/master/lib/jasmine-jquery.js",

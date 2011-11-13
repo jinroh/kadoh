@@ -1,10 +1,16 @@
-var DIST_DIR = __dirname + '/dist/';
+var DIST_DIR  = __dirname + '/dist/';
 var SPEC_DIST = __dirname + '/spec/dist/';
 
 var LIB_DIR = {
-  'kadoh': __dirname + '/lib/client',
-  'socket.io-client' : __dirname + '/node_modules/socket.io-client/dist'
+  'kadoh'            : __dirname + '/lib/client',
+  'socket.io-client' : __dirname + '/node_modules/socket.io-client/dist',
+  'jquery'           : __dirname + '/lib/ext/jquery'
 };
+
+var NODE_BUILD_EXCLUDE = [
+  '[socket.io-client]/*', 
+  '[jQuery]/*'
+  ];
 
 var ENTRY_FILES = [
   'node'
@@ -19,7 +25,7 @@ desc('Say Hello to Kadoh');
 task('default', [], function() {
   var exec  = require('child_process').exec;
 
-  exec('cowsay -p Hello KadOH', function(error, stdout, stderr) {
+  exec('cowsay -f moofasa Hello KadOH', function(error, stdout, stderr) {
     if(stderr)
       console.log('Hello KadOH');
     else
@@ -34,7 +40,9 @@ namespace('test', function() {
   desc('Testing in node');
   task('node', ['default'], function() {
 
-  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : '[socket.io-client]/*'});
+  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
+
+  bot_server = require('./bots/bot-server.js').listen(3000);
    
   PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
     if (err) {
@@ -49,33 +57,19 @@ namespace('test', function() {
   
   desc('Testing in the browser');
   task('browser', ['default'], function() {
+
+    var bot_app = require('./bots/bot-server.js');
     
     Build(SPEC_DIST + 'KadOH.js', false);
 
-    var jasmine;
-
-    try{
-      jasmine = require('jasmine-runner');
-      jasmine.run({command : 'mon', cwd : __dirname, args : []});
-      console.log('use jasmine-runner w/out command line');
-    }
-    catch(e){
+    var jasmine = require('jasmine-runner');
       
-      var spawn = PROC.spawn;
-      jasmine = spawn('jasmine', ['mon']);
-        
-      jasmine.stdout.on('data', function(data) {
-        //suppress blank line
-        (data = data.toString().split(/\n/)).pop();
-        console.log(data.join('\n'));
-      });
-      
-      jasmine.stderr.on('data', function(data) {
-        console.error(data.toString());
-      });
-    }
-    
-
+    jasmine.run({ 
+                  command : 'mon' ,
+                  cwd     : __dirname ,
+                  args    : [],
+                  server  : bot_app
+                });    
   });
 
 });
@@ -85,7 +79,7 @@ desc('Building and minifing the embedded code');
 task('build', ['default'], function() {
   Build(DIST_DIR + 'KadOH.js', false);
   Build(DIST_DIR + 'KadOH.min.js', true);
-  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : '[socket.io-client]/*'});
+  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
 
 });
 
@@ -108,7 +102,7 @@ namespace('build', function() {
 
   desc('Building the code for node');
   task('node', ['default'], function() {
-    Build(DIST_DIR + 'KadOH.node.js', false, {exclude : '[socket.io-client]/*'});
+    Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
   });
   
 });
@@ -162,7 +156,6 @@ var buildCode = function(files, mini) {
 var Dependencies = function(options) {
   if(options && options.exclude) {
     options.exclude = (Array.isArray(options.exclude))? options.exclude : [options.exclude];
-
     this.exclude = options.exclude.map(function(exclusion) {
       var results = Dependencies.prototype.matchDepLine('// Dep : '+ exclusion);
       return {lib : results.lib, path: results.path};
@@ -170,6 +163,7 @@ var Dependencies = function(options) {
   } else {
     this.exclude = [];
   }
+
   this.Stack = [];
 };
 
