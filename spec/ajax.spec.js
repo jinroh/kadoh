@@ -2,7 +2,7 @@ describe('Ajax and Botserver', function() {
 
   beforeEach(function() {
     ajax = KadOH.util.ajax;
-    for_node_server = (typeof exports !== 'undefined')? 'http://localhost:8124' : '';
+    for_node_server = (typeof exports !== 'undefined')? 'http://localhost:3000' : '';
 
   });
   

@@ -41,6 +41,8 @@ namespace('test', function() {
   task('node', ['default'], function() {
 
   Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
+
+  bot_server = require('./bots/bot-server.js').listen(3000);
    
   PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
     if (err) {
@@ -61,19 +63,13 @@ namespace('test', function() {
     Build(SPEC_DIST + 'KadOH.js', false);
 
     var jasmine = require('jasmine-runner');
-    try{
       
     jasmine.run({ 
                   command : 'mon' ,
                   cwd     : __dirname ,
                   args    : [],
                   server  : bot_app
-                });
-    } catch(e) {
-      console.log('catch');
-      console.log(e.stack);
-    }
-    
+                });    
   });
 
 });
