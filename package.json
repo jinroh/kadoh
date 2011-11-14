@@ -17,6 +17,7 @@
       , "jake": "~0.1"
       , "uglify-js": "~1.1"
       , "restler" : "~0.2.1"
+      , "express" : "~2.3"
     }
   , "devDependencies": {
         "jasmine-runner": "https://github.com/alexstrat/jasmine-tool/tarball/master"
