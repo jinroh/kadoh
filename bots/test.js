@@ -1,4 +1,4 @@
-var bot = require(__dirname+'/simple-bot.js').Bot;
+var bot = require(__dirname+'/reply-bot.js').Bot;
 
 var bi = new bot('hi');
 

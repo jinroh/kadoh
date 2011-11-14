@@ -5,8 +5,9 @@ exports.Bot = function(name) {
   this.name = name ? name : 'bot';
 };
 
-exports.Bot.prototype.run = function() {
-  this.socket = new SimUDP('http://0.0.0.0:8080', {'force new connection': true});
+exports.Bot.prototype.run = function(server) {
+  server = server ? server : 'http://0.0.0.0:8080';
+  this.socket = new SimUDP(server, {'force new connection': true});
 
   var self = this;
 

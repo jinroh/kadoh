@@ -10,8 +10,8 @@ describe('Ajax and Botserver', function() {
     var bot = {type : 'test', ip_port : 'foo:foo'};
     var callback = jasmine.createSpy();
     console.log(for_node_server);
-    var req = ajax.post(for_node_server+'/bot', bot).done(callback)//.fail(function(){});
-    waits(100);
+    var req = ajax.post(for_node_server+'/bot', bot).done(callback);//.fail(function(){});
+    waits(300);
     runs(function() {
       expect(callback).toHaveBeenCalled();
       var res = callback.mostRecentCall.args[0];
@@ -23,15 +23,15 @@ describe('Ajax and Botserver', function() {
 
     it('then it should be possible to retrieve the registered bot', function() {
       var callback = jasmine.createSpy();
-      var req = ajax.get(for_node_server+'/bot/test').done(callback)//.fail(function(){});
-      waits(100);
+      var req = ajax.get(for_node_server+'/bot/test').done(callback);
+      waits(300);
       runs(function(){
         expect(callback).toHaveBeenCalled();
         bot = callback.mostRecentCall.args[0].pop();
         expect(bot.type).toEqual('test');
-        var req = ajax.get(for_node_server+'/bot/test/'+bot.id).done(callback)//.fail(function(){});
+        var req = ajax.get(for_node_server+'/bot/test/'+bot.id).done(callback);//.fail(function(){});
       });
-      waits(100);
+      waits(300);
       runs(function(){
         expect(callback).toHaveBeenCalled();
         var _bot = callback.mostRecentCall.args[0];

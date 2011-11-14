@@ -42,25 +42,45 @@ namespace('test', function() {
 
   Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
 
-  bot_server = require('./bots/bot-server.js').listen(3000);
-   
-  PROC.exec('jasmine-node spec', function(err, stdout, stderr) {
-    if (err) {
-      console.error('!ERROR!');
-      console.error(err.message);
-    }
-    console.log(stdout);
+  var bot_server = require('./bots/bot-server.js');
+      var SimUDP = require('./lib/server/router.js').listen(bot_server);
+      bot_server.listen(3000);
 
-    complete();
-  });
+
+  var bot = require('./bots/reply-bot.js').Bot;
+      reply_bot = new bot('reply_bot');
+      reply_bot.run('http://localhost:3000').register('reply','http://localhost:3000');
+   
+  setTimeout(function() {
+    var jasmine = PROC.spawn('jasmine-node', ['spec']);
+
+    jasmine.stdout.on('data', function (data) {
+      data = String(data);
+      console.log('Jasmine-node: ' + data);
+    });
+
+    jasmine.stderr.on('data', function (data) {
+      console.error('Jasmine-node: ' + data);
+    });
+
+    jasmine.on('exit', function (code) {
+      console.warn('Jasmine-node exited with code ' + code);
+    });
+
+  }, 1000);
+
 }, true);
   
   desc('Testing in the browser');
   task('browser', ['default'], function() {
 
-    var bot_app = require('./bots/bot-server.js');
-    
     Build(SPEC_DIST + 'KadOH.js', false);
+
+    var bot_app = require('./bots/bot-server.js');
+    var SimUDP = require('./lib/server/router.js');
+
+
+    //bot_app.listen(8124);
 
     var jasmine = require('jasmine-runner');
       
@@ -68,9 +88,19 @@ namespace('test', function() {
                   command : 'mon' ,
                   cwd     : __dirname ,
                   args    : [],
-                  server  : bot_app
-                });    
-  });
+                  server  : bot_app,
+                  provided_io : SimUDP
+                }); 
+
+       //Start bot :
+    setTimeout(function(){
+      
+    var bot = require('./bots/reply-bot.js').Bot;
+      reply_bot = new bot('reply_bot');
+      reply_bot.run('http://localhost:8124').register('reply','http://localhost:8124');
+    }, 200);
+                   
+ });
 
 });
 
