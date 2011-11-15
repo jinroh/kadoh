@@ -49,4 +49,16 @@
       return KadOH.util.Crypto.bytesToHex(bytes);
     }
   };
+
+  Dumb = {
+    Node: {
+      PING: function(){},
+      FIND_NODE: function(){}
+    },
+
+    UDP: {
+      listen: function(){},
+      send: function(){}
+    }
+  };
 })();
