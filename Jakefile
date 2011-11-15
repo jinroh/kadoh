@@ -1,6 +1,10 @@
 var DIST_DIR  = __dirname + '/dist/';
 var SPEC_DIST = __dirname + '/spec/dist/';
 
+var DOC_DIR     = __dirname + '/doc/jsdoc/';
+var JsDoc3_CONF = __dirname + '/doc/JsDocConf.json';
+var JsDoc3_EXEC = __dirname + '/doc/jsdoc3/jsdoc';
+
 var LIB_DIR = {
   'kadoh'            : __dirname + '/lib/client',
   'socket.io-client' : __dirname + '/node_modules/socket.io-client/dist',
@@ -34,6 +38,8 @@ task('default', [], function() {
   });
 
 }, true);
+
+///*********************TEST***********************
 
 namespace('test', function() {
 
@@ -101,6 +107,23 @@ namespace('test', function() {
     }, 200);
                    
  });
+
+});
+//****************DOC**************
+desc('Generate documentation using JsDoc3');
+task('doc', ['default'], function(){
+    console.log('Generating documentation..');
+
+    var cmd = JsDoc3_EXEC+' --recurse '+LIB_DIR.kadoh+' --destination '+DOC_DIR +' -c '+JsDoc3_CONF;
+    console.log(cmd);
+
+    PROC.exec(cmd, function (error, stdout, stderr) {
+      console.log('[Generating Doc] ' + stdout);
+      console.error('[Generating Doc] Error :' + stderr);
+      if (error !== null) {
+        console.error('[Generating Doc] Error : ' + error);
+      }
+    });
 
 });
 
