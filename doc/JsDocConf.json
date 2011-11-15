@@ -1,0 +1,16 @@
+{
+    "tags": {
+        "allowUnknownTags": true
+    },
+    
+    "source": {
+        "includePattern": ".+\\.js(doc)?$",
+        "excludePattern": "(^|\\/)_|when\\.js"
+    },
+    
+    "plugins": [
+        "plugins/markdown"
+    ],
+    
+    "jsVersion": 180
+}

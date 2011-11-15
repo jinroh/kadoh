@@ -27,7 +27,8 @@ task('run', ['build'], function() {
     , fs  = require('fs')
     , url = require('url')
     , path = require('path')
-    , router = require('../../lib/server/router').listen(app);
+    , SimUDP = require('../../lib/server/router').Router
+    , router = new SimUDP(app);
 
 
   app.listen(8080, function() {
