@@ -12,7 +12,7 @@ var LIB_DIR = {
 };
 
 var NODE_BUILD_EXCLUDE = [
-  '[socket.io-client]/*', 
+  '[socket.io-client]/*',
   '[jQuery]/*'
   ];
 
@@ -56,17 +56,16 @@ namespace('test', function() {
   var bot = require('./bots/reply-bot.js').Bot;
       reply_bot = new bot('reply_bot');
       reply_bot.run('http://localhost:3000').register('reply','http://localhost:3000');
-   
+
   setTimeout(function() {
     var jasmine = PROC.spawn('jasmine-node', ['spec']);
 
     jasmine.stdout.on('data', function (data) {
-      data = String(data);
-      console.log('Jasmine-node: ' + data);
+      process.stdout.write(String(data));
     });
 
     jasmine.stderr.on('data', function (data) {
-      console.error('Jasmine-node: ' + data);
+      process.stderr.write(data);
     });
 
     jasmine.on('exit', function (code) {
@@ -76,7 +75,7 @@ namespace('test', function() {
   }, 1000);
 
 }, true);
-  
+
   desc('Testing in the browser');
   task('browser', ['default'], function() {
 
@@ -89,23 +88,23 @@ namespace('test', function() {
     //bot_app.listen(8124);
 
     var jasmine = require('jasmine-runner');
-      
-    jasmine.run({ 
+
+    jasmine.run({
                   command : 'mon' ,
                   cwd     : __dirname ,
                   args    : [],
                   server  : bot_app,
                   provided_io : SimUDP
-                }); 
+                });
 
        //Start bot :
     setTimeout(function(){
-      
+
     var bot = require('./bots/reply-bot.js').Bot;
       reply_bot = new bot('reply_bot');
       reply_bot.run('http://localhost:8124').register('reply','http://localhost:8124');
     }, 200);
-                   
+
  });
 
 });
@@ -137,7 +136,7 @@ task('build', ['default'], function() {
 });
 
 namespace('build', function() {
-  
+
   desc('Building the code');
   task('normal', ['default'], function() {
     Build(DIST_DIR + 'KadOH.js', false);
@@ -147,7 +146,7 @@ namespace('build', function() {
   task('min', ['default'], function() {
     Build(DIST_DIR + 'KadOH.min.js', true);
   });
-  
+
   desc('Building code for test');
   task('test', [], function(){
     Build(SPEC_DIST + 'KadOH.js', false);
@@ -157,19 +156,19 @@ namespace('build', function() {
   task('node', ['default'], function() {
     Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
   });
-  
+
 });
 
 //*************UTIL*********************
 var Build = function(where, mini, options) {
   mini = mini || false;
   console.log('[Build] START' + (mini ? ' with mignify' : '') + (options && options.exclude ? ' excluding '+options.exclude : ''));
-  
+
   var dep = new Dependencies(options);
   ENTRY_FILES.forEach(function(file) {
     dep.addFile(PATH.join(LIB_DIR.kadoh,file));
   });
-  
+
   FS.writeFileSync(where, buildCode(dep.Stack, mini), 'utf-8');
   console.log('[Build] OK : building ' + PATH.basename(where) + ' complete');
 };
@@ -198,11 +197,11 @@ var buildCode = function(files, mini) {
       results.fail.push( PATH.basename(path));
     }
   }
-  
+
   console.log('[Build] OK : '+results.success.join(', '));
   if(results.fail.length)
     console.log('[Build] read FAIL : '+results.fail.join(', '));
-    
+
   return code.join('\n');
 };
 
@@ -229,13 +228,13 @@ Dependencies.prototype.isExcluded = function(matchDepLineResult) {
 
     if(exclusion.lib !== matchDepLineResult.lib)
       return false;
-    
-    if(exclusion.path === null)
-      return true; 
 
-    if(exclusion.path === matchDepLineResult.path) 
+    if(exclusion.path === null)
       return true;
-    
+
+    if(exclusion.path === matchDepLineResult.path)
+      return true;
+
     return false;
   });
 
@@ -259,7 +258,7 @@ Dependencies.prototype.matchDepLine = function(line) {
     results.match = true;
     results.lib   = null;
     results.path  = extracted[1];
-    
+
     return results;
   }
 
@@ -299,8 +298,8 @@ Dependencies.prototype.addFile = function(filepath) {
   }
 
   var dep = this.extractDep(code, filepath);
-  
-  if(this.Stack.indexOf(filepath) == -1) 
+
+  if(this.Stack.indexOf(filepath) == -1)
     this.Stack.unshift(filepath);
 
   for (var i in dep) {
