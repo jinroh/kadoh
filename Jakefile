@@ -42,88 +42,78 @@ task('default', [], function() {
 ///*********************TEST***********************
 
 namespace('test', function() {
-
   desc('Testing in node');
   task('node', ['default'], function() {
+    Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
 
-  Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
+    var bot_server = require('./bots/bot-server.js');
+    var SimUDP = require('./lib/server/router.js').listen(bot_server);
+    bot_server.listen(3000);
 
-  var bot_server = require('./bots/bot-server.js');
-      var SimUDP = require('./lib/server/router.js').listen(bot_server);
-      bot_server.listen(3000);
+    var bot = require('./bots/reply-bot.js').Bot;
+    reply_bot = new bot('reply_bot');
+    reply_bot.run('http://localhost:3000').register('reply','http://localhost:3000');
 
+    setTimeout(function() {
+      var jasmine = PROC.spawn('jasmine-node', ['spec']);
 
-  var bot = require('./bots/reply-bot.js').Bot;
-      reply_bot = new bot('reply_bot');
-      reply_bot.run('http://localhost:3000').register('reply','http://localhost:3000');
+      jasmine.stdout.on('data', function (data) {
+        process.stdout.write(String(data));
+      });
 
-  setTimeout(function() {
-    var jasmine = PROC.spawn('jasmine-node', ['spec']);
+      jasmine.stderr.on('data', function (data) {
+        process.stderr.write(data);
+      });
 
-    jasmine.stdout.on('data', function (data) {
-      process.stdout.write(String(data));
-    });
+      jasmine.on('exit', function (code) {
+        console.warn('Jasmine-node exited with code ' + code);
+      });
 
-    jasmine.stderr.on('data', function (data) {
-      process.stderr.write(data);
-    });
-
-    jasmine.on('exit', function (code) {
-      console.warn('Jasmine-node exited with code ' + code);
-    });
-
-  }, 1000);
-
-}, true);
+    }, 1000);
+  }, true);
 
   desc('Testing in the browser');
   task('browser', ['default'], function() {
-
     Build(SPEC_DIST + 'KadOH.js', false);
 
     var bot_app = require('./bots/bot-server.js');
     var SimUDP = require('./lib/server/router.js');
 
-
     //bot_app.listen(8124);
-
     var jasmine = require('jasmine-runner');
 
     jasmine.run({
-                  command : 'mon' ,
-                  cwd     : __dirname ,
-                  args    : [],
-                  server  : bot_app,
-                  provided_io : SimUDP
-                });
+      command : 'mon' ,
+      cwd     : __dirname ,
+      args    : [],
+      server  : bot_app,
+      provided_io : SimUDP
+    });
 
-       //Start bot :
-    setTimeout(function(){
-
-    var bot = require('./bots/reply-bot.js').Bot;
+    //Start bot :
+    setTimeout(function() {
+      var bot = require('./bots/reply-bot.js').Bot;
       reply_bot = new bot('reply_bot');
       reply_bot.run('http://localhost:8124').register('reply','http://localhost:8124');
     }, 200);
-
- });
-
+  });
 });
+
 //****************DOC**************
 desc('Generate documentation using JsDoc3');
 task('doc', ['default'], function(){
-    console.log('Generating documentation..');
+  console.log('Generating documentation..');
 
-    var cmd = JsDoc3_EXEC+' --recurse '+LIB_DIR.kadoh+' --destination '+DOC_DIR +' -c '+JsDoc3_CONF;
-    console.log(cmd);
+  var cmd = JsDoc3_EXEC+' --recurse '+LIB_DIR.kadoh+' --destination '+DOC_DIR +' -c '+JsDoc3_CONF;
+  console.log(cmd);
 
-    PROC.exec(cmd, function (error, stdout, stderr) {
-      console.log('[Generating Doc] ' + stdout);
-      console.error('[Generating Doc] Error :' + stderr);
-      if (error !== null) {
-        console.error('[Generating Doc] Error : ' + error);
-      }
-    });
-
+  PROC.exec(cmd, function (error, stdout, stderr) {
+    console.log('[Generating Doc] ' + stdout);
+    console.error('[Generating Doc] Error :' + stderr);
+    if (error !== null) {
+      console.error('[Generating Doc] Error : ' + error);
+    }
+  });
 });
 
 //**************BUILD****************
@@ -132,7 +122,6 @@ task('build', ['default'], function() {
   Build(DIST_DIR + 'KadOH.js', false);
   Build(DIST_DIR + 'KadOH.min.js', true);
   Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
-
 });
 
 namespace('build', function() {
