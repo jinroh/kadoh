@@ -14,7 +14,7 @@ var LIB_DIR = {
 var NODE_BUILD_EXCLUDE = [
   '[socket.io-client]/*',
   '[jQuery]/*'
-  ];
+];
 
 var ENTRY_FILES = [
   'node'
@@ -50,9 +50,9 @@ namespace('test', function() {
     var SimUDP = require('./lib/server/router.js').listen(bot_server);
     bot_server.listen(3000);
 
-    var bot = require('./bots/reply-bot.js').Bot;
-    reply_bot = new bot('reply_bot');
-    reply_bot.run('http://localhost:3000').register('reply','http://localhost:3000');
+    var ReplyBot = require('./bots/reply-bot.js');
+    var reply_bot = new ReplyBot('reply_bot');
+    reply_bot.run();
 
     setTimeout(function() {
       var jasmine = PROC.spawn('jasmine-node', ['spec']);
@@ -92,9 +92,9 @@ namespace('test', function() {
 
     //Start bot :
     setTimeout(function() {
-      var bot = require('./bots/reply-bot.js').Bot;
-      reply_bot = new bot('reply_bot');
-      reply_bot.run('http://localhost:8124').register('reply','http://localhost:8124');
+      var ReplyBot = require('./bots/reply-bot.js');
+      var reply_bot = new ReplyBot('reply_bot', 'http://localhost:8124');
+      reply_bot.run();
     }, 200);
   });
 });

@@ -66,7 +66,6 @@ app.get('/bot/:type', function(req, res) {
     res.json(bot);
     return;
   } catch(e) {
-    //console.log('hi'+e.description);
     if(e.name === 'NOT_FOUND')
       res.send(404);
     else
@@ -86,7 +85,6 @@ app.get('/bot/:type/:id', function(req, res) {
     res.json(bot); 
     return;
   } catch(e) {
-    console.log(e.description);
     if(e.name === 'NOT_FOUND') {
       res.send(404); 
       return;
@@ -113,9 +111,6 @@ app.post('/bot', function(req, res) {
     res.send(500);
   }
 });
-
-
-
 
 if(!module.parent) {
   app.listen(3000);

@@ -1,4 +1,4 @@
-describe('Reactor', function() {
+xdescribe('Reactor', function() {
   beforeEach(function() {
     Reactor = KadOH.Reactor;
     reactor = new Reactor(Dumb.Node);

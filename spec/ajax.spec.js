@@ -8,7 +8,6 @@ describe('Ajax and Botserver', function() {
   it('should be possible to register', function() {
     var bot = {type : 'test', ip_port : 'foo:foo'};
     var callback = jasmine.createSpy();
-    console.log(for_node_server);
     var req = ajax.post(for_node_server+'/bot', bot).done(callback);//.fail(function(){});
     waits(300);
     runs(function() {
