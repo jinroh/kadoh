@@ -98,6 +98,38 @@ namespace('test', function() {
     }, 200);
   });
 });
+//****************BOTS**************
+
+namespace('bot', function(){
+  desc('Start bot server + SimUDP');
+  task('server', ['default'], function() {
+    var bot_server = require('./bots/bot-server.js');
+    var SimUDP = require('./lib/server/router.js').listen(bot_server);
+    bot_server.listen(3000);
+
+  });
+
+  desc('Start reply-bots');
+  task('reply', ['default'], function(number, server) {
+    number = number || 1;
+    server = server || 'http://localhost:3000';
+
+    console.log('Sarting '+number+' reply-bot, registration on '+server);
+
+    var reply_bot = require('./bots/reply-bot.js').Bot;
+    var bots = [];
+
+    for(var i = 0; i<number; i++) {
+      try{
+        var bot = new reply_bot('replyBot'+i);
+        bot.run(server).register('reply', server);
+      } catch(e) {
+        cosnole.log('Bot '+i+' starting failed.');
+      }
+    }
+  });
+
+});
 
 //****************DOC**************
 desc('Generate documentation using JsDoc3');
