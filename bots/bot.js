@@ -38,6 +38,7 @@ var Bot = module.exports = klass({
 
     req.done(function(data) {
       self._id = data.id;
+      self.log('registered');
     }).fail(function(error) {
       console.error('Impossible to register ' + self);
       console.error(error);

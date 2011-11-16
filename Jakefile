@@ -98,15 +98,14 @@ namespace('test', function() {
     }, 200);
   });
 });
-//****************BOTS**************
 
+//****************BOTS**************
 namespace('bot', function(){
   desc('Start bot server + SimUDP');
   task('server', ['default'], function() {
     var bot_server = require('./bots/bot-server.js');
     var SimUDP = require('./lib/server/router.js').listen(bot_server);
     bot_server.listen(3000);
-
   });
 
   desc('Start reply-bots');
@@ -116,15 +115,15 @@ namespace('bot', function(){
 
     console.log('Sarting '+number+' reply-bot, registration on '+server);
 
-    var reply_bot = require('./bots/reply-bot.js').Bot;
+    var reply_bot = require('./bots/reply-bot.js');
     var bots = [];
 
     for(var i = 0; i<number; i++) {
-      try{
-        var bot = new reply_bot('replyBot'+i);
-        bot.run(server).register('reply', server);
+      try {
+        var bot = new reply_bot('replyBot'+i, server);
+        bot.run();
       } catch(e) {
-        cosnole.log('Bot '+i+' starting failed.');
+        console.error('Bot '+i+' starting failed.');
       }
     }
   });
