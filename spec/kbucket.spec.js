@@ -6,7 +6,7 @@ describe('KBucket', function() {
     SHA1 = KadOH.globals._digest;
     Peer = KadOH.Peer;
     
-    min = 1;
+    min = 0;
     max = KadOH.globals._B;
 
     parent_id = SHA1('ip:port');
@@ -18,13 +18,13 @@ describe('KBucket', function() {
   
   describe('When I instanciate a new KBucket', function() {
     beforeEach(function() {
-      kbucket = new KBucket(min, max, parent_id);
+      kbucket = new KBucket(parent_id, min, max);
     });
     
     it('should be empty, from 1 to _B with the right parent id', function() {
       expect(kbucket.getSize()).toEqual(0);
       
-      expect(kbucket.getRange().min).toEqual(1);
+      expect(kbucket.getRange().min).toEqual(0);
       expect(KadOH.globals._B).toEqual(kbucket.getRange().max);
       
       expect(kbucket._parent_id).toEqual(parent_id);
@@ -75,7 +75,7 @@ describe('KBucket', function() {
   describe('When I have a full KBucket', function() {
     
     beforeEach(function() {
-      kbucket = new KBucket(min, max, parent_id);
+      kbucket = new KBucket(parent_id, min, max);
       for (var i=0; i < KadOH.globals._k; i++) {
         kbucket.addPeer(new Peer('127.0.0.1', 1025+i));
       }
@@ -91,8 +91,8 @@ describe('KBucket', function() {
     it('should return me a new kbucket with the right range', function() {
       var new_kbucket = kbucket.split();
       
-      expect(new_kbucket.getRange().min).toEqual(1);
-      expect(new_kbucket.getRange().max).toEqual(kbucket.getRange().min - 1);
+      expect(new_kbucket.getRange().min).toEqual(0);
+      expect(new_kbucket.getRange().max).toEqual(kbucket.getRange().min);
     });
     
     it('should change the KBucket\'s range min', function() {
@@ -100,8 +100,8 @@ describe('KBucket', function() {
       kbucket.split();
       
       expect(kbucket.getRange().max).toEqual(old_range.max);
-      expect(kbucket.getRange().min).toEqual((old_range.max+old_range.min+1)/2);
+      expect(kbucket.getRange().min).toEqual(old_range.max - 1);
     });
-        
+    
   });
 }); 
