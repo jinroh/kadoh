@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>JSDoc: Namespace: jsonrpc2</title>
+	<title>JSDoc: Namespace: ajax</title>
 	
 	<script src="http://shjs.sourceforge.net/sh_main.min.js"> </script>
     <script src="http://shjs.sourceforge.net/lang/sh_javascript.min.js"> </script>
@@ -15,20 +15,20 @@
 
 <div id="main">
     
-    <h1 class="page-title">Namespace: jsonrpc2</h1>
+    <h1 class="page-title">Namespace: ajax</h1>
     
     
     
     <section>
      
     <header>
-        <h2>jsonrpc2</h2>
+        <h2>ajax</h2>
         
     </header>  
     
     <article>
         <div class="container-overview">
-        <p class="description"><p>Implementation of the JSON RPC v2.0 protocol.</p></p><dl class="details">
+        <p class="description"><p>A common API wrapper for jQuery (browser) and Restler (Node) written in deffered style.</p></p><dl class="details">
     
         
 	
@@ -47,7 +47,7 @@
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/rpcprotocol/jsonrpc2.js, line 1</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/util/ajax.js, line 1</li></ul></dd>
 	
 	
 	
@@ -74,7 +74,7 @@
             <h3 class="subsection-title">Methods</h3>
             
             <dl><dt>
-    <h4 class="name" id="buildErrorResponse"><span class="type-signature">&lt;static> </span>buildErrorResponse<span class="signature">(The, <span class="optional">id</span>)</span><span class="type-signature"> &rarr; {<a href="RPCMessage.html">RPCMessage</a>}</span></h4>
+    <h4 class="name" id="delete"><span class="type-signature">&lt;static> </span>delete<span class="signature">(url, <span class="optional">settings</span>)</span><span class="type-signature"> &rarr; {<a href="AjaxReq.html">AjaxReq</a>}</span></h4>
     
     
 </dt>
@@ -82,7 +82,7 @@
     
     
     <p class="description">
-        <p>Build an error response.</p>
+        <p>Delete ajax call.</p>
     </p>
     
     
@@ -104,8 +104,6 @@
 		
 		
 		
-		<th>Default</th>
-		
 		
 		<th class="last">Description</th>
 	</tr>
@@ -116,11 +114,11 @@
 	
         <tr>
             
-                <td class="name"><code>The</code></td>
+                <td class="name"><code>url</code></td>
             
             
             <td class="type">
-            Object | <a href="RPCError.html">RPCError</a>
+            String
             </td>
             
             
@@ -130,23 +128,19 @@
             
             
             
-                <td class="default">
-                
-                </td>
             
-            
-            <td class="description last">error object to transmit</td>
+            <td class="description last">URL</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>settings</code></td>
             
             
             <td class="type">
-            String
+            Object
             </td>
             
             
@@ -156,12 +150,8 @@
             
             
             
-                <td class="default">
-                RPCError.getRPCID()
-                </td>
             
-            
-            <td class="description last">RPCid of the request. If not, defined try to extract RPCID from error object.</td>
+            <td class="description last">Additional settings</td>
         </tr>
 	
 	
@@ -187,7 +177,7 @@
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/rpcprotocol/jsonrpc2.js, line 160</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/util/ajax.js, line 72</li></ul></dd>
 	
 	
 	
@@ -204,7 +194,7 @@
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    The resulted RPCMessage
+    Deffered object
 </div>
 
 
@@ -216,7 +206,7 @@
 	</dt>
 	<dd>
 		
-		<span class="param-type">RPCMessage</span> 
+		<span class="param-type">AjaxReq</span> 
 		
 	</dd>
 </dl>
@@ -226,7 +216,7 @@
 
 </dd>
 <dt>
-    <h4 class="name" id="buildInternalRPCError"><span class="type-signature">&lt;static> </span>buildInternalRPCError<span class="signature">(<span class="optional">data</span>)</span><span class="type-signature"> &rarr; {<a href="RPCError.html">RPCError</a>}</span></h4>
+    <h4 class="name" id="get"><span class="type-signature">&lt;static> </span>get<span class="signature">(url, <span class="optional">settings</span>)</span><span class="type-signature"> &rarr; {<a href="AjaxReq.html">AjaxReq</a>}</span></h4>
     
     
 </dt>
@@ -234,7 +224,7 @@
     
     
     <p class="description">
-        <p>Build an internal RPC error. Use it when bad things occurs localy when resolving a RPC and you want to notify the caller.</p>
+        <p>Get ajax call.</p>
     </p>
     
     
@@ -262,6 +252,170 @@
 	</thead>
 	
 	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">URL</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>settings</code></td>
+            
+            
+            <td class="type">
+            Object
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+            
+            <td class="description last">Additional settings</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/util/ajax.js, line 32</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    Deffered object
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">AjaxReq</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="post"><span class="type-signature">&lt;static> </span>post<span class="signature">(url, data, <span class="optional">settings</span>)</span><span class="type-signature"> &rarr; {<a href="AjaxReq.html">AjaxReq</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Post ajax call.</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">URL</td>
+        </tr>
+	
 	
 	
         <tr>
@@ -270,6 +424,28 @@
             
             
             <td class="type">
+            Object | String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">Post data</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>settings</code></td>
+            
+            
+            <td class="type">
             Object
             </td>
             
@@ -281,7 +457,7 @@
             
             
             
-            <td class="description last">Complement data to trnasmit</td>
+            <td class="description last">Additional settings</td>
         </tr>
 	
 	
@@ -307,7 +483,7 @@
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/rpcprotocol/jsonrpc2.js, line 182</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/util/ajax.js, line 45</li></ul></dd>
 	
 	
 	
@@ -324,7 +500,7 @@
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    The resulting RPCError
+    Deffered object
 </div>
 
 
@@ -336,7 +512,7 @@
 	</dt>
 	<dd>
 		
-		<span class="param-type">RPCError</span> 
+		<span class="param-type">AjaxReq</span> 
 		
 	</dd>
 </dl>
@@ -346,7 +522,7 @@
 
 </dd>
 <dt>
-    <h4 class="name" id="buildRequest"><span class="type-signature">&lt;static> </span>buildRequest<span class="signature">(Method, Parameters, <span class="optional">id</span>)</span><span class="type-signature"> &rarr; {<a href="RPCMessage.html">RPCMessage</a>}</span></h4>
+    <h4 class="name" id="put"><span class="type-signature">&lt;static> </span>put<span class="signature">(url, data, <span class="optional">settings</span>)</span><span class="type-signature"> &rarr; {<a href="AjaxReq.html">AjaxReq</a>}</span></h4>
     
     
 </dt>
@@ -354,7 +530,7 @@
     
     
     <p class="description">
-        <p>Build a request.</p>
+        <p>Put ajax call.</p>
     </p>
     
     
@@ -386,7 +562,7 @@
 	
         <tr>
             
-                <td class="name"><code>Method</code></td>
+                <td class="name"><code>url</code></td>
             
             
             <td class="type">
@@ -401,18 +577,18 @@
             
             
             
-            <td class="description last">name</td>
+            <td class="description last">URL</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>Parameters</code></td>
+                <td class="name"><code>data</code></td>
             
             
             <td class="type">
-            Array
+            Object | String
             </td>
             
             
@@ -423,18 +599,18 @@
             
             
             
-            <td class="description last">of the mehod</td>
+            <td class="description last">Post data</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>settings</code></td>
             
             
             <td class="type">
-            String
+            Object
             </td>
             
             
@@ -445,7 +621,7 @@
             
             
             
-            <td class="description last">RPCid of the request. Can be set later.</td>
+            <td class="description last">Additional settings</td>
         </tr>
 	
 	
@@ -471,7 +647,7 @@
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/rpcprotocol/jsonrpc2.js, line 125</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/util/ajax.js, line 59</li></ul></dd>
 	
 	
 	
@@ -488,7 +664,7 @@
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    The resulted RPCMessage
+    Deffered object
 </div>
 
 
@@ -500,7 +676,7 @@
 	</dt>
 	<dd>
 		
-		<span class="param-type">RPCMessage</span> 
+		<span class="param-type">AjaxReq</span> 
 		
 	</dd>
 </dl>
@@ -510,7 +686,7 @@
 
 </dd>
 <dt>
-    <h4 class="name" id="buildResponse"><span class="type-signature">&lt;static> </span>buildResponse<span class="signature">(The, <span class="optional">id</span>)</span><span class="type-signature"> &rarr; {<a href="RPCMessage.html">RPCMessage</a>}</span></h4>
+    <h4 class="name" id="request"><span class="type-signature">&lt;static> </span>request<span class="signature">(url, <span class="optional">settings</span>)</span><span class="type-signature"> &rarr; {<a href="AjaxReq.html">AjaxReq</a>}</span></h4>
     
     
 </dt>
@@ -518,7 +694,7 @@
     
     
     <p class="description">
-        <p>Build a response.</p>
+        <p>Custom ajax call.</p>
     </p>
     
     
@@ -550,11 +726,11 @@
 	
         <tr>
             
-                <td class="name"><code>The</code></td>
+                <td class="name"><code>url</code></td>
             
             
             <td class="type">
-            
+            String
             </td>
             
             
@@ -565,18 +741,18 @@
             
             
             
-            <td class="description last">result of the RPC</td>
+            <td class="description last">URL</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>settings</code></td>
             
             
             <td class="type">
-            String
+            Object
             </td>
             
             
@@ -587,7 +763,7 @@
             
             
             
-            <td class="description last">RPCid of the request. Can be set later.</td>
+            <td class="description last">Additional settings</td>
         </tr>
 	
 	
@@ -613,7 +789,7 @@
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/rpcprotocol/jsonrpc2.js, line 143</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/util/ajax.js, line 84</li></ul></dd>
 	
 	
 	
@@ -630,7 +806,7 @@
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    The resulted RPCMessage
+    Deffered object
 </div>
 
 
@@ -642,141 +818,7 @@
 	</dt>
 	<dd>
 		
-		<span class="param-type">RPCMessage</span> 
-		
-	</dd>
-</dl>
-
-    
-    
-
-</dd>
-<dt>
-    <h4 class="name" id="parseRPCMessage"><span class="type-signature">&lt;static> </span>parseRPCMessage<span class="signature">(raw)</span><span class="type-signature"> &rarr; {<a href="RPCMessage.html">RPCMessage</a>}</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <p class="description">
-        <p>Parse a given rawdata of JSON (as Object) and return an RPCMessage object. 
-If Errors occurs, RPCError is throwed.</p>
-    </p>
-    
-    
-    
-    
-    <h5>Parameters:</h5>
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>raw</code></td>
-            
-            
-            <td class="type">
-            Object
-            </td>
-            
-            
-            
-            
-            
-            <td class="description last">data to parse</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    <dl class="details">
-    
-        
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/rpcprotocol/jsonrpc2.js, line 35</li></ul></dd>
-	
-	
-	
-	
-	
-</dl>
-
-    
-    
-    
-    
-    <h5>Throws:</h5>
-    
-<div class="param-desc">
-    Information about error occured
-</div>
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-		<span class="param-type"><a href="RPCError.html">RPCError</a></span> 
-		
-	</dd>
-</dl>
-
-    
-    
-    <h5>Returns:</h5>
-    
-<div class="param-desc">
-    The resulted RPCMessage
-</div>
-
-
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-		<span class="param-type">RPCMessage</span> 
+		<span class="param-type">AjaxReq</span> 
 		
 	</dd>
 </dl>
@@ -799,13 +841,13 @@ If Errors occurs, RPCError is throwed.</p>
 </div>
 
 <nav>
-    <h3>Classes</h3><ul><li><a href="AjaxReq.html">AjaxReq</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="KBucket.html">KBucket</a></li><li><a href="RPCError.html">RPCError</a></li><li><a href="RPCMessage.html">RPCMessage</a></li></ul><h3>Namespaces</h3><ul><li><a href="ajax.html">ajax</a></li><li><a href="jsonrpc2.html">jsonrpc2</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_generateID">_generateID</a></li><li><a href="global.html#_handler">_handler</a></li><li><a href="global.html#_handleResponse">_handleResponse</a></li><li><a href="global.html#_handleRPC">_handleRPC</a></li><li><a href="global.html#_iterativeFind">_iterativeFind</a></li><li><a href="global.html#_kbucketIndexFor">_kbucketIndexFor</a></li><li><a href="global.html#addPeer">addPeer</a></li><li><a href="global.html#distance">distance</a></li><li><a href="global.html#FIND_NODE">FIND_NODE</a></li><li><a href="global.html#getClosePeers">getClosePeers</a></li><li><a href="global.html#PING">PING</a></li><li><a href="global.html#sendRPC">sendRPC</a></li><li><a href="global.html#sendRPCs">sendRPCs</a></li></ul>
+    <h3>Classes</h3><ul><li><a href="AjaxReq.html">AjaxReq</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="KBucket.html">KBucket</a></li><li><a href="RPCError.html">RPCError</a></li><li><a href="RPCMessage.html">RPCMessage</a></li></ul><h3>Namespaces</h3><ul><li><a href="jsonrpc2.html">jsonrpc2</a></li><li><a href="util.ajax.html">ajax</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_generateID">_generateID</a></li><li><a href="global.html#_handler">_handler</a></li><li><a href="global.html#_handleResponse">_handleResponse</a></li><li><a href="global.html#_handleRPC">_handleRPC</a></li><li><a href="global.html#_iterativeFind">_iterativeFind</a></li><li><a href="global.html#_kbucketIndexFor">_kbucketIndexFor</a></li><li><a href="global.html#addPeer">addPeer</a></li><li><a href="global.html#distance">distance</a></li><li><a href="global.html#FIND_NODE">FIND_NODE</a></li><li><a href="global.html#getClosePeers">getClosePeers</a></li><li><a href="global.html#PING">PING</a></li><li><a href="global.html#sendRPC">sendRPC</a></li><li><a href="global.html#sendRPCs">sendRPCs</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/micmath/jsdoc">JSDoc 3</a> on Fri Nov 18 2011 20:21:18 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/micmath/jsdoc">JSDoc 3</a> on Fri Nov 18 2011 19:33:06 GMT+0100 (CET)
 </footer>
 
 <script> sh_highlightDocument(); </script>
