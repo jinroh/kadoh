@@ -133,16 +133,27 @@ namespace('bot', function(){
 //****************DOC**************
 desc('Generate documentation using JsDoc3');
 task('doc', ['default'], function(){
-  console.log('Generating documentation..');
+  console.log('[Doc] Purging the doc folder');
+  var rm = 'rm -rf '+DOC_DIR;
+  console.log(rm);
+  PROC.exec(rm, function (error, stdout, stderr) {
+    console.log('[Doc] ' + stdout);
+    console.error('[Doc] Error :' + stderr);
+    if (error !== null) {
+      console.error('[Doc] Error : ' + error);
+    }
+  });
+
+  console.log('[Doc] Generating documentation..');
 
   var cmd = JsDoc3_EXEC+' --recurse '+LIB_DIR.kadoh+' --destination '+DOC_DIR +' -c '+JsDoc3_CONF;
   console.log(cmd);
 
   PROC.exec(cmd, function (error, stdout, stderr) {
-    console.log('[Generating Doc] ' + stdout);
-    console.error('[Generating Doc] Error :' + stderr);
+    console.log('[Doc] ' + stdout);
+    console.error('[Doc] Error :' + stderr);
     if (error !== null) {
-      console.error('[Generating Doc] Error : ' + error);
+      console.error('[Doc] Error : ' + error);
     }
   });
 });
