@@ -23,3 +23,7 @@ npm-debug.log
 # alex
 dht/lib_test
 dht/dist_test
+
+# pierre
+*.sublime-project
+*.sublime-workspace

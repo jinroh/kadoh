@@ -24,7 +24,7 @@ describe('Routing Table', function() {
       expect(routing_table.howManyKBuckets()).toEqual(1);
       
       var kbucket = routing_table.getKBuckets()[0];
-      expect(kbucket.getRange().min).toEqual(1);
+      expect(kbucket.getRange().min).toEqual(0);
       expect(kbucket.getRange().max).toEqual(globals._B);
     });
     
