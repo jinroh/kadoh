@@ -11,9 +11,12 @@ app.listen(8080, function() {
 function handler (request, response) {
   var filePath = '.' + request.url;
 
-  if (filePath == './')
+  if (filePath == './') {
      filePath = './index.html';
-
+   }
+  else {
+    filePath = path.join(__dirname, '../..', filePath);
+  }
   var extname = path.extname(filePath);
   var contentType = 'text/html';
 
@@ -25,7 +28,7 @@ function handler (request, response) {
          contentType = 'text/css';
          break;
   }
-  
+
   path.exists(filePath, function(exists) {
    if (exists) {
        fs.readFile(filePath, function(error, content) {
