@@ -12,7 +12,8 @@ $(function() {
     var ip_port = ip_port.split(':');
     
     node = new KadOH.Node(ip_port[0], ip_port[1]);
-    console.log('ME :' + node.getSocket());
+    console.log('ME :', node.getSocket());
+    console.log(KadOH.globals._digest(node.getSocket()));
   }
   
   // Join the network using other clients as bootstraps
@@ -21,26 +22,38 @@ $(function() {
     try {
       node.join(bootstraps).then(
         function(response) {
-          console.log('Iterative Find : ', response.map(function(peer) {
-            return node._routing_table.distance(peer.getId());
-          }));
-        },
-        function(response) {
-          console.log('UNFINISHED Iterative Find : ', response.map(function(peer) {
-            return peer.getId();
+          console.log(response.map(function(peer) {
+            return peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
           }));
         }
       );
     }
     catch(e) {
-      console.log(e);
+      console.error(e);
     }
     event.preventDefault();
   }
   
+  function onClickLookup(event) {
+    try {
+      node.iterativeFindNode(node.getId()).then(
+        function(response) {
+          console.log(response.map(function(peer) {
+            return peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
+          }));
+        }
+      );
+    }
+    catch(e) {
+      console.error(e);
+    }
+    event.preventDefault();
+  }
+
   // Init the node when receiving our ip and port
   udp._whoami(init);
   $('#join').click(onClickJoin);
+  $('#lookup').click(onClickLookup);
 });
 </script>
 <body>
@@ -48,6 +61,9 @@ $(function() {
 <form id='form'>
   <p>
     <input type="submit" value="Join" name="join" id="join">
+  </p>
+  <p>
+    <input type="submit" value="Iterative Lookup" name="lookup" id="lookup">
   </p>
 </form>
 <h2>Messages received :</h2>
