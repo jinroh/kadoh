@@ -23,13 +23,13 @@
      
     <header>
         <h2>RoutingTable</h2>
-        <p class="class-description">Represents the routing table of a Node.</p>
+        
     </header>  
     
     <article>
         <div class="container-overview">
         <dt>
-    <h4 class="name" id="RoutingTable"><span class="type-signature"></span>new RoutingTable<span class="signature">(node)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="RoutingTable"><span class="type-signature"></span>new RoutingTable<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -37,7 +37,86 @@
     
     
     <p class="description">
-        <p>Construct an instance of a <a href="RoutingTable.html">RoutingTable</a> associated to the instance of Node passed as parameter.</p>
+        <p>Represents the routing table of a Node.</p>
+    </p>
+    
+    
+    
+    
+    
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 11</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+
+</dd>
+
+        </div>
+        
+        
+            <h3 class="subsection-title">Extends</h3>
+            
+            <ul>
+                <li><a href="EventEmitter.html">EventEmitter</a></li>
+            </ul>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+            
+            <h3 class="subsection-title">Methods</h3>
+            
+            <dl><dt>
+    <h4 class="name" id="addListener"><span class="type-signature"></span>addListener<span class="signature">(type, listener, <span class="optional">scope</span>, <span class="optional">once</span>)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Alias for <a href="EventEmitter.html#on">EventEmitter#on</a> method : adds an event listener for the specified event.</p>
     </p>
     
     
@@ -55,7 +134,11 @@
 		<th>Type</th>
 		
 		
+		<th>Argument</th>
 		
+		
+		
+		<th>Default</th>
 		
 		
 		<th class="last">Description</th>
@@ -67,18 +150,104 @@
 	
         <tr>
             
-                <td class="name"><code>node</code></td>
+                <td class="name"><code>type</code></td>
             
             
             <td class="type">
-            Node
+            String
             </td>
             
             
+                <td class="attributes">
+                
+                </td>
             
             
             
-            <td class="description last">Associated node.</td>
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Event type name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+            
+            <td class="type">
+            Function
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Function to be called when the event is fired</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+            
+            <td class="type">
+            Object
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                current <a href="EventEmitter.html">EventEmitter</a> instance
+                </td>
+            
+            
+            <td class="description last">Object that _this_ should be set to when the listener is called</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>once</code></td>
+            
+            
+            <td class="type">
+            Boolean
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                false
+                </td>
+            
+            
+            <td class="description last">If true then the listener will be removed after the first call</td>
         </tr>
 	
 	
@@ -104,7 +273,7 @@
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 22</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 65</li></ul></dd>
 	
 	
 	
@@ -118,30 +287,31 @@
     
     
     
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
     
     
 
 </dd>
-
-        </div>
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-            
-            <h3 class="subsection-title">Methods</h3>
-            
-            <dl><dt>
+<dt>
     <h4 class="name" id="addPeer"><span class="type-signature"></span>addPeer<span class="signature">(peer)</span><span class="type-signature"> &rarr; {Void}</span></h4>
     
     
@@ -217,7 +387,7 @@
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 53</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 60</li></ul></dd>
 	
 	
 	
@@ -328,9 +498,14 @@ These keys are SHA1 hashes as hexadecimal <code>String</code></p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 42</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 49</li></ul></dd>
 	
 	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul><li>Crypto#distance</li></ul>
+	</dd>
 	
 	
 	
@@ -367,7 +542,7 @@ These keys are SHA1 hashes as hexadecimal <code>String</code></p>
 
 </dd>
 <dt>
-    <h4 class="name" id="getClosePeers"><span class="type-signature"></span>getClosePeers<span class="signature">(id, number, exclude)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="emit"><span class="type-signature"></span>emit<span class="signature">(type, args)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
     
     
 </dt>
@@ -375,8 +550,9 @@ These keys are SHA1 hashes as hexadecimal <code>String</code></p>
     
     
     <p class="description">
-        <p>Get the <code>number</code> closest peers from a given <code>id</code>
-but ignore the specified ones in an Array</p>
+        <p>Emits an event executing all appropriate listeners.</p>
+
+<p>All values passed after the type will be passed as arguments to the listeners.</p>
     </p>
     
     
@@ -406,7 +582,7 @@ but ignore the specified ones in an Array</p>
 	
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>type</code></td>
             
             
             <td class="type">
@@ -417,43 +593,25 @@ but ignore the specified ones in an Array</p>
             
             
             
-            <td class="description last"></td>
+            <td class="description last">Event type name to run all listeners from</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>number</code></td>
+                <td class="name"><code>args</code></td>
             
             
             <td class="type">
-            Number
+            *
             </td>
             
             
             
             
             
-            <td class="description last">The number of peers you want</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>exclude</code></td>
-            
-            
-            <td class="type">
-            String[] | Peer[]
-            </td>
-            
-            
-            
-            
-            
-            <td class="description last">The list of ids or peers to exclude</td>
+            <td class="description last">Numerous arguments of any kind to be passed to the listener.</td>
         </tr>
 	
 	
@@ -479,7 +637,7 @@ but ignore the specified ones in an Array</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 106</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 107</li></ul></dd>
 	
 	
 	
@@ -493,6 +651,2074 @@ but ignore the specified ones in an Array</p>
     
     
     
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="getClosePeers"><span class="type-signature"></span>getClosePeers<span class="signature">(id, <span class="optional">number</span>, exclude)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Get the <code>number</code> closest peers from a given <code>id</code>
+but ignore the specified ones in an Array</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last"></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>number</code></td>
+            
+            
+            <td class="type">
+            Number
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                globals._alpha
+                </td>
+            
+            
+            <td class="description last">The number of peers you want</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>exclude</code></td>
+            
+            
+            <td class="type">
+            String[] | Peer[]
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Array of ids or peers to exclude</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 113</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="on"><span class="type-signature"></span>on<span class="signature">(type, listener, <span class="optional">scope</span>, <span class="optional">once</span>)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Adds an event listener for the specified event</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Event type name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+            
+            <td class="type">
+            Function
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Function to be called when the event is fired</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+            
+            <td class="type">
+            Object
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                current <a href="EventEmitter.html">EventEmitter</a> instance
+                </td>
+            
+            
+            <td class="description last">Object that _this_ should be set to when the listener is called</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>once</code></td>
+            
+            
+            <td class="type">
+            Boolean
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                false
+                </td>
+            
+            
+            <td class="description last">If true then the listener will be removed after the first call</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 34</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="once"><span class="type-signature"></span>once<span class="signature">(type, listener, <span class="optional">scope</span>)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Alias for <a href="EventEmitter.html#on">EventEmitter#on</a> method, but will remove the event after the first use</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Event type name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+            
+            <td class="type">
+            Function
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Function to be called when the event is fired</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+            
+            <td class="type">
+            Object
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                current <a href="EventEmitter.html">EventEmitter</a> instance
+                </td>
+            
+            
+            <td class="description last">Object that _this_ should be set to when the listener is called</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 77</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="removeListener"><span class="type-signature"></span>removeListener<span class="signature">(type, listener)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Removes the a listener for the specified event</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Event type name the listener must have for the event to be removed</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+            
+            <td class="type">
+            Function
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Listener the event must have to be removed</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 88</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+</dl>
+            
+        
+        
+        
+        
+        
+    </article>
+    
+    </section>  
+    
+    
+    <section>
+     
+    <header>
+        <h2>RoutingTable</h2>
+        
+    </header>  
+    
+    <article>
+        <div class="container-overview">
+        <dt>
+    <h4 class="name" id="RoutingTable"><span class="type-signature"></span>new RoutingTable<span class="signature">(node)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Construct an instance of a <a href="RoutingTable.html">RoutingTable</a> associated to the instance of Node passed as parameter.</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+            
+            <td class="type">
+            Node
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Associated node.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 28</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+
+</dd>
+
+        </div>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+            
+            <h3 class="subsection-title">Methods</h3>
+            
+            <dl><dt>
+    <h4 class="name" id="addListener"><span class="type-signature"></span>addListener<span class="signature">(type, listener, <span class="optional">scope</span>, <span class="optional">once</span>)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Alias for <a href="EventEmitter.html#on">EventEmitter#on</a> method : adds an event listener for the specified event.</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Event type name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+            
+            <td class="type">
+            Function
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Function to be called when the event is fired</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+            
+            <td class="type">
+            Object
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                current <a href="EventEmitter.html">EventEmitter</a> instance
+                </td>
+            
+            
+            <td class="description last">Object that _this_ should be set to when the listener is called</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>once</code></td>
+            
+            
+            <td class="type">
+            Boolean
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                false
+                </td>
+            
+            
+            <td class="description last">If true then the listener will be removed after the first call</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 65</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="addPeer"><span class="type-signature"></span>addPeer<span class="signature">(peer)</span><span class="type-signature"> &rarr; {Void}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Add a peer to the routing table or update it if its already in.</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>peer</code></td>
+            
+            
+            <td class="type">
+            Peer
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">object to add</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 60</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">Void</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="distance"><span class="type-signature"></span>distance<span class="signature">(key)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Calculates the distance from 0 to B-1 between the parent <code>id</code> and the given <code>key</code>.
+These keys are SHA1 hashes as hexadecimal <code>String</code></p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>key</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last"></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 49</li></ul></dd>
+	
+	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul><li>Crypto#distance</li></ul>
+	</dd>
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    distance between the two keys
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">String</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="emit"><span class="type-signature"></span>emit<span class="signature">(type, args)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Emits an event executing all appropriate listeners.</p>
+
+<p>All values passed after the type will be passed as arguments to the listeners.</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Event type name to run all listeners from</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+            
+            <td class="type">
+            *
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Numerous arguments of any kind to be passed to the listener.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 107</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="getClosePeers"><span class="type-signature"></span>getClosePeers<span class="signature">(id, <span class="optional">number</span>, exclude)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Get the <code>number</code> closest peers from a given <code>id</code>
+but ignore the specified ones in an Array</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last"></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>number</code></td>
+            
+            
+            <td class="type">
+            Number
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                globals._alpha
+                </td>
+            
+            
+            <td class="description last">The number of peers you want</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>exclude</code></td>
+            
+            
+            <td class="type">
+            String[] | Peer[]
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Array of ids or peers to exclude</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 113</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="on"><span class="type-signature"></span>on<span class="signature">(type, listener, <span class="optional">scope</span>, <span class="optional">once</span>)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Adds an event listener for the specified event</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Event type name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+            
+            <td class="type">
+            Function
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Function to be called when the event is fired</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+            
+            <td class="type">
+            Object
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                current <a href="EventEmitter.html">EventEmitter</a> instance
+                </td>
+            
+            
+            <td class="description last">Object that _this_ should be set to when the listener is called</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>once</code></td>
+            
+            
+            <td class="type">
+            Boolean
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                false
+                </td>
+            
+            
+            <td class="description last">If true then the listener will be removed after the first call</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 34</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="once"><span class="type-signature"></span>once<span class="signature">(type, listener, <span class="optional">scope</span>)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Alias for <a href="EventEmitter.html#on">EventEmitter#on</a> method, but will remove the event after the first use</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Event type name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+            
+            <td class="type">
+            Function
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Function to be called when the event is fired</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+            
+            <td class="type">
+            Object
+            </td>
+            
+            
+                <td class="attributes">
+                &lt;optional><br>
+                </td>
+            
+            
+            
+                <td class="default">
+                current <a href="EventEmitter.html">EventEmitter</a> instance
+                </td>
+            
+            
+            <td class="description last">Object that _this_ should be set to when the listener is called</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 77</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="removeListener"><span class="type-signature"></span>removeListener<span class="signature">(type, listener)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Removes the a listener for the specified event</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Event type name the listener must have for the event to be removed</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+            
+            <td class="type">
+            Function
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Listener the event must have to be removed</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/core/eventemitter.js, line 88</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    The current EventEmitter instance to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">EventEmitter</span> 
+		
+	</dd>
+</dl>
+
     
     
 
@@ -511,13 +2737,13 @@ but ignore the specified ones in an Array</p>
 </div>
 
 <nav>
-    <h3>Classes</h3><ul><li><a href="AjaxReq.html">AjaxReq</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="KBucket.html">KBucket</a></li><li><a href="RoutingTable.html">RoutingTable</a></li><li><a href="RPCError.html">RPCError</a></li><li><a href="RPCMessage.html">RPCMessage</a></li></ul><h3>Namespaces</h3><ul><li><a href="ajax.html">ajax</a></li><li><a href="jsonrpc2.html">jsonrpc2</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_generateID">_generateID</a></li><li><a href="global.html#_handler">_handler</a></li><li><a href="global.html#_handleResponse">_handleResponse</a></li><li><a href="global.html#_handleRPC">_handleRPC</a></li><li><a href="global.html#_iterativeFind">_iterativeFind</a></li><li><a href="global.html#FIND_NODE">FIND_NODE</a></li><li><a href="global.html#PING">PING</a></li><li><a href="global.html#sendRPC">sendRPC</a></li><li><a href="global.html#sendRPCs">sendRPCs</a></li></ul>
+    <h3>Classes</h3><ul><li><a href="AjaxReq.html">AjaxReq</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="KBucket.html">KBucket</a></li><li><a href="RoutingTable.html">RoutingTable</a></li><li><a href="RPCError.html">RPCError</a></li><li><a href="RPCMessage.html">RPCMessage</a></li></ul><h3>Namespaces</h3><ul><li><a href="ajax.html">ajax</a></li><li><a href="jsonrpc2.html">jsonrpc2</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handler">_handler</a></li><li><a href="global.html#_handleResponse">_handleResponse</a></li><li><a href="global.html#_handleRPC">_handleRPC</a></li><li><a href="global.html#_iterativeFind">_iterativeFind</a></li><li><a href="global.html#FIND_NODE">FIND_NODE</a></li><li><a href="global.html#PING">PING</a></li><li><a href="global.html#sendRPC">sendRPC</a></li><li><a href="global.html#sendRPCs">sendRPCs</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/micmath/jsdoc">JSDoc 3</a> on Fri Nov 18 2011 22:28:19 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/micmath/jsdoc">JSDoc 3</a> on Sat Nov 19 2011 20:26:45 GMT+0100 (CET)
 </footer>
 
 <script> sh_highlightDocument(); </script>

@@ -29,7 +29,7 @@
     <article>
         <div class="container-overview">
         <dt>
-    <h4 class="name" id="KBucket"><span class="type-signature"></span>new KBucket<span class="signature">(<span class="optional">min</span>, <span class="optional">max</span>, parent_id)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="KBucket"><span class="type-signature"></span>new KBucket<span class="signature">(parent_id, <span class="optional">min</span>, <span class="optional">max</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -67,6 +67,32 @@
 	
         <tr>
             
+                <td class="name"><code>parent_id</code></td>
+            
+            
+            <td class="type">
+            PeerId
+            </td>
+            
+            
+                <td class="attributes">
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">NodeId of the parent</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
                 <td class="name"><code>min</code></td>
             
             
@@ -82,11 +108,11 @@
             
             
                 <td class="default">
-                1
+                0
                 </td>
             
             
-            <td class="description last">Lowlimit of this KBucket</td>
+            <td class="description last">Min limit of this KBucket (exprimed as bit position)</td>
         </tr>
 	
 	
@@ -112,33 +138,7 @@
                 </td>
             
             
-            <td class="description last">Highlimit of this KBucket</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>parent_id</code></td>
-            
-            
-            <td class="type">
-            PeerId
-            </td>
-            
-            
-                <td class="attributes">
-                
-                </td>
-            
-            
-            
-                <td class="default">
-                
-                </td>
-            
-            
-            <td class="description last">Id of the parent</td>
+            <td class="description last">Max limit of this KBucket (exprimed as bit position)</td>
         </tr>
 	
 	
@@ -295,7 +295,7 @@ If the Peer is already in the KBucket, it will be updated</p>
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    self
+    self to allow chaining
 </div>
 
 
@@ -317,7 +317,7 @@ If the Peer is already in the KBucket, it will be updated</p>
 
 </dd>
 <dt>
-    <h4 class="name" id="distanceInRange"><span class="type-signature"></span>distanceInRange<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    <h4 class="name" id="distanceInRange"><span class="type-signature"></span>distanceInRange<span class="signature">(distance)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
     
     
 </dt>
@@ -325,13 +325,53 @@ If the Peer is already in the KBucket, it will be updated</p>
     
     
     <p class="description">
-        <p>Check wether or not a given distance is in range of the KBucket</p>
+        <p>Check wether or not a given distance is in range of the</p>
     </p>
     
     
     
     
-    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>distance</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">distance to check</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
     
     <dl class="details">
     
@@ -352,7 +392,7 @@ If the Peer is already in the KBucket, it will be updated</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 187</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 189</li></ul></dd>
 	
 	
 	
@@ -465,7 +505,7 @@ If the Peer is already in the KBucket, it will be updated</p>
     
     
     <p class="description">
-        <p>Get the latest seen Peer</p>
+        <p>Get the latest seen Peer.</p>
     </p>
     
     
@@ -535,7 +575,7 @@ If the Peer is already in the KBucket, it will be updated</p>
     
     
     <p class="description">
-        <p>Get the least recent Peer</p>
+        <p>Get the least recent Peer.</p>
     </p>
     
     
@@ -597,7 +637,7 @@ If the Peer is already in the KBucket, it will be updated</p>
 
 </dd>
 <dt>
-    <h4 class="name" id="getPeer"><span class="type-signature"></span>getPeer<span class="signature">(peer)</span><span class="type-signature"> &rarr; {Peer}</span></h4>
+    <h4 class="name" id="getPeer"><span class="type-signature"></span>getPeer<span class="signature">(peer)</span><span class="type-signature"> &rarr; {Peer|undefined}</span></h4>
     
     
 </dt>
@@ -605,8 +645,8 @@ If the Peer is already in the KBucket, it will be updated</p>
     
     
     <p class="description">
-        <p>Get a Peer given an ID or a Peer object
-If the given Peer does not exists, <code>false</code> is returned</p>
+        <p>Get a Peer given an NodeId or a Peer object.
+If the given Peer does not exists, <code>undefined</code> is returned.</p>
     </p>
     
     
@@ -640,14 +680,14 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             <td class="type">
-            Peer,String
+            Peer | String
             </td>
             
             
             
             
             
-            <td class="description last">the Peer or its ID</td>
+            <td class="description last">the Peer instance or its NodeId</td>
         </tr>
 	
 	
@@ -690,7 +730,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    the Peer or false if it isn't in the KBucket
+    the Peer  instance or `undefined` if it isn't in the KBucket
 </div>
 
 
@@ -702,7 +742,9 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	</dt>
 	<dd>
 		
-		<span class="param-type">Peer</span> 
+		<span class="param-type">Peer</span> |
+		
+		<span class="param-type">undefined</span> 
 		
 	</dd>
 </dl>
@@ -720,7 +762,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     
     <p class="description">
-        <p>Get all the peers from the KBucket sorted by XOR distance</p>
+        <p>Get all the peers from the KBucket sorted by XOR distance.</p>
     </p>
     
     
@@ -761,7 +803,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             
-            <td class="description last">fixes the number of peers to get</td>
+            <td class="description last">fix the number of peers to get</td>
         </tr>
 	
 	
@@ -779,7 +821,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             
-            <td class="description last">the id or peers to exclude</td>
+            <td class="description last">the NodeIds or Peers to exclude</td>
         </tr>
 	
 	
@@ -848,7 +890,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     
     <p class="description">
-        <p>Get an <code>Object</code> with the <code>min</code> and <code>max</code> values of the KBucket's range</p>
+        <p>Get an <code>Object</code> with the <code>min</code> and <code>max</code> values of the KBucket's range (exprimed as bit position).</p>
     </p>
     
     
@@ -875,7 +917,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 205</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 209</li></ul></dd>
 	
 	
 	
@@ -890,9 +932,9 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     
     <h5>Returns:</h5>
-    
+    <ul><li>
 <div class="param-desc">
-    {min,max}
+    range - range object
 </div>
 
 
@@ -908,7 +950,43 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 		
 	</dd>
 </dl>
+</li><li>
+<div class="param-desc">
+    range.min - minimum bit position
+</div>
 
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">Integer</span> 
+		
+	</dd>
+</dl>
+</li><li>
+<div class="param-desc">
+    renage.max - maximum bit position
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">Integer</span> 
+		
+	</dd>
+</dl>
+</li></ul>
     
     
 
@@ -949,7 +1027,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 196</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 198</li></ul></dd>
 	
 	
 	
@@ -965,6 +1043,10 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     <h5>Returns:</h5>
     
+<div class="param-desc">
+    size of the KBucket
+</div>
+
 
 
 
@@ -984,7 +1066,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 
 </dd>
 <dt>
-    <h4 class="name" id="idInRange"><span class="type-signature"></span>idInRange<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    <h4 class="name" id="idInRange"><span class="type-signature"></span>idInRange<span class="signature">(id)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
     
     
 </dt>
@@ -992,13 +1074,53 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     
     <p class="description">
-        <p>Check wether or not the given ID is in range of the KBucket</p>
+        <p>Check wether or not the given NodeId is in range of the KBucket</p>
     </p>
     
     
     
     
-    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">NodeId to check</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
     
     <dl class="details">
     
@@ -1019,7 +1141,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 178</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 179</li></ul></dd>
 	
 	
 	
@@ -1035,6 +1157,10 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     <h5>Returns:</h5>
     
+<div class="param-desc">
+    true if it is in range.
+</div>
+
 
 
 
@@ -1089,7 +1215,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 294</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 298</li></ul></dd>
 	
 	
 	
@@ -1163,7 +1289,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 285</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 289</li></ul></dd>
 	
 	
 	
@@ -1202,7 +1328,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 
 </dd>
 <dt>
-    <h4 class="name" id="removePeer"><span class="type-signature"></span>removePeer<span class="signature">(peer)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="removePeer"><span class="type-signature"></span>removePeer<span class="signature">(peer)</span><span class="type-signature"> &rarr; {<a href="KBucket.html">KBucket</a>}</span></h4>
     
     
 </dt>
@@ -1251,7 +1377,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             
-            <td class="description last"></td>
+            <td class="description last">Peer instance or peer's NodeId</td>
         </tr>
 	
 	
@@ -1277,7 +1403,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 162</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 163</li></ul></dd>
 	
 	
 	
@@ -1291,6 +1417,26 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     
     
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    self to allow chaining
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">KBucket</span> 
+		
+	</dd>
+</dl>
+
     
     
 
@@ -1304,7 +1450,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     
     <p class="description">
-        <p>Set the range of the KBucket</p>
+        <p>Set the range of the KBucket (exprimed as bit position)</p>
     </p>
     
     
@@ -1345,7 +1491,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             
-            <td class="description last"><h6>Properties</h6>
+            <td class="description last">range object<h6>Properties</h6>
 
 <table class="params">
     <thead>
@@ -1373,14 +1519,14 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             <td class="type">
-            Number
+            Integer
             </td>
             
             
             
             
             
-            <td class="description last">LowLimit of range</td>
+            <td class="description last">minimum bit position</td>
         </tr>
 	
 	
@@ -1391,14 +1537,14 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             <td class="type">
-            Number
+            Integer
             </td>
             
             
             
             
             
-            <td class="description last">HighLimit of range</td>
+            <td class="description last">maximum bit position</td>
         </tr>
 	
 	
@@ -1429,7 +1575,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 220</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 224</li></ul></dd>
 	
 	
 	
@@ -1446,7 +1592,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    self
+    self to allow chaining
 </div>
 
 
@@ -1476,7 +1622,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     
     <p class="description">
-        <p>Set the range max of the KBucket</p>
+        <p>Set the range max of the KBucket (exprimed as bit position)</p>
     </p>
     
     
@@ -1517,7 +1663,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             
-            <td class="description last"></td>
+            <td class="description last">max bit position</td>
         </tr>
 	
 	
@@ -1543,7 +1689,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 243</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 247</li></ul></dd>
 	
 	
 	
@@ -1560,7 +1706,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    self
+    self to allow chaining
 </div>
 
 
@@ -1590,7 +1736,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     
     
     <p class="description">
-        <p>Set the range min of the KBucket</p>
+        <p>Set the range min of the KBucket (exprimed as bit position)</p>
     </p>
     
     
@@ -1631,7 +1777,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
             
             
             
-            <td class="description last"></td>
+            <td class="description last">minimum bit position</td>
         </tr>
 	
 	
@@ -1657,7 +1803,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 232</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 236</li></ul></dd>
 	
 	
 	
@@ -1674,7 +1820,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
     <h5>Returns:</h5>
     
 <div class="param-desc">
-    self
+    self to allow chaining
 </div>
 
 
@@ -1731,7 +1877,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 253</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 257</li></ul></dd>
 	
 	
 	
@@ -1805,7 +1951,7 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 302</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/kbucket.js, line 306</li></ul></dd>
 	
 	
 	
@@ -1857,13 +2003,13 @@ If the given Peer does not exists, <code>false</code> is returned</p>
 </div>
 
 <nav>
-    <h3>Classes</h3><ul><li><a href="AjaxReq.html">AjaxReq</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="KBucket.html">KBucket</a></li><li><a href="RoutingTable.html">RoutingTable</a></li><li><a href="RPCError.html">RPCError</a></li><li><a href="RPCMessage.html">RPCMessage</a></li></ul><h3>Namespaces</h3><ul><li><a href="ajax.html">ajax</a></li><li><a href="jsonrpc2.html">jsonrpc2</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_generateID">_generateID</a></li><li><a href="global.html#_handler">_handler</a></li><li><a href="global.html#_handleResponse">_handleResponse</a></li><li><a href="global.html#_handleRPC">_handleRPC</a></li><li><a href="global.html#_iterativeFind">_iterativeFind</a></li><li><a href="global.html#FIND_NODE">FIND_NODE</a></li><li><a href="global.html#PING">PING</a></li><li><a href="global.html#sendRPC">sendRPC</a></li><li><a href="global.html#sendRPCs">sendRPCs</a></li></ul>
+    <h3>Classes</h3><ul><li><a href="AjaxReq.html">AjaxReq</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="KBucket.html">KBucket</a></li><li><a href="RoutingTable.html">RoutingTable</a></li><li><a href="RPCError.html">RPCError</a></li><li><a href="RPCMessage.html">RPCMessage</a></li></ul><h3>Namespaces</h3><ul><li><a href="ajax.html">ajax</a></li><li><a href="jsonrpc2.html">jsonrpc2</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_handler">_handler</a></li><li><a href="global.html#_handleResponse">_handleResponse</a></li><li><a href="global.html#_handleRPC">_handleRPC</a></li><li><a href="global.html#_iterativeFind">_iterativeFind</a></li><li><a href="global.html#FIND_NODE">FIND_NODE</a></li><li><a href="global.html#PING">PING</a></li><li><a href="global.html#sendRPC">sendRPC</a></li><li><a href="global.html#sendRPCs">sendRPCs</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/micmath/jsdoc">JSDoc 3</a> on Fri Nov 18 2011 22:28:19 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/micmath/jsdoc">JSDoc 3</a> on Sat Nov 19 2011 20:26:45 GMT+0100 (CET)
 </footer>
 
 <script> sh_highlightDocument(); </script>

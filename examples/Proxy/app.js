@@ -17,6 +17,7 @@ function handler (request, response) {
   else {
     filePath = path.join(__dirname, '../..', filePath);
   }
+  
   var extname = path.extname(filePath);
   var contentType = 'text/html';
 
