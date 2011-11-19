@@ -1,0 +1,56 @@
+<html>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="/dist/KadOH.js"></script>
+
+<script type="text/javascript">
+$(function() {
+  var KadOH = window.KadOH;
+  var udp = new window.KadOH.transport.SimUDP('localhost');
+  
+  // Init the node global object
+  function init(ip_port) {
+    var ip_port = ip_port.split(':');
+    
+    node = new KadOH.Node(ip_port[0], ip_port[1]);
+    console.log('ME :' + node.getSocket());
+  }
+  
+  // Join the network using other clients as bootstraps
+  function onClickJoin(event) {
+    var bootstraps = [['router.utorrent.com', 6881]];
+    try {
+      node.join(bootstraps).then(
+        function(response) {
+          console.log('Iterative Find : ', response.map(function(peer) {
+            return peer.getId();
+          }));
+        },
+        function(response) {
+          console.log('UNFINISHED Iterative Find : ', response.map(function(peer) {
+            return peer.getId();
+          }));
+        }
+      );
+    }
+    catch(e) {
+      console.log(e);
+    }
+    event.preventDefault();
+  }
+  
+  // Init the node when receiving our ip and port
+  udp._whoami(init);
+  $('#join').click(onClickJoin);
+});
+</script>
+<body>
+<h2>Send message to node :</h2>
+<form id='form'>
+  <p>
+    <input type="submit" value="Join" name="join" id="join">
+  </p>
+</form>
+<h2>Messages received :</h2>
+<div id='received'></div>
+</body>
+</html>

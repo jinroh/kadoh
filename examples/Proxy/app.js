@@ -1,6 +1,6 @@
 var app = require('http').createServer(handler)
    , fs  = require('fs')
-   , router = require('../../lib/server/router').listen(app)
+   , proxy = require('../../lib/server/udpproxy').listen(app)
    , path = require('path');
 
 app.listen(8080, function() {
@@ -45,9 +45,3 @@ function handler (request, response) {
    }
  });
 }
-
-router.on("listupdate", function() {
-  var list = router.getClients();
-  router._sockets.emit("clients-up", list);
-});
-
