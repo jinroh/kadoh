@@ -38,10 +38,9 @@
         return id;
       }
       
-      var KadOH = (typeof require === 'function') ? require('../dist/KadOH.node.js') : self.KadOH;
-
       var bytes = KadOH.util.Crypto.hexToBytes(id);
-      var index = Math.floor((distance-1)/8);
+
+      var index = Math.floor(bytes.length - distance/8);
       var shift = 7 - ((distance-1) % 8);
       
       bytes[index] = bytes[index] ^ (0xFF>>>shift);
