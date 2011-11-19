@@ -17,12 +17,12 @@ $(function() {
   
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
-    var bootstraps = [['router.utorrent.com', 6881]];
+    var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
     try {
       node.join(bootstraps).then(
         function(response) {
           console.log('Iterative Find : ', response.map(function(peer) {
-            return peer.getId();
+            return node._routing_table.distance(peer.getId());
           }));
         },
         function(response) {
