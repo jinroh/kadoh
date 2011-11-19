@@ -2,6 +2,8 @@ describe('Peer', function() {
   beforeEach(function() {
     Peer = KadOH.Peer;
     SHA1 = KadOH.globals._digest;
+    ip = '234.5.78.4';
+    port = 1234;
   });
   
   it('should be a function', function() {
@@ -9,10 +11,6 @@ describe('Peer', function() {
   });
   
   describe('When I instantiate a new Peer', function() {
-    
-    var ip = '234.5.78.4';
-    var port = 1234;
-    var peer;
     
     beforeEach(function() {
       peer = new Peer(ip, port);
@@ -24,6 +22,7 @@ describe('Peer', function() {
     });
 
     it('should get a socket which is the ip:port string', function() {
+      console.log(peer.getSocket());
       expect(peer.getSocket()).toEqual(ip + ':' + port);
     });
 
@@ -34,10 +33,10 @@ describe('Peer', function() {
   });
   
   it('should be possible to instanciate a peer using a triple', function() {
-    var peer = new Peer(['127.0.0.1', 1234]);
+    var peer1 = new Peer(['127.0.0.1', 1234]);
     
-    expect(peer.getSocket()).toEqual('127.0.0.1:1234');
-    expect(peer.getId()).toEqual(SHA1('127.0.0.1:1234'));
+    expect(peer1.getSocket()).toEqual('127.0.0.1:1234');
+    expect(peer1.getId()).toEqual(SHA1('127.0.0.1:1234'));
   });
   
   it('should be possible to test their equality', function() {
