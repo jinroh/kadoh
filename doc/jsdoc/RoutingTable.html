@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>JSDoc: Class: RoutingTable</title>
+	
+	<script src="http://shjs.sourceforge.net/sh_main.min.js"> </script>
+    <script src="http://shjs.sourceforge.net/lang/sh_javascript.min.js"> </script>
+    
+    <link type="text/css" rel="stylesheet" href="styles/node-dark.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Class: RoutingTable</h1>
+    
+    
+    
+    <section>
+     
+    <header>
+        <h2>RoutingTable</h2>
+        <p class="class-description">Represents the routing table of a Node.</p>
+    </header>  
+    
+    <article>
+        <div class="container-overview">
+        <dt>
+    <h4 class="name" id="RoutingTable"><span class="type-signature"></span>new RoutingTable<span class="signature">(node)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Construct an instance of a <a href="RoutingTable.html">RoutingTable</a> associated to the instance of Node passed as parameter.</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+            
+            <td class="type">
+            Node
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Associated node.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 22</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+
+</dd>
+
+        </div>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+            
+            <h3 class="subsection-title">Methods</h3>
+            
+            <dl><dt>
+    <h4 class="name" id="addPeer"><span class="type-signature"></span>addPeer<span class="signature">(peer)</span><span class="type-signature"> &rarr; {Void}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Add a peer to the routing table or update it if its already in.</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>peer</code></td>
+            
+            
+            <td class="type">
+            Peer
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">object to add</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 53</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">Void</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="distance"><span class="type-signature"></span>distance<span class="signature">(key)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Calculates the distance from 0 to B-1 between the parent <code>id</code> and the given <code>key</code>.
+These keys are SHA1 hashes as hexadecimal <code>String</code></p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>key</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last"></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 42</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+<div class="param-desc">
+    distance between the two keys
+</div>
+
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+		<span class="param-type">String</span> 
+		
+	</dd>
+</dl>
+
+    
+    
+
+</dd>
+<dt>
+    <h4 class="name" id="getClosePeers"><span class="type-signature"></span>getClosePeers<span class="signature">(id, number, exclude)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <p class="description">
+        <p>Get the <code>number</code> closest peers from a given <code>id</code>
+but ignore the specified ones in an Array</p>
+    </p>
+    
+    
+    
+    
+    <h5>Parameters:</h5>
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            String
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last"></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>number</code></td>
+            
+            
+            <td class="type">
+            Number
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The number of peers you want</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>exclude</code></td>
+            
+            
+            <td class="type">
+            String[] | Peer[]
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The list of ids or peers to exclude</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    <dl class="details">
+    
+        
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>/Users/alex/Taf/3AEurecom/SemesterProject/kadoh/lib/client/routingtable.js, line 106</li></ul></dd>
+	
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+
+</dd>
+</dl>
+            
+        
+        
+        
+        
+        
+    </article>
+    
+    </section>  
+    
+</div>
+
+<nav>
+    <h3>Classes</h3><ul><li><a href="AjaxReq.html">AjaxReq</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="KBucket.html">KBucket</a></li><li><a href="RoutingTable.html">RoutingTable</a></li><li><a href="RPCError.html">RPCError</a></li><li><a href="RPCMessage.html">RPCMessage</a></li></ul><h3>Namespaces</h3><ul><li><a href="ajax.html">ajax</a></li><li><a href="jsonrpc2.html">jsonrpc2</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_generateID">_generateID</a></li><li><a href="global.html#_handler">_handler</a></li><li><a href="global.html#_handleResponse">_handleResponse</a></li><li><a href="global.html#_handleRPC">_handleRPC</a></li><li><a href="global.html#_iterativeFind">_iterativeFind</a></li><li><a href="global.html#FIND_NODE">FIND_NODE</a></li><li><a href="global.html#PING">PING</a></li><li><a href="global.html#sendRPC">sendRPC</a></li><li><a href="global.html#sendRPCs">sendRPCs</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/micmath/jsdoc">JSDoc 3</a> on Fri Nov 18 2011 22:28:19 GMT+0100 (CET)
+</footer>
+
+<script> sh_highlightDocument(); </script>
+</body>
+</html>
