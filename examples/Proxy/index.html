@@ -13,17 +13,17 @@ $(function() {
     
     node = new KadOH.Node(ip_port[0], ip_port[1]);
     console.log('ME :', node.getSocket());
-    console.log(KadOH.globals._digest(node.getSocket()));
+    console.log(node.getId());
   }
   
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
-    var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
     try {
+      var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
       node.join(bootstraps).then(
         function(response) {
           console.log(response.map(function(peer) {
-            return peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
+            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
           }));
         }
       );
@@ -39,8 +39,28 @@ $(function() {
       node.iterativeFindNode(node.getId()).then(
         function(response) {
           console.log(response.map(function(peer) {
-            return peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
+            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
           }));
+        }
+      );
+    }
+    catch(e) {
+      console.error(e);
+    }
+    event.preventDefault();
+  }
+
+  function onClickFind(event) {
+    try {
+      var key = $('#key').val().toString();
+      var dst = new Peer($('#dst').val().toString());
+      node.reactor().FIND_NODE(dst, key).then(
+        function(result) {
+          node._routing_table.addPeers(result);
+          console.log(result);
+        },
+        function(result) {
+          console.log("impossible to finish");
         }
       );
     }
@@ -54,6 +74,7 @@ $(function() {
   udp._whoami(init);
   $('#join').click(onClickJoin);
   $('#lookup').click(onClickLookup);
+  $('#find').click(onClickFind);
 });
 </script>
 <body>
@@ -64,6 +85,11 @@ $(function() {
   </p>
   <p>
     <input type="submit" value="Iterative Lookup" name="lookup" id="lookup">
+  </p>
+  <p>
+    <input type="text" value="" id="dst">
+    <input type="text" value="" id="key">
+    <input type="submit" value="FIND_NODE" name="find" id="find">
   </p>
 </form>
 <h2>Messages received :</h2>
