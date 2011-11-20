@@ -5,7 +5,7 @@ describe('RPC', function() {
     SHA = KadOH.globals._digest;
     jsonrpc = KadOH.protocol.jsonrpc2;
     
-    peer = '127.0.0.1:321';
+    peer = new Peer(['127.0.0.1', 321]);
     request = jsonrpc.buildRequest('foo', 'bar');
   });
   
