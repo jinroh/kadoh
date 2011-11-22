@@ -107,12 +107,12 @@ app.post('/bot', function(req, res) {
     var bot = registerBot(type, ip_port);
     res.json(bot); 
   } catch(e) {
-    console.log(e);
+    console.log('[BotServer] ', e);
     res.send(500);
   }
 });
 
 if(!module.parent) {
   app.listen(3000);
-  console.log('Bot server running on http://localhost:3000');
+  console.log('[BotServer] running on http://localhost:3000');
 }
