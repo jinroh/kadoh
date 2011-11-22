@@ -22,7 +22,6 @@ describe('Peer', function() {
     });
 
     it('should get a socket which is the ip:port string', function() {
-      console.log(peer.getSocket());
       expect(peer.getSocket()).toEqual(ip + ':' + port);
     });
 
