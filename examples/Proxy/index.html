@@ -53,6 +53,7 @@ $(function() {
   
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
+    try {
       var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
       var it = node.join(bootstraps)
       it.then(
@@ -60,7 +61,8 @@ $(function() {
           console.log(response.map(function(peer) {
             return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
           }));
-        });
+        }
+      );
 
       var recorder = new iterFindRecorder(it, '#iterative');
 
@@ -79,6 +81,10 @@ $(function() {
       //     });
       //   console.log('newHeardOf : '+p.join(' '));
       // });
+    }
+    catch(e) {
+      console.error(e.stack);
+    }
     event.preventDefault();
   }
   
