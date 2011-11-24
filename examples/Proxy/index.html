@@ -175,6 +175,10 @@ iterFindRecorder.prototype =  {
     state.state = iterfind.state;
 
     var prev_state = (this.states.length !== 0) ? this.states[state.index-1] : undefined;
+
+    state.time = +(new Date());
+    state.cumulTime = (prev_state) ? prev_state.cumulTime + state.time - prev_state.time : 0;
+
     state.HeardOf = iterfind.HeardOf.clone();
 
     state.totalHeardOf = iterfind.HeardOf.length();
@@ -218,6 +222,7 @@ iterFindRecorder.prototype =  {
             .append('<h4>Summarry</h4>')
             .append('<ul>')
             .append('<li><b>Etap : </b>'+state.index+'/'+(self.states.length-1)+'</li>')
+            .append('<li><b>Time : </b>'+state.cumulTime+'</li>')
             .append('<li><b>Target id : </b>'+hash+'</li>')
             .append('<li><b>State : </b>'+state.state+'</li>')
             .append('<li><b>Total Reached : </b>'+state.totalReached+'</li>')
