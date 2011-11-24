@@ -40,7 +40,7 @@ tr.trap {
 <script type="text/javascript">
 $(function() {
   var KadOH = window.KadOH;
-  var udp = new window.KadOH.transport.SimUDP('localhost');
+  var udp = new window.KadOH.transport.SimUDP();
   
   // Init the node global object
   function init(ip_port) {
@@ -133,18 +133,21 @@ function iterFindRecorder(iterfind, where) {
   this.iterfind = iterfind;
   this.targetId = iterfind._targetId;
   var self =this;
+  var index = 0;
 
   this.iterfind.on('progress', function() {self.shootState()});
-  this.iterfind.on('resolve', function() {self.shootState()});
+  this.iterfind.on('resolve', function() {
+    self.shootState();
+    index = self.states.length -1;
+    self.representState(index, where+' .content');
+
+  });
 
   $(where).append('<h3>IterativeFind inspector</h3>')
           .append('<input type="submit" value="Prev" class="prev">')
           .append('<input type="submit" value="Next" class="next">')
-          .append('<div class="content"></div>');
+          .append('<div class="content">Wait..</div>');
 
-  var index = 0;
-  var self = this;
-  console.log($(where+' .next'));
   $(where+' .next').click(function(e){
     if(index!==self.states.length -1) {
       index ++;
