@@ -53,7 +53,6 @@ $(function() {
   
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
-    try {
       var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
       var it = node.join(bootstraps)
       it.then(
@@ -80,10 +79,6 @@ $(function() {
       //     });
       //   console.log('newHeardOf : '+p.join(' '));
       // });
-    }
-    catch(e) {
-      console.error(e);
-    }
     event.preventDefault();
   }
   
@@ -179,8 +174,7 @@ iterFindRecorder.prototype =  {
     state.totalNotReached = iterfind.NotReached.length();
     state.totalTrap = iterfind.Trap.length();
 
-    state.shot = state.HeardOf
-                      .clone()
+    state.shot = state.HeardOf.getRawArray()
                       .map(function(peer) {
       var peerRecord = {};
       peerRecord.socket = peer.getSocket();
