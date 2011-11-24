@@ -1,4 +1,4 @@
-describe('SimUDP with Bot', function() {
+xdescribe('SimUDP with Bot', function() {
 	beforeEach(function() {
     for_node_server = (typeof exports !== 'undefined') ? 'http://localhost:3000' : '';
 
