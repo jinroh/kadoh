@@ -1,18 +1,18 @@
 (function() {
-  beforeEach(function () {
+  beforeEach(function() {
     KadOH = (typeof require === 'function') ? require('../dist/KadOH.node.js') : KadOH;
     
     this.addMatchers({
-      toBeObject: function () {
+      toBeObject: function() {
         return typeof(this.actual) === 'object';
       },
-      toBeString: function () {
+      toBeString: function() {
         return typeof(this.actual) === 'string';
       },
-      toBeNumber: function () {
+      toBeNumber: function() {
         return typeof(this.actual) === 'number';
       },
-      toBeFunction: function () {
+      toBeFunction: function() {
         return typeof(this.actual) === 'function';
       },
       toBeArray: function() {
@@ -22,11 +22,33 @@
           return Object.prototype.toString.call(this.actual) === '[object Array]';
         }
       },
-      toBeUnique: function () {
+      toBeUnique: function() {
         return this.actual.length === undefined || this.actual.length === 1;
       },
       toBeDefined: function() {
         return typeof(this.actual) !== 'undefined';
+      },
+      toBeAscSorted: function() {
+        var compare = function(a, b) {
+          return a - b;
+        }
+
+        for (var i=0, l=this.actual.length; i < l-1; i++) {
+          if (compare(this.actual[i], this.actual[i+1]) >= 0)
+            return false;
+        }
+        return true;
+      },
+      toBeDescSorted: function() {
+        var compare = function(a, b) {
+          return a - b;
+        }
+
+        for (var i=0, l=this.actual.length; i < l-1; i++) {
+          if (compare(this.actual[i], this.actual[i+1]) <= 0)
+            return false;
+        }
+        return true;
       }
     });
   });

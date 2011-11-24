@@ -1,8 +1,8 @@
 describe('Crypto', function() {
-  
+
   beforeEach(function() {
     Crypto = KadOH.util.Crypto;
-    
+
     SHA1 = Crypto.digest.SHA1;
   });
   

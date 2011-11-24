@@ -1,4 +1,4 @@
-describe('Ajax and Botserver', function() {
+xdescribe('Ajax and Botserver', function() {
 
   beforeEach(function() {
     ajax = KadOH.util.ajax;
