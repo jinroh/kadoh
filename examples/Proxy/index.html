@@ -2,7 +2,9 @@
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <script type="text/javascript" src="/dist/KadOH.js"></script>
 <style type="text/css">
-
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
 table {
  border-width:1px; 
  border-style:solid; 
@@ -59,7 +61,7 @@ $(function() {
       it.then(
         function(response) {
           console.log(response.map(function(peer) {
-            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
+            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routingTable.distance(peer.getId());
           }));
         }
       );
@@ -68,7 +70,7 @@ $(function() {
 
       // it.on('Reached', function(fromPeer, response) {
       //   var response = response.map(function(peer) {
-      //       return peer.getSocket() +'('+ node._routing_table.distance(peer.getId())+')';
+      //       return peer.getSocket() +'('+ node._routingTable.distance(peer.getId())+')';
       //     });
       //   console.log('Reached : '+fromPeer.getSocket()+'('+fromPeer._distance+') and return : '+response.join(' '));
       // });
@@ -77,7 +79,7 @@ $(function() {
       // });
       // it.on('newHeardOf', function(p) {
       //   var p = p.map(function(peer) {
-      //       return peer.getSocket() +'(' +node._routing_table.distance(peer.getId())+')';
+      //       return peer.getSocket() +'(' +node._routingTable.distance(peer.getId())+')';
       //     });
       //   console.log('newHeardOf : '+p.join(' '));
       // });
@@ -93,7 +95,7 @@ $(function() {
       node.iterativeFindNode(node.getId()).then(
         function(response) {
           console.log(response.map(function(peer) {
-            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
+            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routingTable.distance(peer.getId());
           }));
         }
       );
@@ -110,7 +112,7 @@ $(function() {
       var dst = new Peer($('#dst').val().toString());
       node.reactor().FIND_NODE(dst, key).then(
         function(result) {
-          node._routing_table.addPeers(result);
+          node._routingTable.addPeers(result);
           console.log(result);
         },
         function(result) {
