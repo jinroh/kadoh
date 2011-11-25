@@ -45,57 +45,31 @@ namespace('test', function() {
   desc('Testing in node');
   task('node', ['default'], function() {
     Build(DIST_DIR + 'KadOH.node.js', false, {exclude : NODE_BUILD_EXCLUDE});
+    var jasmine = PROC.spawn('jasmine-node', ['spec']);
 
-    var bot_server = require('./bots/bot-server.js');
-    var SimUDP = require('./lib/server/router.js').listen(bot_server);
-    bot_server.listen(3000);
+    jasmine.stdout.on('data', function (data) {
+      process.stdout.write(String(data));
+    });
 
-    var ReplyBot = require('./bots/reply-bot.js');
-    var reply_bot = new ReplyBot('reply_bot');
-    reply_bot.run();
+    jasmine.stderr.on('data', function (data) {
+      process.stderr.write(data);
+    });
 
-    setTimeout(function() {
-      var jasmine = PROC.spawn('jasmine-node', ['spec']);
-
-      jasmine.stdout.on('data', function (data) {
-        process.stdout.write(String(data));
-      });
-
-      jasmine.stderr.on('data', function (data) {
-        process.stderr.write(data);
-      });
-
-      jasmine.on('exit', function (code) {
-        console.warn('Jasmine-node exited with code ' + code);
-      });
-
-    }, 1000);
+    jasmine.on('exit', function (code) {
+      console.warn('Jasmine-node exited with code ' + code);
+    });
   }, true);
 
   desc('Testing in the browser');
   task('browser', ['default'], function() {
     Build(SPEC_DIST + 'KadOH.js', false);
 
-    var bot_app = require('./bots/bot-server.js');
-    var SimUDP = require('./lib/server/router.js');
-
-    //bot_app.listen(8124);
     var jasmine = require('jasmine-runner');
-
     jasmine.run({
       command : 'mon' ,
       cwd     : __dirname ,
       args    : [],
-      server  : bot_app,
-      provided_io : SimUDP
     });
-
-    //Start bot :
-    setTimeout(function() {
-      var ReplyBot = require('./bots/reply-bot.js');
-      var reply_bot = new ReplyBot('reply_bot', 'http://localhost:8124');
-      reply_bot.run();
-    }, 200);
   });
 });
 

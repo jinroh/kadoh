@@ -41,50 +41,13 @@ tr.trap {
 </style>
 <script type="text/javascript">
 $(function() {
-  var KadOH = window.KadOH;
-  var udp = new window.KadOH.transport.SimUDP();
-  
-  // Init the node global object
-  function init(ip_port) {
-    var ip_port = ip_port.split(':');
-    
-    node = new KadOH.Node(ip_port[0], ip_port[1]);
-    console.log('ME :', node.getSocket());
-    console.log(node.getId());
-  }
   
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
     try {
       var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
-      var it = node.join(bootstraps)
-      it.then(
-        function(response) {
-          console.log(response.map(function(peer) {
-            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routingTable.distance(peer.getId());
-          }));
-        }
-      );
-
-      var recorder = new iterFindRecorder(it, '#iterative');
-
-      // it.on('Reached', function(fromPeer, response) {
-      //   var response = response.map(function(peer) {
-      //       return peer.getSocket() +'('+ node._routingTable.distance(peer.getId())+')';
-      //     });
-      //   console.log('Reached : '+fromPeer.getSocket()+'('+fromPeer._distance+') and return : '+response.join(' '));
-      // });
-      // it.on('NotReached', function(fromPeer) {
-      //   console.log('NotReached :'+fromPeer.getSocket());
-      // });
-      // it.on('newHeardOf', function(p) {
-      //   var p = p.map(function(peer) {
-      //       return peer.getSocket() +'(' +node._routingTable.distance(peer.getId())+')';
-      //     });
-      //   console.log('newHeardOf : '+p.join(' '));
-      // });
-    }
-    catch(e) {
+      node.join(bootstraps);
+    } catch(e) {
       console.error(e.stack);
     }
     event.preventDefault();
@@ -101,7 +64,7 @@ $(function() {
       );
     }
     catch(e) {
-      console.error(e);
+      console.log(e);
     }
     event.preventDefault();
   }
@@ -121,7 +84,7 @@ $(function() {
       );
     }
     catch(e) {
-      console.error(e);
+      console.error(e.stack);
     }
     event.preventDefault();
   }
@@ -143,7 +106,11 @@ function iterFindRecorder(iterfind, where) {
     self.shootState();
     index = self.states.length -1;
     self.representState(index, where+' .content');
-
+  });
+  this.iterfind.on('reject', function() {
+    self.shootState();
+    index = self.states.length -1;
+    self.representState(index, where+' .content');
   });
 
   $(where).append('<h3>IterativeFind inspector</h3>')
@@ -170,6 +137,7 @@ function iterFindRecorder(iterfind, where) {
 
 iterFindRecorder.prototype =  {
   shootState : function() {
+    var self = this;
     var iterfind = this.iterfind;
     var state = {};
 
@@ -194,7 +162,7 @@ iterFindRecorder.prototype =  {
       var peerRecord = {};
       peerRecord.socket = peer.getSocket();
       peerRecord.id = peer.getID();
-      peerRecord.distance = peer._distance;
+      peerRecord.distance = peer.getDistanceTo(self.targetId);
 
       peerRecord.new = (!prev_state) ? true : (! prev_state.HeardOf.contains(peer));
       peerRecord.queried = iterfind.Queried.contains(peer);
@@ -272,11 +240,54 @@ iterFindRecorder.prototype =  {
 
 
 
-  // Init the node when receiving our ip and port
-  udp._whoami(init);
   $('#join').click(onClickJoin);
   $('#lookup').click(onClickLookup);
   $('#find').click(onClickFind);
+
+  var options = {
+    reactor : {
+      transport : {
+        transports : [
+                      //'websocket', 
+                      'flashsocket', 
+                      'htmlfile', 
+                      'xhr-multipart', 
+                      'xhr-polling', 
+                      'jsonp-polling'
+                      ]
+      }
+    }
+  }
+
+  node = new KadOH.Node(undefined, options);
+
+  node._reactor.on('transport connect', function(iam) {
+    $('#info').append('<h3>Node info<h3>')
+              .append('<ul>')
+              .append('<li><b>My Address : </b>'+iam+'</li>')
+              .append('<li><b>My id : </b>'+shortSha(node.getId())+'</li>')
+              .append('</ul>');
+  })
+
+  node.on('iterativeFind start', function(it) {
+    var recorder = new iterFindRecorder(it, '#iterative');
+
+      // it.on('Reached', function(fromPeer, response) {
+      //   var response = response.map(function(peer) {
+      //       return peer.getSocket() +'('+ node._routing_table.distance(peer.getId())+')';
+      //     });
+      //   console.log('Reached : '+fromPeer.getSocket()+'('+fromPeer._distance+') and return : '+response.join(' '));
+      // });
+      // it.on('NotReached', function(fromPeer) {
+      //   console.log('NotReached :'+fromPeer.getSocket());
+      // });
+      // it.on('newHeardOf', function(p) {
+      //   var p = p.map(function(peer) {
+      //       return peer.getSocket() +'(' +node._routing_table.distance(peer.getId())+')';
+      //     });
+      //   console.log('newHeardOf : '+p.join(' '));
+      // });
+  });
 });
 </script>
 <body>
@@ -294,6 +305,7 @@ iterFindRecorder.prototype =  {
     <input type="submit" value="FIND_NODE" name="find" id="find">
   </p>
 </form>
+<div id='info'></div>
 <div id='iterative'></div>
 </body>
 </html>

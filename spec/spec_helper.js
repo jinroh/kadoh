@@ -34,7 +34,7 @@
         }
 
         for (var i=0, l=this.actual.length; i < l-1; i++) {
-          if (compare(this.actual[i], this.actual[i+1]) >= 0)
+          if (compare(this.actual[i], this.actual[i+1]) > 0)
             return false;
         }
         return true;
@@ -45,7 +45,7 @@
         }
 
         for (var i=0, l=this.actual.length; i < l-1; i++) {
-          if (compare(this.actual[i], this.actual[i+1]) <= 0)
+          if (compare(this.actual[i], this.actual[i+1]) < 0)
             return false;
         }
         return true;

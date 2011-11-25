@@ -22,18 +22,18 @@ describe('KBucket', function() {
     });
     
     it('should be empty, from 1 to _B with the right parent id', function() {
-      expect(kbucket.getSize()).toEqual(0);
+      expect(kbucket.length()).toEqual(0);
       
       expect(kbucket.getRange().min).toEqual(0);
       expect(KadOH.globals._B).toEqual(kbucket.getRange().max);
       
-      expect(kbucket._parent_id).toEqual(parent_id);
+      expect(kbucket._parentID).toEqual(parent_id);
     });
     
     it('should have a new peer when i add one', function() {
       kbucket.addPeer(new Peer('127.0.0.1', 1234));
       
-      expect(kbucket.getSize()).toEqual(1);
+      expect(kbucket.length()).toEqual(1);
     });
     
     it('should be empty when i add and remove a peer', function() {
@@ -41,11 +41,7 @@ describe('KBucket', function() {
       kbucket.addPeer(peer);
       kbucket.removePeer(peer);
       
-      expect(kbucket.getSize()).toEqual(0);
-    });
-    
-    it('should throw an error when removing a non existing peer', function() {
-      expect(function() { kbucket.removePeer(SHA1('foo')); }).toThrow();
+      expect(kbucket.length()).toEqual(0);
     });
     
     it('should update a peer if i add an already existing one', function() {
@@ -60,14 +56,22 @@ describe('KBucket', function() {
       expect(kbucket.getNewestPeer()).toBe(peer1);
     });
     
-    it('should be able to give me the closest peer from a given ID', function() {
-      var peer1 = new Peer('foo', 123, Factory.distance(parent_id, 5));
-      var peer2 = new Peer('bar', 123, Factory.distance(parent_id, 150));
-      
-      kbucket.addPeer(peer1);
-      kbucket.addPeer(peer2);
-      
-      expect(kbucket.getClosestPeer(parent_id)).toBe(peer1);
+    it('should be possible to retrieve a certain number of peers from it', function() {
+      for (var i=0; i < KadOH.globals._k; i++) {
+        kbucket.addPeer(new Peer('127.0.0.1', 1025+i));
+      }
+      expect(kbucket.getPeers(KadOH.globals._k - 1).length()).toEqual(KadOH.globals._k - 1);
+      expect(kbucket.getPeers(KadOH.globals._k).getRawArray().map(function(peer) {
+        return peer.getTriple()[1];
+      })).toBeDescSorted();
+    });
+
+    it('should exclude certain peers', function() {
+      for (var i=0; i < KadOH.globals._k; i++) {
+        kbucket.addPeer(new Peer('127.0.0.1', 1025+i));
+      }
+      var exclude = [new Peer('127.0.0.1', 1026)];
+      expect(kbucket.getPeers(kbucket.length(), exclude).contains(exclude)).toBeFalsy();
     });
     
   });

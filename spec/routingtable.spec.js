@@ -29,15 +29,16 @@ describe('Routing Table', function() {
     });
     
     it('should be possible to add a new peer and to retrieve it', function() {
-      routing_table.addPeer(new Peer('127.0.0.1', 54321));
+      var peer = new Peer('127.0.0.1', 54321);
+      routing_table.addPeer(peer);
       
-      expect(routing_table.getKBuckets()[0].getSize()).toEqual(1);
+      expect(routing_table.getKBuckets()[0].length()).toEqual(1);
       
       expect(function() {
-        routing_table.getPeer(SHA1('127.0.0.1:54321'));
+        routing_table.getPeer(peer);
       }).not.toThrow();
       
-      expect(routing_table.getPeer(SHA1('127.0.0.1:54321')).getId()).toEqual(SHA1('127.0.0.1:54321'));
+      expect(routing_table.getPeer(peer).getId()).toEqual(SHA1('127.0.0.1:54321'));
     });
     
   });
