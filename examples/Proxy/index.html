@@ -2,7 +2,9 @@
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <script type="text/javascript" src="/dist/KadOH.js"></script>
 <style type="text/css">
-
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
 table {
  border-width:1px; 
  border-style:solid; 
@@ -44,10 +46,9 @@ $(function() {
   function onClickJoin(event) {
     try {
       var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
-      //debugger;
       node.join(bootstraps);
-    }catch(e) {
-      console.error(e);
+    } catch(e) {
+      console.error(e.stack);
     }
     event.preventDefault();
   }
@@ -57,13 +58,13 @@ $(function() {
       node.iterativeFindNode(node.getId()).then(
         function(response) {
           console.log(response.map(function(peer) {
-            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routing_table.distance(peer.getId());
+            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routingTable.distance(peer.getId());
           }));
         }
       );
     }
     catch(e) {
-      console.error(e);
+      console.log(e);
     }
     event.preventDefault();
   }
@@ -74,7 +75,7 @@ $(function() {
       var dst = new Peer($('#dst').val().toString());
       node.reactor().FIND_NODE(dst, key).then(
         function(result) {
-          node._routing_table.addPeers(result);
+          node._routingTable.addPeers(result);
           console.log(result);
         },
         function(result) {
@@ -83,7 +84,7 @@ $(function() {
       );
     }
     catch(e) {
-      console.error(e);
+      console.error(e.stack);
     }
     event.preventDefault();
   }
