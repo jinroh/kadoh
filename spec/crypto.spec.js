@@ -88,8 +88,8 @@ describe('Crypto', function() {
     });
 
     // 'and ask the distance between two different length objects': {
-    it('should return -1 when I give two different sized objects', function() {
-      expect(distance([123,45,67], [34,67,45,90])).toEqual(-1);
+    it('should throw when I give two different sized objects', function() {
+      expect(function() { distance([123,45,67], [34,67,45,90]); }).toThrow();
     });
     
     it('should return positive number', function() {
