@@ -12,16 +12,18 @@ One of our challenge is to design a mean to enable a communicaton as direct as p
 
 ## Install
 
-To run KadOH you need __[node.js]__ and __[npm]__ \(node's packet manager\) to be installed.
+To run KadOH you need __[node.js]__ (v0.4.12) and __[npm]__ \(node's packet manager\) to be installed.
 
 ### Clone the repository
-
-    $ git clone https://github.com/jinroh/kadoh.git
+```bash
+$ git clone https://github.com/jinroh/kadoh.git
+```
     
 ### Install dependencies
-
-    $ cd kadoh
-    $ npm install
+```bash
+$ cd kadoh
+$ npm install .
+```
     
 ### Build the source tree
 
@@ -32,8 +34,7 @@ To build the source you can use either `jake build` or `jake build:normal`. This
 
 We use [jasmine-node] and [jasmine-runner] for our testing on `node` and directly in the browser.
 
-You can launch the test using the jake task `jake test` or `jake test:browser` which launch a HTTP server on `localhost:8124`.
-
+You can launch the test using the jake task `jake test:node` or `jake test:browser` which launch a HTTP server on `localhost:8124`.
 
 
 [node.js]:https://github.com/joyent/node
