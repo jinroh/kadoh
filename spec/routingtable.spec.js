@@ -29,7 +29,7 @@ describe('Routing Table', function() {
     });
     
     it('should be possible to add a new peer and to retrieve it', function() {
-      var peer = new Peer('127.0.0.1', 54321);
+      var peer = new Peer('127.0.0.1:54321');
       routing_table.addPeer(peer);
       
       expect(routing_table.getKBuckets()[0].length()).toEqual(1);
@@ -47,7 +47,7 @@ describe('Routing Table', function() {
     
     it('should split when entering random peers', function() {
        for (var i = 0; i < KadOH.globals._k; i++) {
-        routing_table.addPeer(new Peer('127.0.0.1', (1025 + i)));
+        routing_table.addPeer(new Peer('127.0.0.1:' + (1025 + i)));
       }
       
       expect(routing_table.howManyKBuckets()).toEqual(2);
