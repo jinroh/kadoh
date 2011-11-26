@@ -2,7 +2,7 @@ describe('PeerArray', function() {
   beforeEach(function() {
     PeerArray = KadOH.PeerArray;
     Peer = KadOH.Peer;
-    SHA1 = KadOH.globals._digest;
+    SHA1 = KadOH.globals.DIGEST;
     ip = '234.5.78.4';
     port = 1234;
     socket = ip + ':' + port;
@@ -86,6 +86,7 @@ describe('PeerArray', function() {
       expect(arr.contains(new Peer(ip + ':' + (port+3)))).toBeFalsy();
     });
   });
+
 });
 
 describe('SortedPeerArray', function() {
@@ -93,7 +94,7 @@ describe('SortedPeerArray', function() {
   beforeEach(function() {
     PeerArray = KadOH.XORSortedPeerArray;
     Peer = KadOH.Peer;
-    SHA1 = KadOH.globals._digest;
+    SHA1 = KadOH.globals.DIGEST;
     ip = '234.5.78.4';
     port = 1234;
     socket = ip + ':' + port;
@@ -187,8 +188,8 @@ describe('SortedPeerArray', function() {
 
     it('should be a sorted array', function() {
       var peers = [];
-      for (var i = 0; i < KadOH.globals._B * 2; i++) {
-        peers.push(new Peer(ip + ':' + port, Factory.distance(id, Math.floor(Math.random() * KadOH.globals._B))));
+      for (var i = 0; i < KadOH.globals.B * 2; i++) {
+        peers.push(new Peer(ip + ':' + port, Factory.distance(id, Math.floor(Math.random() * KadOH.globals.B))));
       }
       spa.add(peers);
       distance_array = spa.getRawArray().map(function(peer) {

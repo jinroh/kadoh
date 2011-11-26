@@ -3,11 +3,11 @@ describe('KBucket', function() {
   beforeEach(function() {
     KBucket = KadOH.KBucket;
     
-    SHA1 = KadOH.globals._digest;
+    SHA1 = KadOH.globals.DIGEST;
     Peer = KadOH.Peer;
     
     min = 0;
-    max = KadOH.globals._B;
+    max = KadOH.globals.B;
 
     parent_id = SHA1('ip:port');
   });
@@ -25,7 +25,7 @@ describe('KBucket', function() {
       expect(kbucket.length()).toEqual(0);
       
       expect(kbucket.getRange().min).toEqual(0);
-      expect(KadOH.globals._B).toEqual(kbucket.getRange().max);
+      expect(KadOH.globals.B).toEqual(kbucket.getRange().max);
       
       expect(kbucket._parentID).toEqual(parent_id);
     });
@@ -57,17 +57,17 @@ describe('KBucket', function() {
     });
     
     it('should be possible to retrieve a certain number of peers from it', function() {
-      for (var i=0; i < KadOH.globals._k; i++) {
+      for (var i=0; i < KadOH.globals.K; i++) {
         kbucket.addPeer(new Peer('127.0.0.1:' + 1025+i));
       }
-      expect(kbucket.getPeers(KadOH.globals._k - 1).length()).toEqual(KadOH.globals._k - 1);
-      expect(kbucket.getPeers(KadOH.globals._k).getRawArray().map(function(peer) {
+      expect(kbucket.getPeers(KadOH.globals.K - 1).length()).toEqual(KadOH.globals.K - 1);
+      expect(kbucket.getPeers(KadOH.globals.K).getRawArray().map(function(peer) {
         return peer.getAddress().split(':')[1];
       })).toBeDescSorted();
     });
 
     it('should exclude certain peers', function() {
-      for (var i=0; i < KadOH.globals._k; i++) {
+      for (var i=0; i < KadOH.globals.K; i++) {
         kbucket.addPeer(new Peer('127.0.0.1:' + 1025+i));
       }
       var exclude = [new Peer('127.0.0.1:' + 1026)];
@@ -80,7 +80,7 @@ describe('KBucket', function() {
     
     beforeEach(function() {
       kbucket = new KBucket(parent_id, min, max);
-      for (var i=0; i < KadOH.globals._k; i++) {
+      for (var i=0; i < KadOH.globals.K; i++) {
         kbucket.addPeer(new Peer('127.0.0.1:' + 1025+i));
       }
     });

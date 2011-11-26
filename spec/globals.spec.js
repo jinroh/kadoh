@@ -8,37 +8,42 @@ describe('globals', function() {
   });
   
   it('should define _k', function() {
-    expect(globals._k).toBeDefined();
-    expect(globals._k).toBeNumber();
+    expect(globals.K).toBeDefined();
+    expect(globals.K).toBeNumber();
   });
   
   it('should define _alpha', function() {
-    expect(globals._alpha).toBeDefined();
-    expect(globals._alpha).toBeNumber();
+    expect(globals.ALPHA).toBeDefined();
+    expect(globals.ALPHA).toBeNumber();
   });
   
   it('should define _beta', function() {
-    expect(globals._beta).toBeDefined();
-    expect(globals._beta).toBeNumber();
+    expect(globals.BETA).toBeDefined();
+    expect(globals.BETA).toBeNumber();
   });
   
   it('should define _B', function() {
-    expect(globals._B).toBeDefined();
-    expect(globals._B).toBeNumber();
+    expect(globals.B).toBeDefined();
+    expect(globals.B).toBeNumber();
+  });
+
+  it('should define a timeout error for rpcs', function() {
+    expect(globals.TIMEOUT).toBeDefined();
+    expect(globals.TIMEOUT).toBeNumber();
   });
   
   it('should define a digest function', function() {
-    expect(globals._digest).toBeDefined();
-    expect(globals._digest).toBeFunction();
+    expect(globals.DIGEST).toBeDefined();
+    expect(globals.DIGEST).toBeFunction();
   });
   
-  it('should define a parser function', function() {
-    expect(globals._parse).toBeDefined();
-    expect(globals._parse).toBeFunction();
+  it('should define a regex for id validations function', function() {
+    expect(globals.REGEX_NODE_ID).toBeDefined();
+    expect(globals.REGEX_NODE_ID).toBeFunction();
   });
   
   it('should define all the RPC functions', function() {
-    expect(globals._rpcs).toBeDefined();
-    expect(globals._rpcs).toBeArray();
+    expect(globals.RPCS).toBeDefined();
+    expect(globals.RPCS).toBeArray();
   });
 });

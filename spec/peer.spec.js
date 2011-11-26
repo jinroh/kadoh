@@ -1,7 +1,7 @@
 describe('Peer', function() {  
   beforeEach(function() {
     Peer = KadOH.Peer;
-    SHA1 = KadOH.globals._digest;
+    SHA1 = KadOH.globals.DIGEST;
     ip = '234.5.78.4:1234';
   });
   

@@ -4,7 +4,7 @@ describe('Routing Table', function() {
     RoutingTable = KadOH.RoutingTable;
     globals = KadOH.globals;
     
-    SHA1 = KadOH.globals._digest;
+    SHA1 = KadOH.globals.DIGEST;
     Peer = KadOH.Peer;
 
     parent_id = SHA1('ip:port');
@@ -25,7 +25,7 @@ describe('Routing Table', function() {
       
       var kbucket = routing_table.getKBuckets()[0];
       expect(kbucket.getRange().min).toEqual(0);
-      expect(kbucket.getRange().max).toEqual(globals._B);
+      expect(kbucket.getRange().max).toEqual(globals.B);
     });
     
     it('should be possible to add a new peer and to retrieve it', function() {
@@ -46,7 +46,7 @@ describe('Routing Table', function() {
   describe('when I a add more than _k elements to it', function() {
     
     it('should split when entering random peers', function() {
-       for (var i = 0; i < KadOH.globals._k; i++) {
+       for (var i = 0; i < KadOH.globals.K; i++) {
         routing_table.addPeer(new Peer('127.0.0.1:' + (1025 + i)));
       }
       
