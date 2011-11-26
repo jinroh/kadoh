@@ -45,7 +45,7 @@ $(function() {
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
     try {
-      var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
+      var bootstraps = [['router.utorrent.com:6881'], ['router.bittorrent.com:6881']];
       node.join(bootstraps);
     } catch(e) {
       console.error(e.stack);
