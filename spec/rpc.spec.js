@@ -22,8 +22,8 @@ describe('RPC', function() {
     var rpc = new RPC(peer, request);
     expect(rpc.getID).toBeFunction();
     expect(rpc.getDST() instanceof Peer).toBe(true);
-    expect(rpc.getDSTSocket()).toEqual('127.0.0.1:321');
-    expect(rpc.getDSTID()).toEqual(SHA('127.0.0.1:321'));
+    expect(rpc.getDST().getSocket()).toEqual('127.0.0.1:321');
+    expect(rpc.getDST().getID()).toEqual(SHA('127.0.0.1:321'));
     expect(rpc.getRequest()).toBeObject();
   });
   
