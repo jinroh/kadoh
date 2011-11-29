@@ -38,7 +38,7 @@ describe('Routing Table', function() {
         routing_table.getPeer(peer);
       }).not.toThrow();
       
-      expect(routing_table.getPeer(peer).getId()).toEqual(SHA1('127.0.0.1:54321'));
+      expect(routing_table.getPeer(peer).getID()).toEqual(SHA1('127.0.0.1:54321'));
     });
     
   });

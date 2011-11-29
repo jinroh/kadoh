@@ -55,10 +55,10 @@ $(function() {
   
   function onClickLookup(event) {
     try {
-      node.iterativeFindNode(node.getId()).then(
+      node.iterativeFindNode(node.getID()).then(
         function(response) {
           console.log(response.map(function(peer) {
-            return peer.getAddress() + ' : ' + peer.getId() + ' : ' + node._routingTable.distance(peer.getId());
+            return peer.getAddress() + ' : ' + peer.getID() + ' : ' + node._routingTable.distance(peer.getID());
           }));
         }
       );
@@ -97,7 +97,7 @@ var shortSha = function(hash) {
 function iterFindRecorder(iterfind, where) {
   this.states = [];
   this.iterfind = iterfind;
-  this.targetId = iterfind._target.getID();
+  this.targetID = iterfind._target.getID();
   var self =this;
   var index = 0;
 
@@ -162,7 +162,7 @@ iterFindRecorder.prototype =  {
       var peerRecord = {};
       peerRecord.socket = peer.getAddress();
       peerRecord.id = peer.getID();
-      peerRecord.distance = peer.getDistanceTo(self.targetId);
+      peerRecord.distance = peer.getDistanceTo(self.targetID);
 
       peerRecord.new = (!prev_state) ? true : (! prev_state.HeardOf.contains(peer));
       peerRecord.queried = iterfind.Queried.contains(peer);
@@ -186,7 +186,7 @@ iterFindRecorder.prototype =  {
     var state = this.states[index];
     var self = this;
 
-    var hash = shortSha(this.targetId);
+    var hash = shortSha(this.targetID);
 
     $(where).empty()
             .append('<h4>Summarry</h4>')
@@ -265,7 +265,7 @@ iterFindRecorder.prototype =  {
     $('#info').append('<h3>Node info<h3>')
               .append('<ul>')
               .append('<li><b>My Address : </b>'+iam+'</li>')
-              .append('<li><b>My id : </b>'+shortSha(node.getId())+'</li>')
+              .append('<li><b>My id : </b>'+shortSha(node.getID())+'</li>')
               .append('</ul>');
   })
 
@@ -274,7 +274,7 @@ iterFindRecorder.prototype =  {
 
       // it.on('Reached', function(fromPeer, response) {
       //   var response = response.map(function(peer) {
-      //       return peer.getAddress() +'('+ node._routing_table.distance(peer.getId())+')';
+      //       return peer.getAddress() +'('+ node._routing_table.distance(peer.getID())+')';
       //     });
       //   console.log('Reached : '+fromPeer.getAddress()+'('+fromPeer._distance+') and return : '+response.join(' '));
       // });
@@ -283,7 +283,7 @@ iterFindRecorder.prototype =  {
       // });
       // it.on('newHeardOf', function(p) {
       //   var p = p.map(function(peer) {
-      //       return peer.getAddress() +'(' +node._routing_table.distance(peer.getId())+')';
+      //       return peer.getAddress() +'(' +node._routing_table.distance(peer.getID())+')';
       //     });
       //   console.log('newHeardOf : '+p.join(' '));
       // });

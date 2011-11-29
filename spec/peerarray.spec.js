@@ -103,7 +103,7 @@ describe('SortedPeerArray', function() {
 
   describe('method add', function() {
     beforeEach(function() {
-      arr = new PeerArray().setRelativeNodeId(id);
+      arr = new PeerArray().setRelativeNodeID(id);
     });
 
     it('should be possible to add one triple', function() {
@@ -153,7 +153,7 @@ describe('SortedPeerArray', function() {
 
   describe('method contains', function() {
     beforeEach(function() {
-      arr = new PeerArray().setRelativeNodeId(id);
+      arr = new PeerArray().setRelativeNodeID(id);
     });
 
     it('should respond correctly', function() {
@@ -165,7 +165,7 @@ describe('SortedPeerArray', function() {
 
   describe('method remove', function() {
     beforeEach(function() {
-      arr = new PeerArray().setRelativeNodeId(id);
+      arr = new PeerArray().setRelativeNodeID(id);
     });
 
     it('should works', function() {
@@ -183,7 +183,7 @@ describe('SortedPeerArray', function() {
     
     beforeEach(function() {
       spa = new PeerArray();
-      spa.setRelativeNodeId(id);
+      spa.setRelativeNodeID(id);
     });
 
     it('should be a sorted array', function() {
@@ -193,7 +193,7 @@ describe('SortedPeerArray', function() {
       }
       spa.add(peers);
       distance_array = spa.getRawArray().map(function(peer) {
-        return KadOH.util.Crypto.distance(peer.getId(), id);
+        return KadOH.util.Crypto.distance(peer.getID(), id);
       });
       expect(distance_array).toBeAscSorted();
     });
@@ -204,7 +204,7 @@ describe('SortedPeerArray', function() {
     
     beforeEach(function() {
       spa = new PeerArray();
-      spa.setRelativeNodeId(id);
+      spa.setRelativeNodeID(id);
     });
 
     it('should have the good relative node id', function() {

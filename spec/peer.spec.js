@@ -15,9 +15,9 @@ describe('Peer', function() {
       peer = new Peer(ip);
     });
     
-    it('should respond to `getAddress()` and `getId()`', function() {
+    it('should respond to `getAddress()` and `getID()`', function() {
       expect(typeof peer.getAddress).toBe('function');
-      expect(typeof peer.getId).toBe('function');
+      expect(typeof peer.getID).toBe('function');
     });
 
     it('should get a socket which is the ip:port string', function() {
@@ -25,7 +25,7 @@ describe('Peer', function() {
     });
 
     it('should get an ID which is the SHA1 of IP:PORT', function() {
-      expect(peer.getId()).toEqual(SHA1(ip));
+      expect(peer.getID()).toEqual(SHA1(ip));
     });
     
   });
@@ -34,7 +34,7 @@ describe('Peer', function() {
     var peer1 = new Peer(['127.0.0.1:1234', SHA1('foo')]);
     
     expect(peer1.getAddress()).toEqual('127.0.0.1:1234');
-    expect(peer1.getId()).toEqual(SHA1('foo'));
+    expect(peer1.getID()).toEqual(SHA1('foo'));
   });
   
   it('should be possible to test their equality', function() {
