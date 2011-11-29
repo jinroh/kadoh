@@ -19,7 +19,7 @@ Kad is a _peer to peer_ system. That means that nodes (or peers) need to communi
 
 One of our challenge is to find a mean to enable a communicaton as direct as possible between mobile nodes.
 
-Hints : AJAX long-polling, WebSocket, Socket.io and XMPP over BOSH..
+_Hints_ : AJAX long-polling, WebSocket, Socket.io and XMPP over BOSH..
 
 ### Large scale-testing
 
@@ -29,7 +29,7 @@ However, to test our implementation we need some instance nodes of it - actually
 
 One of our challenge is to test our system at large-scale.
 
-Hints : bots, proxy to existing DHTs..
+_Hints_ : bots, proxy to existing DHTs..
 
 # Install
 
@@ -64,7 +64,7 @@ You can test our implementation of the iterativeFindNode algorithm by launching 
 
 In directory `examples/Proxy` run with Node :
 
-```
+```bash
 $ node app.js
 ```
 
