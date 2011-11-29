@@ -2,7 +2,7 @@ describe('jsonrpc2', function() {
  
  beforeEach(function() {
     prot = KadOH.protocol.jsonrpc2;
-    RPCS = KadOH.globals._rpcs;
+    RPCS = KadOH.globals.RPCS;
  }); 
   
   it('should RPCMessage constructor work', function() {

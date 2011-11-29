@@ -2,10 +2,10 @@ describe('RPC', function() {
   
   beforeEach(function() {
     RPC = KadOH.protocol.RPC;
-    SHA = KadOH.globals._digest;
+    SHA = KadOH.globals.DIGEST;
     jsonrpc = KadOH.protocol.jsonrpc2;
     
-    peer = new Peer(['127.0.0.1', 321]);
+    peer = new Peer(['127.0.0.1:321']);
     request = jsonrpc.buildRequest('foo', 'bar');
   });
   
@@ -21,9 +21,7 @@ describe('RPC', function() {
   it('should have all the getters', function() {
     var rpc = new RPC(peer, request);
     expect(rpc.getID).toBeFunction();
-    expect(rpc.getDST() instanceof Peer).toBe(true);
-    expect(rpc.getDST().getSocket()).toEqual('127.0.0.1:321');
-    expect(rpc.getDST().getID()).toEqual(SHA('127.0.0.1:321'));
+    expect(rpc.getDST().equals(peer)).toBeTruthy();
     expect(rpc.getRequest()).toBeObject();
   });
   

@@ -45,7 +45,7 @@ $(function() {
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
     try {
-      var bootstraps = [['router.utorrent.com', 6881], ['router.bittorrent.com', 6881]];
+      var bootstraps = [['router.utorrent.com:6881'], ['router.bittorrent.com:6881']];
       node.join(bootstraps);
     } catch(e) {
       console.error(e.stack);
@@ -58,7 +58,7 @@ $(function() {
       node.iterativeFindNode(node.getId()).then(
         function(response) {
           console.log(response.map(function(peer) {
-            return peer.getSocket() + ' : ' + peer.getId() + ' : ' + node._routingTable.distance(peer.getId());
+            return peer.getAddress() + ' : ' + peer.getId() + ' : ' + node._routingTable.distance(peer.getId());
           }));
         }
       );
@@ -97,7 +97,7 @@ var shortSha = function(hash) {
 function iterFindRecorder(iterfind, where) {
   this.states = [];
   this.iterfind = iterfind;
-  this.targetId = iterfind._targetId;
+  this.targetId = iterfind._target.getID();
   var self =this;
   var index = 0;
 
@@ -160,7 +160,7 @@ iterFindRecorder.prototype =  {
     state.shot = state.HeardOf.getRawArray()
                       .map(function(peer) {
       var peerRecord = {};
-      peerRecord.socket = peer.getSocket();
+      peerRecord.socket = peer.getAddress();
       peerRecord.id = peer.getID();
       peerRecord.distance = peer.getDistanceTo(self.targetId);
 
@@ -274,16 +274,16 @@ iterFindRecorder.prototype =  {
 
       // it.on('Reached', function(fromPeer, response) {
       //   var response = response.map(function(peer) {
-      //       return peer.getSocket() +'('+ node._routing_table.distance(peer.getId())+')';
+      //       return peer.getAddress() +'('+ node._routing_table.distance(peer.getId())+')';
       //     });
-      //   console.log('Reached : '+fromPeer.getSocket()+'('+fromPeer._distance+') and return : '+response.join(' '));
+      //   console.log('Reached : '+fromPeer.getAddress()+'('+fromPeer._distance+') and return : '+response.join(' '));
       // });
       // it.on('NotReached', function(fromPeer) {
-      //   console.log('NotReached :'+fromPeer.getSocket());
+      //   console.log('NotReached :'+fromPeer.getAddress());
       // });
       // it.on('newHeardOf', function(p) {
       //   var p = p.map(function(peer) {
-      //       return peer.getSocket() +'(' +node._routing_table.distance(peer.getId())+')';
+      //       return peer.getAddress() +'(' +node._routing_table.distance(peer.getId())+')';
       //     });
       //   console.log('newHeardOf : '+p.join(' '));
       // });

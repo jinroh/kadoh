@@ -9,10 +9,8 @@ $(function() {
   
   // Init the node global object
   function init(ip_port) {
-    var ip_port = ip_port.split(':');
-    
-    node = new KadOH.Node(ip_port[0], ip_port[1]);
-    console.log('ME :' + node.getSocket());
+    node = new KadOH.Node(undefined);
+    console.log('ME :' + node.getAddress());
   }
   
   // Join the network using other clients as bootstraps
@@ -20,7 +18,7 @@ $(function() {
     var bootstraps = [];
     for (ip in ips) {
       if (KadOH.globals._digest(ip) !== node.getId()) {
-        bootstraps.push(ip.split(':'));
+        bootstraps.push(ip);
       }
     }
     
