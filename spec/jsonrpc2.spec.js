@@ -7,8 +7,8 @@ describe('jsonrpc2', function() {
   
   it('should RPCMessage constructor work', function() {
     expect(prot).toBeObject();
-    expect(prot._RPCMessage).toBeFunction();
-    var mes = new prot._RPCMessage({id : '3'});
+    expect(prot.RPCMessage).toBeFunction();
+    var mes = new prot.RPCMessage({id : '3'});
     expect(mes).toBeObject();
     expect(mes.id).toEqual('3');
     expect(mes.setRPCID).toBeDefined();
@@ -21,8 +21,8 @@ describe('jsonrpc2', function() {
   
   it('should RPCError constructor work', function() {
     expect(prot).toBeObject();
-    expect(prot._RPCError).toBeFunction();
-    var err = new prot._RPCError(-32601, null, {id : '3'});
+    expect(prot.RPCError).toBeFunction();
+    var err = new prot.RPCError(-32601, null, {id : '3'});
     expect(err).toBeObject();
     expect(err.code).toEqual(-32601);
     expect(err.getRPCID).toBeDefined();
@@ -50,7 +50,7 @@ describe('jsonrpc2', function() {
 
   it('should build a good errorResponse', function() {
     expect(prot.buildErrorResponse).toBeFunction();
-    var resp = prot.buildErrorResponse(new prot._RPCError(-32601, null, {id : '3'}));
+    var resp = prot.buildErrorResponse(new prot.RPCError(-32601, null, {id : '3'}));
     expect(resp).toBeObject();
     expect(resp.isError()).toBeTruthy();
     expect(resp.getError().stringify().code).toEqual(-32601);
