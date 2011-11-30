@@ -39,7 +39,6 @@ describe('globals', function() {
   
   it('should define a regex for id validations function', function() {
     expect(globals.REGEX_NODE_ID).toBeDefined();
-    expect(globals.REGEX_NODE_ID).toBeFunction();
   });
   
   it('should define all the RPC functions', function() {
