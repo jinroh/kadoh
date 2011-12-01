@@ -164,7 +164,7 @@ iterFindRecorder.prototype =  {
       peerRecord.id = peer.getID();
       peerRecord.distance = peer.getDistanceTo(self.targetId);
 
-      peerRecord.new = (!prev_state) ? true : (! prev_state.HeardOf.contains(peer));
+      peerRecord.isNew = (!prev_state) ? true : (! prev_state.HeardOf.contains(peer));
       peerRecord.queried = iterfind.Queried.contains(peer);
       peerRecord.reached = iterfind.Reached.contains(peer);
       peerRecord.notreached = iterfind.NotReached.contains(peer);
@@ -214,7 +214,7 @@ iterFindRecorder.prototype =  {
                  if(peer.notreached)  Class.push('notreached');
                  if(peer.reached)     Class.push('reached');
                  if(peer.trap)        Class.push('trap');
-                 if(peer.new)         Class.push('new');
+                 if(peer.isNew)         Class.push('new');
 
                 var line = ['<tr',
                             (Class.length !==0) ? ' class=\''+Class.join(' ')+'\' ' : '',
