@@ -21,7 +21,7 @@
     }
   , "devDependencies": {
         "jasmine-runner": "https://github.com/alexstrat/jasmine-tool/tarball/master"
-      , "jasmine-node": "1.0.12"
+      , "jasmine-node": "~1.0"
       , "klass": "~1.2"
     }
   , "engines": { "node": ">= 0.4.0" }

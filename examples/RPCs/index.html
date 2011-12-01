@@ -17,7 +17,7 @@ $(function() {
   function onClickJoin(event) {
     var bootstraps = [];
     for (ip in ips) {
-      if (KadOH.globals._digest(ip) !== node.getId()) {
+      if (KadOH.globals._digest(ip) !== node.getID()) {
         bootstraps.push(ip);
       }
     }
