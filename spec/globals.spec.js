@@ -7,22 +7,22 @@ describe('globals', function() {
     expect(globals).toBeDefined();
   });
   
-  it('should define _k', function() {
+  it('should define K', function() {
     expect(globals.K).toBeDefined();
     expect(globals.K).toBeNumber();
   });
   
-  it('should define _alpha', function() {
+  it('should define ALPHA', function() {
     expect(globals.ALPHA).toBeDefined();
     expect(globals.ALPHA).toBeNumber();
   });
   
-  it('should define _beta', function() {
+  it('should define BETA', function() {
     expect(globals.BETA).toBeDefined();
     expect(globals.BETA).toBeNumber();
   });
   
-  it('should define _B', function() {
+  it('should define B', function() {
     expect(globals.B).toBeDefined();
     expect(globals.B).toBeNumber();
   });
