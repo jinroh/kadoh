@@ -8,7 +8,8 @@ var JsDoc3_EXEC = __dirname + '/doc/jsdoc3/jsdoc';
 var LIB_DIR = {
   'kadoh'            : __dirname + '/lib/client',
   'socket.io-client' : __dirname + '/node_modules/socket.io-client/dist',
-  'jquery'           : __dirname + '/lib/ext/jquery'
+  'jquery'           : __dirname + '/lib/ext/jquery',
+  'strophejs'        : __dirname + '/lib/ext/strophejs'
 };
 
 var NODE_BUILD_EXCLUDE = [
