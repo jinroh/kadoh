@@ -113,7 +113,7 @@ Kademlia client
 
       - RPC protocol
           - JSON-RPC2               [x]
-          - XML-RPC                 [ ]
+          - XML-RPC                 [x]
 
       - P2P transport
           - SimUDP                  [x]
