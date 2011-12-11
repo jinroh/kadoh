@@ -9,7 +9,8 @@ var LIB_DIR = {
   'kadoh'            : __dirname + '/lib/client',
   'socket.io-client' : __dirname + '/node_modules/socket.io-client/dist',
   'jquery'           : __dirname + '/lib/ext/jquery',
-  'strophejs'        : __dirname + '/lib/ext/strophejs'
+  'strophejs'        : __dirname + '/lib/ext/strophejs',
+  'lawnchair'        : __dirname + '/lib/ext/lawnchair'
 };
 
 var NODE_BUILD_EXCLUDE = [
