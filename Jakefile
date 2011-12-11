@@ -70,7 +70,7 @@ namespace('test', function() {
     jasmine.run({
       command : 'mon' ,
       cwd     : __dirname ,
-      args    : [],
+      args    : []
     });
   });
 });
