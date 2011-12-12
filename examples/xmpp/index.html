@@ -1,0 +1,25 @@
+<html>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="../../dist/KadOH.js"></script>
+
+<script type="text/javascript">
+$(function() {
+  var KadOH = window.KadOH;
+
+  // function init(event) {
+    node = new KadOH.Node(null, { reactor: { transport: { jid: 'kadoh@jabber.org', password: 'azerty' }}});
+    node.join(['alexstrat@jabber.org', 'jinroh@jabber.org']);
+  //  event.preventDefault();
+  // }
+  // $('#join').click(init);
+});
+</script>
+<body>
+<h2>Send message to node :</h2>
+<form id='form'>
+  <p>
+    <input type="submit" value="Join" name="join" id="join">
+  </p>
+</form>
+</body>
+</html>
