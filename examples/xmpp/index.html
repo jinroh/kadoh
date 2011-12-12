@@ -5,13 +5,28 @@
 <script type="text/javascript">
 $(function() {
   var KadOH = window.KadOH;
+  window.node = new KadOH.Node(null, { reactor: { transport: { jid: 'kadoh@jabber.org', password: 'azerty' }}});
 
-  // function init(event) {
-    node = new KadOH.Node(null, { reactor: { transport: { jid: 'kadoh@jabber.org', password: 'azerty' }}});
+  function init(event) {
     node.join(['alexstrat@jabber.org', 'jinroh@jabber.org']);
-  //  event.preventDefault();
-  // }
-  // $('#join').click(init);
+    event.preventDefault();
+  }
+
+  function ping(event) {
+    try {
+      var dst = $('#ping_dst').val();
+      node.reactor().PING(new KadOH.Peer(dst));
+    }
+    catch(e) {
+      console.error(e);
+    }
+    finally {
+      event.preventDefault();
+    }
+  }
+
+  $('#join').click(init);
+  $('#ping').click(ping);
 });
 </script>
 <body>
@@ -19,6 +34,10 @@ $(function() {
 <form id='form'>
   <p>
     <input type="submit" value="Join" name="join" id="join">
+  </p>
+  <p>
+    <input type="text" name="ping_dst" id="ping_dst" value=""> 
+    <input type="submit" value="Ping" name="ping" id="ping">
   </p>
 </form>
 </body>
