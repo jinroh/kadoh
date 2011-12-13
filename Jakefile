@@ -15,7 +15,9 @@ var LIB_DIR = {
 
 var NODE_BUILD_EXCLUDE = [
   '[socket.io-client]/*',
-  '[jQuery]/*'
+  '[jquery]/*',
+  '[strophejs]/*',
+  '[KadOH]/rpcprotocol/xmlrpc'
 ];
 
 var ENTRY_FILES = [
