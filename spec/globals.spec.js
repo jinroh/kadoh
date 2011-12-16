@@ -28,8 +28,8 @@ describe('globals', function() {
   });
 
   it('should define a timeout error for rpcs', function() {
-    expect(globals.TIMEOUT).toBeDefined();
-    expect(globals.TIMEOUT).toBeNumber();
+    expect(globals.TIMEOUT_RPC).toBeDefined();
+    expect(globals.TIMEOUT_RPC).toBeNumber();
   });
   
   it('should define a digest function', function() {
