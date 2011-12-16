@@ -40,6 +40,12 @@ describe('Crypto', function() {
       expect(randomSHA1().length).toBe(40);
     });
 
+    it('should return a sha1 in the good range', function() {
+      var sha  = SHA1('foo');
+      var dist = Math.floor(Math.random() * 160) + 1;
+      expect(Crypto.distance(sha, randomSHA1(sha, dist))).toEqual(dist);
+    });
+
   });
   
   describe('XOR', function() {
