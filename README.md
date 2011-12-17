@@ -85,10 +85,14 @@ Kademlia client
 
       - K-Bucket object             [x]
       - find closest peer method    [x]
+      - refresh                     [?]
 
   - Value Management                [ ]
-      - ..........
-      - ..........
+  
+      - persistent stor.(Lawnchair) [x]
+      - session recover             [ ]
+      - expiration                  [x]
+      - republishing                [ ]
 
   - Node                            [ ]
 
