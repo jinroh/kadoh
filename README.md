@@ -90,7 +90,7 @@ Kademlia client
   - Value Management                [ ]
   
       - persistent stor.(Lawnchair) [x]
-      - session recover             [ ]
+      - session recover             [x]
       - expiration                  [x]
       - republishing                [ ]
 
