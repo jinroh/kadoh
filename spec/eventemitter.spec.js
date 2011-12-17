@@ -93,5 +93,12 @@ describe('EventEmitter', function() {
       expect(spy.mostRecentCall.args).toEqual(['bar', {baz: 'alex'}]);
     });
 
+    it('should be possible to unsubscribe', function() {
+      ee.unsubscribe(spy);
+      ee.emit('empty');
+
+      expect(spy.callCount).toBe(2);
+    })
+
   });
 });
