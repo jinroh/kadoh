@@ -23,13 +23,13 @@ describe('Value Management', function() {
   });
 
   it('should be instanciable', function() {
-    var v = new VM(node);
+    var v = new VM(node, {recover : false});
     expect(typeof v).toEqual('object');
   });
 
-  describe('when i instanciate one', function() {
+  describe('when i instanciate one (no recover)', function() {
     beforeEach(function(){
-      v = new VM(node);
+      v = new VM(node, {recover : false});
     });
 
     it('should be possible to store a value', function(){
@@ -100,11 +100,15 @@ describe('Value Management', function() {
         runs(function(){
           expect(node.republish).toHaveBeenCalled();
           expect(node.republish.callCount).toEqual(1);
+          expect(node.republish.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
+
         });
         waits(53);
         runs(function(){
           expect(node.republish).toHaveBeenCalled();
           expect(node.republish.callCount).toEqual(2);
+          expect(node.republish.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
+
         });
       });
     });
