@@ -75,4 +75,23 @@ describe('EventEmitter', function() {
       //object refers to the inner scope when spy has been called : nice !
     });
   });
+
+  describe('subscribers', function() {
+    
+    beforeEach(function() {
+      ee = new constr();
+
+      spy = jasmine.createSpy();
+      ee.subscribe(spy);
+
+      ee.emit('foo');
+      ee.emit('bar', {baz: 'alex'});
+    });
+
+    it('should be possible to subscribe', function() {
+      expect(spy.callCount).toBe(2);
+      expect(spy.mostRecentCall.args).toEqual(['bar', {baz: 'alex'}]);
+    });
+
+  });
 });
