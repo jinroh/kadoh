@@ -260,6 +260,9 @@ iterFindRecorder.prototype =  {
   }
 
   node = new KadOH.Node(undefined, options);
+  KadOH.log.subscribeTo(node, 'Node');
+  KadOH.log.subscribeTo(node.reactor(), 'Reactor');
+  KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
 
   node._reactor.on('transport connect', function(iam) {
     $('#info').append('<h3>Node info<h3>')
