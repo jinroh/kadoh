@@ -85,7 +85,7 @@ Kademlia client
 
       - K-Bucket object             [x]
       - find closest peer method    [x]
-      - refresh                     [?]
+      - refresh                     [x]
 
   - Value Management                [ ]
   
@@ -121,7 +121,7 @@ Kademlia client
 
       - P2P transport
           - SimUDP                  [x]
-          - XMPP over BOSH          [ ]
+          - XMPP over BOSH          [x]
 
 ```
 
