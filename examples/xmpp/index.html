@@ -19,6 +19,7 @@ $(function() {
   KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
 
   function init(event) {
+    node.connect();
     node.join(['alexstrat@jabber.org', 'jinroh@jabber.org']);
     event.preventDefault();
   }
