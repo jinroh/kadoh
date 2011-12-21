@@ -17,7 +17,7 @@ var NODE_BUILD_EXCLUDE = [
   '[socket.io-client]/*',
   '[jquery]/*',
   '[strophejs]/*',
-  '[KadOH]/valuemanagement'     // use of window.localStorage
+  '[lawnchair]/*'     // use of window.localStorage
 ];
 
 var ENTRY_FILES = [
