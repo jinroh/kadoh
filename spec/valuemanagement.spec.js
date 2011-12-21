@@ -1,4 +1,4 @@
-xdescribe('Value Management', function() {
+describe('Value Management', function() {
   
   beforeEach(function() {
     VM = KadOH.ValueManagement;
@@ -70,7 +70,7 @@ xdescribe('Value Management', function() {
 
     describe('when I\' ve stored a value with an expiration time', function() {
       beforeEach(function(){
-        var exp = +(new Date()) + 50; //TTL : 50 ms
+        var exp = +(new Date()) + 50; //TTL : 200 ms
         v.save('1Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'babar'}, exp);
       });
 
@@ -105,6 +105,9 @@ xdescribe('Value Management', function() {
       beforeEach(function(){
         v._repTime = 50;
         v.save('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
+      });
+      afterEach(function() {
+        v._repTime = globals.TIMEOUT_REPUBLISH;
       });
 
       it('should be republished at least twice', function(){
