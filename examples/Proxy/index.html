@@ -46,6 +46,7 @@ $(function() {
   function onClickJoin(event) {
     try {
       var bootstraps = [['router.utorrent.com:6881'], ['router.bittorrent.com:6881']];
+      node.connect();
       node.join(bootstraps);
     } catch(e) {
       console.error(e.stack);
