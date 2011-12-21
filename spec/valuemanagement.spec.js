@@ -33,18 +33,31 @@ xdescribe('Value Management', function() {
     });
 
     it('should be possible to store a value', function(){
-      v.store('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
+      v.save('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
       expect(true).toBeTruthy();
     });
 
     describe('when I\' ve stored a value', function() {
       beforeEach(function(){
-        v.store('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
+        v.save('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
       });
-      it('should be possible to retrieve later', function(){
+      it('should be possible to retrieve later (with callback)', function(){
         res = undefined;
         runs(function(){
           v.retrieve('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', function(obj) {
+            res = obj.foo;
+          });
+        });
+        waits(10);
+        runs(function(){
+          expect(res).toEqual('bar');
+        });
+      });
+      it('should be possible to retrieve later (with deferred)', function(){
+        res = undefined;
+        runs(function(){
+          v.retrieve('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01').then(
+            function(obj) {
             res = obj.foo;
           });
         });
@@ -57,8 +70,8 @@ xdescribe('Value Management', function() {
 
     describe('when I\' ve stored a value with an expiration time', function() {
       beforeEach(function(){
-        var exp = +(new Date()) + 50; //TTL : 300 ms
-        v.store('1Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'babar'}, exp);
+        var exp = +(new Date()) + 50; //TTL : 50 ms
+        v.save('1Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'babar'}, exp);
       });
 
       it('should be there now..', function(){
@@ -75,7 +88,7 @@ xdescribe('Value Management', function() {
 
       it('...and have exprired after a while', function(){
         res = 12345;
-        waits(50);
+        waits(53);
         runs(function(){
           v.retrieve('1Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', function(obj) {
             res = obj;
@@ -91,7 +104,7 @@ xdescribe('Value Management', function() {
     describe('when I\' ve stored a value (and manuelly dropped down the republish time to test it)', function(){
       beforeEach(function(){
         v._repTime = 50;
-        v.store('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
+        v.save('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
       });
 
       it('should be republished at least twice', function(){
