@@ -41,10 +41,23 @@ describe('Value Management', function() {
       beforeEach(function(){
         v.save('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
       });
-      it('should be possible to retrieve later', function(){
+      it('should be possible to retrieve later (with callback)', function(){
         res = undefined;
         runs(function(){
           v.retrieve('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', function(obj) {
+            res = obj.foo;
+          });
+        });
+        waits(10);
+        runs(function(){
+          expect(res).toEqual('bar');
+        });
+      });
+      it('should be possible to retrieve later (with deferred)', function(){
+        res = undefined;
+        runs(function(){
+          v.retrieve('9Va5c4acf388e17a1a8a5364b14ee48c2cb29b01').then(
+            function(obj) {
             res = obj.foo;
           });
         });
