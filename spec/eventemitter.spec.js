@@ -98,7 +98,7 @@ describe('EventEmitter', function() {
       ee.emit('empty');
 
       expect(spy.callCount).toBe(2);
-    })
+    });
 
   });
 });
