@@ -5,7 +5,18 @@
 <script type="text/javascript">
 $(function() {
   var KadOH = window.KadOH;
-  window.node = new KadOH.Node(null, { reactor: { transport: { jid: 'kadoh@jabber.org', password: 'azerty' }}});
+  window.node = new KadOH.Node(null, {
+    reactor: {
+      host: 'http://bosh.melo.fr.nf/http-bind',
+      transport: {
+        jid: 'kadoh@jabber.org',
+        password: 'azerty'
+      }
+    }
+  });
+  KadOH.log.subscribeTo(node, 'Node');
+  KadOH.log.subscribeTo(node._reactor, 'Reactor')
+  KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
 
   function init(event) {
     node.join(['alexstrat@jabber.org', 'jinroh@jabber.org']);

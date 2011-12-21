@@ -246,6 +246,9 @@ iterFindRecorder.prototype =  {
 
   var options = {
     reactor : {
+      protocol  : KadOH.protocol.jsonrpc2,
+      host      : 'localhost',
+      type      : KadOH.transport.SimUDP,
       transport : {
         transports : [
                       //'websocket', 
@@ -257,14 +260,14 @@ iterFindRecorder.prototype =  {
                       ]
       }
     }
-  }
+  };
 
   node = new KadOH.Node(undefined, options);
   KadOH.log.subscribeTo(node, 'Node');
   KadOH.log.subscribeTo(node.reactor(), 'Reactor');
   KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
 
-  node._reactor.on('transport connect', function(iam) {
+  node._reactor.on('connected', function(iam) {
     $('#info').append('<h3>Node info<h3>')
               .append('<ul>')
               .append('<li><b>My Address : </b>'+iam+'</li>')
@@ -272,24 +275,8 @@ iterFindRecorder.prototype =  {
               .append('</ul>');
   })
 
-  node.on('iterativeFind start', function(it) {
+  node.on('iterativeFind started', function(it) {
     var recorder = new iterFindRecorder(it, '#iterative');
-
-      // it.on('Reached', function(fromPeer, response) {
-      //   var response = response.map(function(peer) {
-      //       return peer.getAddress() +'('+ node._routing_table.distance(peer.getID())+')';
-      //     });
-      //   console.log('Reached : '+fromPeer.getAddress()+'('+fromPeer._distance+') and return : '+response.join(' '));
-      // });
-      // it.on('NotReached', function(fromPeer) {
-      //   console.log('NotReached :'+fromPeer.getAddress());
-      // });
-      // it.on('newHeardOf', function(p) {
-      //   var p = p.map(function(peer) {
-      //       return peer.getAddress() +'(' +node._routing_table.distance(peer.getID())+')';
-      //     });
-      //   console.log('newHeardOf : '+p.join(' '));
-      // });
   });
 });
 </script>
