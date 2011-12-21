@@ -14,7 +14,7 @@
  "console_reporter" : {
  	"mute_passed" : true
  },
- "externals":[
+ "COMMENTED-externals":[
   "https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js",
   "https://github.com/velesin/jasmine-jquery/raw/master/lib/jasmine-jquery.js",
   "https://github.com/pivotal/jasmine-ajax/raw/master/lib/mock-ajax.js" 

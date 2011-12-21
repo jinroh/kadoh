@@ -70,7 +70,7 @@ describe('Value Management', function() {
 
     describe('when I\' ve stored a value with an expiration time', function() {
       beforeEach(function(){
-        var exp = +(new Date()) + 50; //TTL : 300 ms
+        var exp = +(new Date()) + 50; //TTL : 50 ms
         v.save('1Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'babar'}, exp);
       });
 
