@@ -88,7 +88,7 @@ describe('Value Management', function() {
 
       it('...and have exprired after a while', function(){
         res = 12345;
-        waits(50);
+        waits(53);
         runs(function(){
           v.retrieve('1Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', function(obj) {
             res = obj;
