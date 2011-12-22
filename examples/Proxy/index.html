@@ -103,12 +103,12 @@ function iterFindRecorder(iterfind, where) {
   var index = 0;
 
   this.iterfind.on('progress', function() {self.shootState()});
-  this.iterfind.on('resolve', function() {
+  this.iterfind.on('resolved', function() {
     self.shootState();
     index = self.states.length -1;
     self.representState(index, where+' .content');
   });
-  this.iterfind.on('reject', function() {
+  this.iterfind.on('rejected', function() {
     self.shootState();
     index = self.states.length -1;
     self.representState(index, where+' .content');
