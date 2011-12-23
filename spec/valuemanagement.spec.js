@@ -112,20 +112,42 @@ describe('Value Management', function() {
 
       it('should be republished at least twice', function(){
         spyOn(node,'republish');
-        waits(53);
+        waits(50+3);
         runs(function(){
           expect(node.republish).toHaveBeenCalled();
           expect(node.republish.callCount).toEqual(1);
           expect(node.republish.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
 
         });
-        waits(53);
+        waits(50+3);
         runs(function(){
           expect(node.republish).toHaveBeenCalled();
           expect(node.republish.callCount).toEqual(2);
           expect(node.republish.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
 
         });
+        });
+
+        describe('and when I re-store it a a while later', function() {
+          waits(25);
+          runs(function() {
+            v.save('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01', {foo : 'bar'});
+          });
+          it('should not have been republished too early..', function() {
+            spyOn(node,'republish');
+            waits(25+3);
+            runs(function(){
+              expect(node.republish).not.toHaveBeenCalled();
+            });
+          });
+          it('..but at the rigth time', function() {
+            spyOn(node,'republish');
+            waits(50+3);
+            runs(function(){
+              expect(node.republish).toHaveBeenCalled();
+              expect(node.republish.callCount).toEqual(1);
+            });
+          });
       });
     });
   });
