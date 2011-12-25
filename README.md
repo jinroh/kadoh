@@ -7,6 +7,8 @@
 _/    _/    _/_/_/    _/_/_/    _/_/    _/    _/       
 ```
 
+[![Build Status](https://secure.travis-ci.org/jinroh/kadoh.png?branch=experimental)](https://secure.travis-ci.org/jinroh/kadoh.png?branch=experimental)
+
 # Description
 
 The aim of this project is to write an implementation of the Kad system running in a browser environnement and especially in a mobile browser.
