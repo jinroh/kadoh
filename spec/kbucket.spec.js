@@ -20,6 +20,9 @@ describe('KBucket', function() {
     beforeEach(function() {
       kbucket = new KBucket(parent_id, min, max);
     });
+    afterEach(function() {
+      kbucket._stopRefreshTimeout();
+    });
     
     it('should be empty, from 1 to _B with the right parent id', function() {
       expect(kbucket.length()).toEqual(0);
@@ -84,6 +87,9 @@ describe('KBucket', function() {
         kbucket.addPeer(new Peer('127.0.0.1:' + 1025+i));
       }
     });
+    afterEach(function() {
+      kbucket._stopRefreshTimeout();
+    });
 
     it('should not be able to add a new peer', function() {
       expect(function() { kbucket.addPeer(new Peer('127.0.0.1:2000')); }).toThrow();
@@ -91,21 +97,29 @@ describe('KBucket', function() {
   });
   
   describe('When I want to split the KBucket', function() {
+    beforeEach(function() {
+      old_range = kbucket.getRange();
+      new_kbucket = kbucket.split();
+    });
     
+    afterEach(function() {
+      new_kbucket._stopRefreshTimeout();
+    });
+
     it('should return me a new kbucket with the right range', function() {
-      var new_kbucket = kbucket.split();
+      //var new_kbucket = kbucket.split();
       
       expect(new_kbucket.getRange().min).toEqual(0);
       expect(new_kbucket.getRange().max).toEqual(kbucket.getRange().min);
     });
     
     it('should change the KBucket\'s range min', function() {
-      old_range = kbucket.getRange();
-      kbucket.split();
+      //old_range = kbucket.getRange();
+      //kbucket.split();
       
       expect(kbucket.getRange().max).toEqual(old_range.max);
       expect(kbucket.getRange().min).toEqual(old_range.max - 1);
     });
     
   });
-}); 
+});
