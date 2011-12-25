@@ -18,8 +18,11 @@
       , "uglify-js": "~1.1"
       , "restler" : "~0.2.1"
       , "express" : "~2.5"
-    }
-  , "devDependencies": {
+    },
+		"scripts": {
+		  "test": "jake build:node && jasmine-node spec"
+		},
+   "devDependencies": {
         "jasmine-runner": "https://github.com/alexstrat/jasmine-tool/tarball/master"
       , "jasmine-node": "~1.0"
       , "klass": "~1.2"

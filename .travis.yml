@@ -1,0 +1,11 @@
+# whitelist
+branches:
+  only:
+    - experimental
+
+notifications:
+  email: false
+
+language: node_js
+node_js:
+  - 0.4

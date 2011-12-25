@@ -33,7 +33,7 @@
       toBeAscSorted: function() {
         var compare = function(a, b) {
           return a - b;
-        }
+        };
 
         for (var i=0, l=this.actual.length; i < l-1; i++) {
           if (compare(this.actual[i], this.actual[i+1]) > 0)
@@ -44,7 +44,7 @@
       toBeDescSorted: function() {
         var compare = function(a, b) {
           return a - b;
-        }
+        };
 
         for (var i=0, l=this.actual.length; i < l-1; i++) {
           if (compare(this.actual[i], this.actual[i+1]) < 0)
