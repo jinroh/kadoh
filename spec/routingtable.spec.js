@@ -19,6 +19,9 @@ describe('Routing Table', function() {
     beforeEach(function() {
       routing_table = new RoutingTable(parent_id);
     });
+    afterEach(function() {
+      routing_table.stop();
+    });
     
     it('should have one KBucket [0 -> _B]', function() {
       expect(routing_table.howManyKBuckets()).toEqual(1);
@@ -41,18 +44,17 @@ describe('Routing Table', function() {
       expect(routing_table.getPeer(peer).getID()).toEqual(SHA1('127.0.0.1:54321'));
     });
     
+    describe('when I a add more than K elements to it', function() {
+      
+      it('should split when entering random peers', function() {
+         for (var i = 0; i < KadOH.globals.K +1; i++) {
+          routing_table.addPeer(new Peer('127.0.0.1:' + (1025 + i)));
+        }
+        expect(routing_table.howManyKBuckets()).toEqual(2);
+      });
+    });
+
   });
   
-  describe('when I a add more than _k elements to it', function() {
-    
-    it('should split when entering random peers', function() {
-       for (var i = 0; i < KadOH.globals.K; i++) {
-        routing_table.addPeer(new Peer('127.0.0.1:' + (1025 + i)));
-      }
-      
-      expect(routing_table.howManyKBuckets()).toEqual(2);
-    });
-    
-  });
   
 });

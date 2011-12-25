@@ -1,4 +1,4 @@
-xdescribe('In Value Management', function() {
+describe('In Value Management', function() {
   
   beforeEach(function() {
     VM = KadOH.ValueManagement;
