@@ -119,14 +119,14 @@ describe('In Value Management', function() {
 
       it('should be republished at least twice', function(){
         spyOn(node,'republish');
-        waits(v._repTime+20);
+        waits(v._repTime+100);
         runs(function(){
           expect(node.republish).toHaveBeenCalled();
           expect(node.republish.callCount).toEqual(1);
           expect(node.republish.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
         });
 
-        waits(v._repTime+20);
+        waits(v._repTime+100);
         runs(function(){
           expect(node.republish).toHaveBeenCalled();
           expect(node.republish.callCount).toEqual(2);
