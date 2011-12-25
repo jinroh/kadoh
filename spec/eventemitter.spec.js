@@ -22,7 +22,7 @@ describe('EventEmitter', function() {
 
     it('should be added to the event queue', function() {
       expect(typeof ee._events.foo).toBeDefined();
-      var evt = ee._events.foo[ee._events.foo.length -1]; //last opushed one
+      var evt = ee._events.foo.callbacks[ee._events.foo.callbacks.length - 1]; //last opushed one
       expect(evt.listener).toEqual(spy);
     });
 

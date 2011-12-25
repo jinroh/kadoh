@@ -2,6 +2,8 @@
   beforeEach(function() {
     KadOH = (typeof require === 'function') ? require('../dist/KadOH.node.js') : KadOH;
     
+    KadOH.log.removeAllLoggers();
+    
     this.addMatchers({
       toBeObject: function() {
         return typeof(this.actual) === 'object';
