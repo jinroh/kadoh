@@ -1,10 +1,9 @@
-# whitelist
-branches:
-  only:
-    - experimental
-
 notifications:
   email: false
+
+branches:
+  except:
+    - master
 
 language: node_js
 node_js:

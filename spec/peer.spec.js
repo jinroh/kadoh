@@ -1,4 +1,4 @@
-describe('Peer', function() {  
+describe('Peer', function() {
   beforeEach(function() {
     Peer = KadOH.Peer;
     SHA1 = KadOH.globals.DIGEST;
