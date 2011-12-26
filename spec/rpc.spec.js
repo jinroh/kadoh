@@ -1,8 +1,9 @@
-xdescribe('RPC', function() {
+describe('RPC', function() {
   
   beforeEach(function() {
     RPC = KadOH.protocol.RPC;
     SHA = KadOH.globals.DIGEST;
+    Peer = KadOH.Peer;
     jsonrpc = KadOH.protocol.jsonrpc2;
     
     peer = new Peer(['127.0.0.1:321']);
