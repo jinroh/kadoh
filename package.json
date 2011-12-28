@@ -15,7 +15,7 @@
         "socket.io": "~0.8"
       , "socket.io-client": "~0.8"
       , "jake": "~0.1"
-      , "uglify-js": "~1.1"
+      , "jsCicada": "https://github.com/alexstrat/jsCicada/tarball/master"
       , "restler" : "~0.2.1"
       , "express" : "~2.5"
     },

@@ -1,0 +1,39 @@
+{ 
+  "basedir"     : ".",
+  "directories" : {
+    "KadOH"            : "lib/client",
+    "socket.io-client" : "node_modules/socket.io-client/dist",
+    "jquery"           : "lib/ext/jquery",
+    "strophejs"        : "lib/ext/strophejs",
+    "lawnchair"        : "lib/ext/lawnchair",
+
+    "dist"             : "dist",
+    "spec-dist"        : "spec/dist"
+  },
+
+  "targets" : {
+    "normal" : {
+      "entry"   : "[KadOH]/node",
+      "build"   : "[dist]/KadOH.js"
+    },
+    "mini" : {
+      "depends" : "normal",
+      "mignify" : true,
+      "build"   : "[dist]/KadOH.min.js"
+    },
+    "test" : {
+      "depends" : "normal",
+      "build"   : "[spec-dist]/KadOH.js"
+    },
+    "node" : {
+      "depends" : "normal",
+      "exclude" : [
+        "[socket.io-client]/*",
+        "[jquery]/*",
+        "[strophejs]/*",
+        "[lawnchair]/*" 
+      ],
+      "build"   : "[dist]/KadOH.node.js"
+    }
+  }
+}
