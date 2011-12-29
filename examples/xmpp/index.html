@@ -17,9 +17,11 @@ $(function() {
         }
       }
     });
-    KadOH.log.subscribeTo(node, 'Node');
-    KadOH.log.subscribeTo(node._reactor, 'Reactor')
-    KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
+    if (log) {
+      KadOH.log.subscribeTo(node, 'Node');
+      KadOH.log.subscribeTo(node._reactor, 'Reactor')
+      KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
+    }
     event.preventDefault();
   }
 

@@ -13,7 +13,9 @@ describe('KBucket', function() {
   });
   
   it('should be a function', function() {
+    var kbucket = new KBucket(parent_id, min, max);
     expect(KBucket).toBeFunction();
+    expect(kbucket instanceof KadOH.PeerArray).toBeTruthy();
   });
   
   describe('When I instanciate a new KBucket', function() {

@@ -97,13 +97,11 @@ describe('SortedPeerArray', function() {
     port = 1234;
     socket = ip + ':' + port;
     id = SHA1(socket);
+    arr = new PeerArray().setRelativeNodeID(id);
+    expect(arr instanceof KadOH.PeerArray).toBeTruthy();
   });
 
   describe('#add', function() {
-    beforeEach(function() {
-      arr = new PeerArray().setRelativeNodeID(id);
-    });
-
     it('should be possible to add one triple', function() {
       arr.addPeer([socket, id]);
       expect(arr.getPeer(0).equals(new Peer(socket))).toBeTruthy();
@@ -150,10 +148,6 @@ describe('SortedPeerArray', function() {
   });
 
   describe('#contains', function() {
-    beforeEach(function() {
-      arr = new PeerArray().setRelativeNodeID(id);
-    });
-
     it('should respond correctly', function() {
       arr.addPeer([socket, id]);
       expect(arr.contains(new Peer(socket))).toBeTruthy();
@@ -162,10 +156,6 @@ describe('SortedPeerArray', function() {
   });
 
   describe('#remove', function() {
-    beforeEach(function() {
-      arr = new PeerArray().setRelativeNodeID(id);
-    });
-
     it('should works', function() {
       arr.add([new Peer(ip + ':' + port), new Peer(ip + ':' + (port+1)), new Peer(ip + ':' + (port+2)), new Peer(ip + ':' + (port+3))]);
       arr.remove([new Peer(ip + ':' + (port+1)),new Peer(ip + ':' + (port+3)) ]);
@@ -189,19 +179,13 @@ describe('SortedPeerArray', function() {
   });
 
   describe('sorted array', function() {
-    
-    beforeEach(function() {
-      spa = new PeerArray();
-      spa.setRelativeNodeID(id);
-    });
-
     it('should be a sorted array', function() {
       var peers = [];
       for (var i = 0; i < KadOH.globals.B * 2; i++) {
         peers.push(new Peer(ip + ':' + port, Factory.distance(id, Math.floor(Math.random() * KadOH.globals.B))));
       }
-      spa.add(peers);
-      distance_array = spa.getRawArray().map(function(peer) {
+      arr.add(peers);
+      distance_array = arr.getRawArray().map(function(peer) {
         return KadOH.util.Crypto.distance(peer.getID(), id);
       });
       expect(distance_array).toBeAscSorted();
@@ -210,16 +194,9 @@ describe('SortedPeerArray', function() {
   });
 
   describe('relative node id', function() {
-    
-    beforeEach(function() {
-      spa = new PeerArray();
-      spa.setRelativeNodeID(id);
-    });
-
     it('should have the good relative node id', function() {
-      expect(spa.isSortedByDistanceTo(id)).toBeTruthy();
+      expect(arr.isSortedByDistanceTo(id)).toBeTruthy();
     });
-
   });
 
 });
