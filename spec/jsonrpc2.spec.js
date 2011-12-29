@@ -1,7 +1,7 @@
 describe('jsonrpc2', function() {
  
  beforeEach(function() {
-    prot = KadOH.protocol.jsonrpc2;
+    prot = KadOH.rpc.protocol.jsonrpc2;
     RPCS = KadOH.globals.RPCS;
  }); 
   
