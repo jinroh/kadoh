@@ -7,13 +7,10 @@ describe('PeerArray', function() {
     port = 1234;
     socket = ip + ':' + port;
     id = SHA1(socket);
+    arr = new PeerArray();
   });
 
-  describe('method add', function() {
-    beforeEach(function() {
-      arr = new PeerArray();
-    });
-
+  describe('#add', function() {
     it('should be possible to add one triple', function() {
       arr.addPeer([socket, id]);
       expect(arr.getPeer(0).equals(new Peer(socket))).toBeTruthy();
@@ -59,11 +56,7 @@ describe('PeerArray', function() {
     });
   });
 
-  describe('method contains', function() {
-    beforeEach(function() {
-      arr = new PeerArray();
-    });
-
+  describe('#contains', function() {
     it('should respond correctly', function() {
       arr.addPeer([socket, id]);
       expect(arr.contains(new Peer(socket))).toBeTruthy();
@@ -71,11 +64,7 @@ describe('PeerArray', function() {
     });
   });
 
-  describe('method remove', function() {
-    beforeEach(function() {
-      arr = new PeerArray();
-    });
-
+  describe('#remove', function() {
     it('should works', function() {
       arr.add([new Peer(ip + ':' + port), new Peer(ip + ':' + (port+1)), new Peer(ip + ':' + (port+2)), new Peer(ip + ':' + (port+3))]);
       arr.remove([new Peer(ip + ':' + (port+1)),new Peer(ip + ':' + (port+3)) ]);
@@ -84,6 +73,15 @@ describe('PeerArray', function() {
       expect(arr.contains(new Peer(ip + ':' + (port+2)))).toBeTruthy();
       expect(arr.contains(new Peer(ip + ':' + (port+1)))).toBeFalsy();
       expect(arr.contains(new Peer(ip + ':' + (port+3)))).toBeFalsy();
+    });
+  });
+
+  describe('#clone', function() {
+    it('should copy all the properties', function() {
+      var clone = arr.clone();
+      expect(clone).not.toBe(arr);
+      expect(clone._PEERS).not.toBe(arr._PEERS);
+      expect(clone._PEERS).toEqual(arr._PEERS);
     });
   });
 
@@ -101,7 +99,7 @@ describe('SortedPeerArray', function() {
     id = SHA1(socket);
   });
 
-  describe('method add', function() {
+  describe('#add', function() {
     beforeEach(function() {
       arr = new PeerArray().setRelativeNodeID(id);
     });
@@ -151,7 +149,7 @@ describe('SortedPeerArray', function() {
     });
   });
 
-  describe('method contains', function() {
+  describe('#contains', function() {
     beforeEach(function() {
       arr = new PeerArray().setRelativeNodeID(id);
     });
@@ -163,7 +161,7 @@ describe('SortedPeerArray', function() {
     });
   });
 
-  describe('method remove', function() {
+  describe('#remove', function() {
     beforeEach(function() {
       arr = new PeerArray().setRelativeNodeID(id);
     });
@@ -176,6 +174,17 @@ describe('SortedPeerArray', function() {
       expect(arr.contains(new Peer(ip + ':' + (port+2)))).toBeTruthy();
       expect(arr.contains(new Peer(ip + ':' + (port+1)))).toBeFalsy();
       expect(arr.contains(new Peer(ip + ':' + (port+3)))).toBeFalsy();
+    });
+  });
+
+  describe('#clone', function() {
+    it('should copy all the properties', function() {
+      var clone = arr.clone();
+      expect(clone).not.toBe(arr);
+      expect(clone._PEERS).not.toBe(arr._PEERS);
+      expect(clone._PEERS).toEqual(arr._PEERS);
+      expect(clone._relativeNodeID).toEqual(arr._relativeNodeID);
+      expect(clone._newClosestIndex).toEqual(arr._newClosestIndex);
     });
   });
 

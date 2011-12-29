@@ -27,14 +27,15 @@ describe('Peer', function() {
     it('should get an ID which is the SHA1 of IP:PORT', function() {
       expect(peer.getID()).toEqual(SHA1(ip));
     });
-    
+
   });
   
   it('should be possible to instanciate a peer using a triple', function() {
     var peer1 = new Peer(['127.0.0.1:1234', SHA1('foo')]);
-    
+    var peer2 = new Peer('127.0.0.1:1234', SHA1('foo'));
     expect(peer1.getAddress()).toEqual('127.0.0.1:1234');
     expect(peer1.getID()).toEqual(SHA1('foo'));
+    expect(peer1.equals(peer2)).toBeTruthy();
   });
   
   it('should be possible to test their equality', function() {
@@ -42,8 +43,15 @@ describe('Peer', function() {
     var peer2 = new Peer(['127.0.0.1:1234']);
     var peer3 = new Peer(['127.0.0.1:1235']);
     
-    expect(peer1.equals(peer2)).toBe(true);
-    expect(peer1.equals(peer3)).toBe(false);
+    expect(peer1.equals(peer2)).toBeTruthy();
+    expect(peer1.equals(peer3)).toBeFalsy();
+  });
+
+  it('should prevent bad ID', function() {
+    var test = function() {
+      var peer = new Peer(ip, 'abc');
+    };
+    expect(test).toThrow();
   });
   
 });

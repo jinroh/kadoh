@@ -21,7 +21,7 @@ describe('KBucket', function() {
       kbucket = new KBucket(parent_id, min, max);
     });
     afterEach(function() {
-      kbucket._stopRefreshTimeout();
+      kbucket.stopRefreshTimeout();
     });
     
     it('should be empty, from 1 to _B with the right parent id', function() {
@@ -88,7 +88,7 @@ describe('KBucket', function() {
       }
     });
     afterEach(function() {
-      kbucket._stopRefreshTimeout();
+      kbucket.stopRefreshTimeout();
     });
 
     it('should not be able to add a new peer', function() {
@@ -97,26 +97,22 @@ describe('KBucket', function() {
   });
   
   describe('When I want to split the KBucket', function() {
+    
     beforeEach(function() {
       old_range = kbucket.getRange();
       new_kbucket = kbucket.split();
     });
     
     afterEach(function() {
-      new_kbucket._stopRefreshTimeout();
+      new_kbucket.stopRefreshTimeout();
     });
 
     it('should return me a new kbucket with the right range', function() {
-      //var new_kbucket = kbucket.split();
-      
       expect(new_kbucket.getRange().min).toEqual(0);
       expect(new_kbucket.getRange().max).toEqual(kbucket.getRange().min);
     });
     
     it('should change the KBucket\'s range min', function() {
-      //old_range = kbucket.getRange();
-      //kbucket.split();
-      
       expect(kbucket.getRange().max).toEqual(old_range.max);
       expect(kbucket.getRange().min).toEqual(old_range.max - 1);
     });
