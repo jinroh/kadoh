@@ -108,13 +108,13 @@ Kademlia client
       - outgoing RPC 
           - 'PING'                  [x]
           - 'FIND_NODE'             [x]
-          - 'FIND_VALUE'            [ ]
-          - 'STORE'                 [ ]
+          - 'FIND_VALUE'            [x]
+          - 'STORE'                 [x]
 
       - incoming RPC
           - 'PING'                  [x]
           - 'FIND_NODE'             [x]
-          - 'FIND_VALUE'            [ ]
+          - 'FIND_VALUE'            [x]
           - 'STORE'                 [ ]
 
       - RPC protocol

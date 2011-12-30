@@ -16,7 +16,7 @@
       "entry"   : "[KadOH]/node",
       "build"   : "[dist]/KadOH.js"
     },
-    "mini" : {
+    "min" : {
       "depends" : "normal",
       "mignify" : true,
       "build"   : "[dist]/KadOH.min.js"
