@@ -28,6 +28,11 @@ describe('Deferred', function() {
       expect(def.isResolved()).toBeTruthy();
       expect(success).toHaveBeenCalledWith('foo', 'bar');
     });
+
+    it('should be possible to get passed arguments', function(){
+      def.resolve('foo', 'bar');
+      expect(def.getResolvePassedArgs()).toEqual(['foo', 'bar']);
+    });
     
     it('should not be resolve twice', function() {
       def.resolve().resolve();
@@ -63,6 +68,11 @@ describe('Deferred', function() {
       def.reject('foo', 'bar');
       expect(def.isRejected()).toBeTruthy();
       expect(failure).toHaveBeenCalledWith('foo', 'bar');
+    });
+
+    it('should be possible to get passed arguments', function(){
+      def.reject('foo', 'bar');
+      expect(def.getRejectPassedArgs()).toEqual(['foo', 'bar']);
     });
 
     it('should not be reject twice', function() {
