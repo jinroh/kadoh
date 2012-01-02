@@ -24,7 +24,7 @@ Whatever RPC encoding protocl used (XML, JSON), RPCs SHOULD follow thefollowing 
 ### Response - result
   
   - `id`    - String        : the node id of the queried node
-  - `nodes` - Array<String> : array of nodes id
+  - `nodes` - Array<Array<String>> : array of array [node_address, node_id]
 
 ## Find value
 
@@ -38,9 +38,9 @@ Whatever RPC encoding protocl used (XML, JSON), RPCs SHOULD follow thefollowing 
 ### Response - result
   
   - `id`         - String        : the node id of the queried node
-  - `nodes`      - Array<String> : array of nodes id (if not found)
-  - `value`      - String        : value found       (if found)
-  - `expiration` - Integer       : expiration date   (if found)
+  - `nodes` - Array<Array<String>> : _if not found_ array of array [node_address, node_id]
+  - `value`      - String        : _if found_ value found
+  - `expiration` - Integer       : _if found_ expiration date
 
 ## Store a value
   
