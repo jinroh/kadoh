@@ -4,6 +4,7 @@ notifications:
 branches:
   except:
     - master
+    - refactor_reactor
 
 language: node_js
 node_js:
