@@ -1,4 +1,4 @@
-describe('RPC', function() {
+xdescribe('RPC', function() {
   
   beforeEach(function() {
     RPC = KadOH.rpc.object.RPC;
