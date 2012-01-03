@@ -222,9 +222,14 @@ describe('Deferred', function() {
 
     describe('whenAtLeast', function() {
       
-      it('should resolve if at least one has resolved when they are all completed', function() {
-        var atl = Deferred.whenAtLeast(promises).then(success, failure);
+      var atl;
+
+      beforeEach(function() {
+        atl = Deferred.whenAtLeast(promises).then(success, failure);
         expect(atl.isResolved()).toBeFalsy();
+      });
+
+      it('should resolve if at least one has resolved when they are all completed', function() {
         promises[0].reject();
         expect(success).not.toHaveBeenCalled();
         promises[2].resolve('bar');
@@ -232,6 +237,15 @@ describe('Deferred', function() {
         promises[1].reject();
         expect(success).toHaveBeenCalled();
         expect(atl.isResolved()).toBeTruthy();
+      });
+
+      it('should reject when all have rejected', function() {
+        promises[0].reject();
+        promises[1].reject();
+        promises[2].reject();
+        expect(failure).toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(atl.isRejected()).toBeTruthy();
       });
 
     });

@@ -5,22 +5,38 @@
 <script type="text/javascript">
 $(function() {
   var KadOH = window.KadOH;
-  window.node = new KadOH.Node(null, {
-    reactor: {
-      host: 'http://bosh.melo.fr.nf/http-bind',
-      transport: {
-        jid: 'kadoh@jabber.org',
-        password: 'azerty'
-      }
-    }
-  });
-  KadOH.log.subscribeTo(node, 'Node');
-  KadOH.log.subscribeTo(node._reactor, 'Reactor')
-  KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
+  node = undefined;
 
   function init(event) {
+    var log = node ? false : true;
+    node    = node || new KadOH.Node(null, {
+      reactor: {
+        transport: {
+          jid: $('#login').val().trim() || 'kadoh@jabber.org',
+          password: $('#password').val().trim() || 'azerty'
+        }
+      }
+    });
+    if (log) {
+      KadOH.log.subscribeTo(node, 'Node');
+      KadOH.log.subscribeTo(node._reactor, 'Reactor')
+      KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
+    }
+    event.preventDefault();
+  }
+
+  function connect(event) {
     node.connect();
-    node.join(['alexstrat@jabber.org', 'jinroh@jabber.org']);
+    event.preventDefault();
+  }
+
+  function disconnect(event) {
+    node.disconnect();
+    event.preventDefault();
+  }
+
+  function join(event) {
+    node.join(['alexstrat@jabber.org/kadoh', 'jinroh@jabber.org/kadoh']);
     event.preventDefault();
   }
 
@@ -37,13 +53,25 @@ $(function() {
     }
   }
 
-  $('#join').click(init);
+  $('#init').click(init);
+  $('#connect').click(connect);
+  $('#disconnect').click(disconnect);
+  $('#join').click(join);
   $('#ping').click(ping);
 });
 </script>
 <body>
 <h2>Send message to node :</h2>
 <form id='form'>
+  <p>
+    <input type="text" value="kadoh@jabber.org" name="login" id="login">
+    <input type="password" value="azerty" name="password" id="password">
+    <input type="submit" value="Init" name="init" id="init">
+  </p>
+  <p>
+    <input type="submit" value="Connect" name="connect" id="connect">
+    <input type="submit" value="Disconnect" name="disconnect" id="disconnect">
+  </p>
   <p>
     <input type="submit" value="Join" name="join" id="join">
   </p>
