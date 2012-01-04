@@ -46,7 +46,7 @@ $(function() {
       node.reactor().PING(new KadOH.Peer(dst));
     }
     catch(e) {
-      console.error(e);
+      console.debug(e);
     }
     finally {
       event.preventDefault();
