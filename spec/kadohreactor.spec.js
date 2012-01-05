@@ -56,7 +56,7 @@ describe('in Reactor', function() {
         expect(args[1].getAddress()).toEqual('you@you.me');
         expect(args[0].method).toEqual('PING');
         expect(args[0].params[0].id).toEqual('a2cfd6254f8dcfa189b0c1142056df9d3daca861');
-        expect(args[0].id).toEqual(rpc.getId());
+        expect(args[0].id).toEqual(rpc.getID());
       });
 
       describe('when receive a response result', function() {
@@ -65,7 +65,7 @@ describe('in Reactor', function() {
           R.on('reached', cb);
           rpc.then(cb, this);
           R.handleNormalizedResponse({
-            id : rpc.getId(),
+            id : rpc.getID(),
             result : {id : 'b2cfd6254f8dcfa189b0c1142056df9d3daca861'}
           },'you@you.me');
         });
@@ -94,7 +94,7 @@ describe('in Reactor', function() {
           var spy = jasmine.createSpy();
           rpc.addErrback(spy, this);
           R.handleNormalizedResponse({
-            id : rpc.getId(),
+            id : rpc.getID(),
             error : 'error'
           },'you@you.me');
         });
@@ -106,7 +106,7 @@ describe('in Reactor', function() {
       describe('when i receive a response from a different peer (spoofing prevention)', function(){
         beforeEach(function() {
           R.handleNormalizedResponse({
-            id : rpc.getId(),
+            id : rpc.getID(),
             error : 'error'
           },'NASTY_BOY@you');
         });
@@ -117,7 +117,7 @@ describe('in Reactor', function() {
           cb = jasmine.createSpy();
           rpc.then(cb, this);
           R.handleNormalizedResponse({
-            id : rpc.getId(),
+            id : rpc.getID(),
             result : {id : 'b2cfd6254f8dcfa189b0c1142056df9d3daca861'}
           },'you@you.me');
           expect(cb).toHaveBeenCalled();
@@ -129,7 +129,7 @@ describe('in Reactor', function() {
           outdated_cb = jasmine.createSpy();
           R.on('outdated', outdated_cb, this);
           R.handleNormalizedResponse({
-            id : rpc.getId(),
+            id : rpc.getID(),
             result : {id : 'f2cfd6254f8dcfa189b0c1142056df9d3daca861'}
           },'you@you.me');
         });
@@ -169,7 +169,7 @@ describe('in Reactor', function() {
       it('should have been parsed', function() {
         expect(handler).toHaveBeenCalled();
         var rpc = handler.mostRecentCall.args[0];
-        expect(rpc.getId()).toEqual('lu');
+        expect(rpc.getID()).toEqual('lu');
         expect(rpc.getMethod()).toEqual('PING');
         expect(rpc.getQuering().getID()).toEqual(you.getID());
         expect(rpc.getQuering().getAddress()).toEqual(you.getAddress());
@@ -192,7 +192,7 @@ describe('in Reactor', function() {
           dst = R.sendNormalizedResponse.mostRecentCall.args[1];
 
           expect(dst.equals(you)).toBeTruthy();
-          expect(res.id).toEqual(rpc.getId());
+          expect(res.id).toEqual(rpc.getID());
           expect(res.result.id).toEqual('a2cfd6254f8dcfa189b0c1142056df9d3daca861');
         });
       });
@@ -209,7 +209,7 @@ describe('in Reactor', function() {
           dst = R.sendNormalizedResponse.mostRecentCall.args[1];
 
           expect(dst.equals(you)).toBeTruthy();
-          expect(res.id).toEqual(rpc.getId());
+          expect(res.id).toEqual(rpc.getID());
           expect(res.error).toBeDefined();
         });
       });
