@@ -33,7 +33,7 @@ describe('jsonrpc2', function() {
   
   it('should build a good requestMessage', function() {
     expect(prot.buildRequest).toBeFunction();
-    var req = prot.buildRequest('foo', 'bar', 'dot');
+    var req = prot.buildRequest('foo', ['bar', 'dot']);
     expect(req).toBeObject();
     expect(req.isRequest()).toBeTruthy();
     expect(req.getMethod()).toEqual('foo');
