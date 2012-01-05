@@ -101,4 +101,29 @@ describe('EventEmitter', function() {
     });
 
   });
+
+  describe('chain of events', function() {
+    
+    it('should be possible to add chain of events', function() {
+      var ee   = new constr();
+      var spy  = jasmine.createSpy();
+      var that = {baz: 'quz'};
+      var chain = {
+        'foo': function() {
+          spy.call(this, 'foo');
+        },
+        'bar': function() {
+          spy.call(this, 'bar');
+        }
+      };
+      ee.on(chain, that);
+      ee.emit('foo');
+      expect(spy).toHaveBeenCalledWith('foo');
+      expect(spy.mostRecentCall.object).toBe(that);
+      ee.emit('bar');
+      expect(spy).toHaveBeenCalledWith('bar');
+      expect(spy.mostRecentCall.object).toBe(that);
+    });
+
+  });
 });

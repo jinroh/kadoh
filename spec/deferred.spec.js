@@ -214,7 +214,7 @@ describe('Deferred', function() {
         promises[0].resolve('foo');
         expect(success).not.toHaveBeenCalled();
         promises[2].resolve('baz');
-        expect(success).toHaveBeenCalledWith(['foo'], ['baz']);
+        expect(success).toHaveBeenCalledWith(['foo'], undefined, ['baz']);
         expect(some.isResolved()).toBeTruthy();
       });
 
@@ -248,6 +248,24 @@ describe('Deferred', function() {
         expect(atl.isRejected()).toBeTruthy();
       });
 
+    });
+
+    describe('whenMap', function() {
+      
+      var map;
+
+      beforeEach(function() {
+        map = Deferred.whenMap(promises, function(value) {
+          return value + '_bar';
+        }).then(success);
+      });
+
+      it('should', function() {
+        promises[0].resolve('foo1');
+        promises[1].resolve('foo2');
+        promises[2].resolve('foo3');
+        expect(success).toHaveBeenCalledWith(['foo1_bar', 'foo2_bar', 'foo3_bar']);
+      });
     });
 
   });
