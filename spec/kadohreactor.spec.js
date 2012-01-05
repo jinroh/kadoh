@@ -155,7 +155,7 @@ describe('in Reactor', function() {
       beforeEach(function() {
         spyOn(R, 'sendNormalizedResponse');
         handler = jasmine.createSpy();
-        R.on('receive RPCQuery', handler, this);
+        R.on('queried', handler, this);
 
         R.handleNormalizedQuery({
           id : 'lu',
