@@ -171,8 +171,8 @@ describe('in Reactor', function() {
         var rpc = handler.mostRecentCall.args[0];
         expect(rpc.getID()).toEqual('lu');
         expect(rpc.getMethod()).toEqual('PING');
-        expect(rpc.getQuering().getID()).toEqual(you.getID());
-        expect(rpc.getQuering().getAddress()).toEqual(you.getAddress());
+        expect(rpc.getQuerying().getID()).toEqual(you.getID());
+        expect(rpc.getQuerying().getAddress()).toEqual(you.getAddress());
       });
 
       it('should emit reached event', function() {
