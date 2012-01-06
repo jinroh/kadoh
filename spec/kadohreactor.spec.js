@@ -159,7 +159,7 @@ describe('in Reactor', function() {
           reached_cb = jasmine.createSpy();
           R.on('reached', reached_cb);
           R.handleNormalizedResponse({
-            id : rpc.getId(),
+            id : rpc.getID(),
             result : {id : 'b2cfd6254f8dcfa189b0c1142056df9d3daca861'}
           },'you@you.me');
         });
