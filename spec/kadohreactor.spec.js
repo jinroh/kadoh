@@ -149,7 +149,26 @@ describe('in Reactor', function() {
       });
     });
 
-
+    describe('when sending but i dont know the id (bootstrap)', function() {
+      beforeEach(function() {
+        you = new Peer('you@you.me',null);
+        rpc = R.sendRPC(you ,'PING');
+      });
+      describe('when receiving a response', function() {
+        beforeEach(function() {
+          reached_cb = jasmine.createSpy();
+          R.on('reached', reached_cb);
+          R.handleNormalizedResponse({
+            id : rpc.getId(),
+            result : {id : 'b2cfd6254f8dcfa189b0c1142056df9d3daca861'}
+          },'you@you.me');
+        });
+        it('should emit a reached event with the right id', function() {
+          expect(reached_cb).toHaveBeenCalled();
+          expect(reached_cb.mostRecentCall.args[0].equals(you)).toBeTruthy();
+        });
+      });
+    });
 
     describe('when receiving', function() {
       beforeEach(function() {
