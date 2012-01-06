@@ -21,7 +21,7 @@ task('default', [], function() {
     '   _/  _/    _/    _/  _/    _/  _/    _/  _/    _/     \n' +
     '  _/    _/    _/_/_/    _/_/_/    _/_/    _/    _/      \n' +
     '                                                        ';
-  console.log(logo.yellow.inverse);
+  console.log(logo.yellow);
 });
 
 // ------------ TESTS ------------
