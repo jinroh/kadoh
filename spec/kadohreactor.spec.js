@@ -387,6 +387,7 @@ describe('in Reactor', function() {
         var rpc = handler.mostRecentCall.args[0];
         expect(rpc.getID()).toEqual('lu');
         expect(rpc.getMethod()).toEqual('FIND_NODE');
+        expect(rpc.getTarget()).toEqual(target);
         expect(rpc.getQuerying().getID()).toEqual(you.getID());
         expect(rpc.getQuerying().getAddress()).toEqual(you.getAddress());
         expect(rpc.getTarget()).toEqual(target);
