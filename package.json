@@ -15,7 +15,7 @@
         "socket.io": "~0.8"
       , "socket.io-client": "~0.8"
       , "jake": "~0.1"
-      , "jsCicada": "https://github.com/alexstrat/jsCicada/tarball/master"
+      , "jsCicada": "~0.1.3"
       , "restler" : "~0.2.1"
       , "express" : "~2.5"
       , "colors"  : "~0.6"
