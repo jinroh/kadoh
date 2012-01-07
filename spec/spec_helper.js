@@ -51,6 +51,9 @@
             return false;
         }
         return true;
+      },
+      toBeInstanceof: function(expected) {
+        return(this.actual instanceof expected);
       }
     });
   });
