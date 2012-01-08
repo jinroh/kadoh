@@ -95,7 +95,7 @@ describe('KBucket', function() {
     });
 
     it('should not be able to add a new peer', function() {
-      expect(function() { kbucket.addPeer(new Peer('127.0.0.1:2000')); }).toThrow();
+      expect(function() { kbucket.addPeer(new Peer('127.0.0.1:2000')); }).toThrow('full');
     });
   });
   
