@@ -188,8 +188,8 @@ describe('in Reactor', function() {
       it('should have been parsed', function() {
         expect(handler).toHaveBeenCalled();
         var rpc = handler.mostRecentCall.args[0];
-        //expect(rpc).toBeInstanceof(KadOH.rpc.object.PingRPC); //trigger cycling
-        expect(rpc instanceof KadOH.rpc.object.PingRPC).toBeTruthy();
+        expect(rpc).toBeInstanceof(KadOH.rpc.object.PingRPC); //trigger cycling
+        //expect(rpc instanceof KadOH.rpc.object.PingRPC).toBeTruthy();
         expect(rpc.getID()).toEqual('lu');
         expect(rpc.getMethod()).toEqual('PING');
         expect(rpc.getQuerying().getID()).toEqual(you.getID());
@@ -387,8 +387,8 @@ describe('in Reactor', function() {
       it('should have been parsed', function() {
         expect(handler).toHaveBeenCalled();
         var rpc = handler.mostRecentCall.args[0];
-        //expect(rpc).toBeInstanceof(KadOH.rpc.object.FindNodeRPC); //trigger cycling
-        expect(rpc instanceof KadOH.rpc.object.FindNodeRPC).toBeTruthy();
+        expect(rpc).toBeInstanceof(KadOH.rpc.object.FindNodeRPC); //trigger cycling
+        //expect(rpc instanceof KadOH.rpc.object.FindNodeRPC).toBeTruthy();
         expect(rpc.getID()).toEqual('lu');
         expect(rpc.getMethod()).toEqual('FIND_NODE');
         expect(rpc.getTarget()).toEqual(target);
