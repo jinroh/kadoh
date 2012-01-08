@@ -126,4 +126,19 @@ describe('EventEmitter', function() {
     });
 
   });
+
+  describe('forward', function() {
+    
+    it('should forward events', function() {
+      var ee1 = new constr(),
+          ee2 = new constr(),
+          spy = jasmine.createSpy();
+      
+      ee1.forward('foo', ee2);
+      ee2.on('foo', spy);
+      ee1.emit('foo', 'bar', 'baz');
+      expect(spy).toHaveBeenCalledWith('bar', 'baz');
+    });
+
+  });
 });
