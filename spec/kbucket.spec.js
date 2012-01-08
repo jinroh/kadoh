@@ -64,7 +64,7 @@ describe('KBucket', function() {
     
     it('should be possible to retrieve a certain number of peers from it', function() {
       for (var i=0; i < KadOH.globals.K; i++) {
-        kbucket.addPeer(new Peer('127.0.0.1:' + 1025+i));
+        kbucket.addPeer(new Peer('127.0.0.1:' + (1025+i)));
       }
       expect(kbucket.getPeers(KadOH.globals.K - 1).length()).toEqual(KadOH.globals.K - 1);
       expect(kbucket.getPeers(KadOH.globals.K).getRawArray().map(function(peer) {
@@ -74,7 +74,7 @@ describe('KBucket', function() {
 
     it('should exclude certain peers', function() {
       for (var i=0; i < KadOH.globals.K; i++) {
-        kbucket.addPeer(new Peer('127.0.0.1:' + 1025+i));
+        kbucket.addPeer(new Peer('127.0.0.1:' + (1025+i)));
       }
       var exclude = [new Peer('127.0.0.1:' + 1026)];
       expect(kbucket.getPeers(kbucket.length(), exclude).contains(exclude)).toBeFalsy();
@@ -87,7 +87,7 @@ describe('KBucket', function() {
     beforeEach(function() {
       kbucket = new KBucket(parent_id, min, max);
       for (var i=0; i < KadOH.globals.K; i++) {
-        kbucket.addPeer(new Peer('127.0.0.1:' + 1025+i));
+        kbucket.addPeer(new Peer('127.0.0.1:' + (1025+i)));
       }
     });
     afterEach(function() {

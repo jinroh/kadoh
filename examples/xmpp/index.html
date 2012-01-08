@@ -18,6 +18,7 @@ $(function() {
       }
     });
     if (log) {
+      KadOH.log.setLevel('debug');
       KadOH.log.subscribeTo(node, 'Node');
       KadOH.log.subscribeTo(node._reactor, 'Reactor')
       KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
@@ -46,7 +47,7 @@ $(function() {
       node.reactor().PING(new KadOH.Peer(dst));
     }
     catch(e) {
-      console.error(e);
+      console.debug(e);
     }
     finally {
       event.preventDefault();

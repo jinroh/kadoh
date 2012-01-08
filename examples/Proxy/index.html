@@ -45,7 +45,7 @@ $(function() {
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
     try {
-      var bootstraps = ['router.utorrent.com:6881', 'router.bittorrent.com:6881'];
+      var bootstraps = ['67.215.242.139:6881', '67.215.242.138:6881'];
       node.connect();
       node.join(bootstraps);
     } catch(e) {
@@ -98,7 +98,7 @@ var shortSha = function(hash) {
 function iterFindRecorder(iterfind, where) {
   this.states = [];
   this.iterfind = iterfind;
-  this.targetID = iterfind._target.getID();
+  this.targetID = iterfind._target;
   var self =this;
   var index = 0;
 
@@ -264,6 +264,7 @@ iterFindRecorder.prototype =  {
   };
 
   node = new KadOH.Node(undefined, options);
+  KadOH.log.setLevel('debug');
   KadOH.log.subscribeTo(node, 'Node');
   KadOH.log.subscribeTo(node.reactor(), 'Reactor');
   KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');

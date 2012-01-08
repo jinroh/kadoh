@@ -6,7 +6,7 @@ Whatever RPC encoding protocl used (XML, JSON), RPCs SHOULD follow thefollowing 
 
 ### Query - parameters
 
-  - `id` - String : the node id of the quering node
+  - `id` - String : the node id of the querying node
 
 ### Response - result
 
@@ -18,7 +18,7 @@ Whatever RPC encoding protocl used (XML, JSON), RPCs SHOULD follow thefollowing 
 
 ### Query - parameters
 
-  - `id`     - String : the node id of the quering node
+  - `id`     - String : the node id of the querying node
   - `target` - String : node id of the targeted node
 
 ### Response - result
@@ -32,7 +32,7 @@ Whatever RPC encoding protocl used (XML, JSON), RPCs SHOULD follow thefollowing 
   
 ### Query - parameters
 
-  - `id`     - String : the node id of the quering node
+  - `id`     - String : the node id of the querying node
   - `target` - String : value key id of the targeted value
 
 ### Response - result
@@ -48,7 +48,7 @@ Whatever RPC encoding protocl used (XML, JSON), RPCs SHOULD follow thefollowing 
 
 ### Query - parameters
   
-  - `id`         - String  : the node id of the quering node
+  - `id`         - String  : the node id of the querying node
   - `key`        - String  : the key of the value
   - `value`      - String  : value associated to the key
   - `expiration` - Integer : expiration date (<0 means infinite)

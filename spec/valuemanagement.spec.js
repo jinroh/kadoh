@@ -11,9 +11,6 @@ describe('In Value Management', function() {
       },
       getAddress: function() {
         return 'kadoh@jabber.org';
-      },
-      republish: function(key, value, exp) {
-        //do nothing for the moment
       }
     };
   });
@@ -118,19 +115,20 @@ describe('In Value Management', function() {
       });
 
       it('should be republished at least twice', function(){
-        spyOn(node,'republish');
+        spy = jasmine.createSpy();
+        v.on('republish', spy, this);
         waits(v._repTime+100);
         runs(function(){
-          expect(node.republish).toHaveBeenCalled();
-          expect(node.republish.callCount).toEqual(1);
-          expect(node.republish.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
+          expect(spy).toHaveBeenCalled();
+          expect(spy.callCount).toEqual(1);
+          expect(spy.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
         });
 
         waits(v._repTime+100);
         runs(function(){
-          expect(node.republish).toHaveBeenCalled();
-          expect(node.republish.callCount).toEqual(2);
-          expect(node.republish.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
+          expect(spy).toHaveBeenCalled();
+          expect(spy.callCount).toEqual(2);
+          expect(spy.mostRecentCall.args[0]).toEqual('3Va5c4acf388e17a1a8a5364b14ee48c2cb29b01');
         });
       });
 
@@ -142,15 +140,16 @@ describe('In Value Management', function() {
           });
         });
         it('should not have been republished too early..', function() {
-          spyOn(node,'republish');
-          expect(node.republish).not.toHaveBeenCalled();
+          spy = jasmine.createSpy();
+          v.on('republish', spy, this);
+          expect(spy).not.toHaveBeenCalled();
         });
         it('..but at the rigth time', function() {
-          spyOn(node,'republish');
-          waits(v._repTime/2+10);
+          spy = jasmine.createSpy();
+          v.on('republish', spy, this);
+          waits(v._repTime+10);
           runs(function(){
-            expect(node.republish).toHaveBeenCalled();
-            expect(node.republish.callCount).toEqual(1);
+            expect(spy.callCount).toEqual(1);
           });
         });
       });

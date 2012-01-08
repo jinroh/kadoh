@@ -3,25 +3,25 @@ describe('Routing Table', function() {
   beforeEach(function() {
     RoutingTable = KadOH.RoutingTable;
     globals = KadOH.globals;
-    
-    SHA1 = KadOH.globals.DIGEST;
-    Peer = KadOH.Peer;
+    SHA1    = globals.DIGEST;
+    Peer    = KadOH.Peer;
+    Crypto  = KadOH.util.Crypto;
 
     parent_id = SHA1('ip:port');
   });
   
+  beforeEach(function() {
+    routing_table = new RoutingTable(parent_id);
+  });
+  afterEach(function() {
+    routing_table.stop();
+  });
+
   it('should be a function', function() {
     expect(RoutingTable).toBeFunction();
   });
   
   describe('when I instanciate a new RoutingTable', function() {
-    
-    beforeEach(function() {
-      routing_table = new RoutingTable(parent_id);
-    });
-    afterEach(function() {
-      routing_table.stop();
-    });
     
     it('should have one KBucket [0 -> _B]', function() {
       expect(routing_table.howManyKBuckets()).toEqual(1);
@@ -43,18 +43,56 @@ describe('Routing Table', function() {
       
       expect(routing_table.getPeer(peer).getID()).toEqual(SHA1('127.0.0.1:54321'));
     });
-    
+
     describe('when I a add more than K elements to it', function() {
       
       it('should split when entering random peers', function() {
-         for (var i = 0; i < KadOH.globals.K +1; i++) {
+         for (var i = 0; i < globals.K +1; i++) {
           routing_table.addPeer(new Peer('127.0.0.1:' + (1025 + i)));
         }
         expect(routing_table.howManyKBuckets()).toEqual(2);
       });
+
+      it('should update a full the kbucket', function() {
+        for (var i = 0; i < globals.K + 1; i++) {
+          routing_table.addPeer(
+            new Peer('127.0.0.1:' + (1025 + i), Crypto.digest.randomSHA1(parent_id, globals.B-1))
+          );
+        }
+        var kb = routing_table._kbuckets[1];
+        expect(kb.isFull()).toBeTruthy();
+        // expect(kb.getOldestPeer().getAddress()).toEqual('127.0.0.1:1026');
+        // expect(kb.getNewestPeer().getAddress()).toEqual('127.0.0.1:' + (1025 + globals.K));
+      });
+
+    });
+
+    describe('with a complete routing table', function() {
+      
+      beforeEach(function() {
+        for (var i = 0; i < KadOH.globals.B - 120; i++) {
+          for (var j = 0; j < KadOH.globals.K; j++) {
+            routing_table.addPeer(new Peer(i+':'+j, Crypto.digest.randomSHA1(parent_id, globals.B-i)));
+          }
+        }
+        // console.log(routing_table._kbuckets.map(function(kb) {
+        //   return kb._PEERS.map(function(peer) {
+        //     return peer.getAddress();
+        //   });
+        // }));
+      });
+
+      it('should', function() {
+        // console.log(routing_table.getClosePeers(
+        //   Crypto.digest.randomSHA1(parent_id, globals.B-3),
+        //   10
+        // ).map(function(peer) {
+        //   return peer.getAddress();
+        // }).getRawArray());
+      });
+
     });
 
   });
-  
   
 });
