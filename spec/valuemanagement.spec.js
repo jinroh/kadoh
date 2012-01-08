@@ -147,9 +147,8 @@ describe('In Value Management', function() {
         it('..but at the rigth time', function() {
           spy = jasmine.createSpy();
           v.on('republish', spy, this);
-          waits(v._repTime/2+10);
+          waits(v._repTime+10);
           runs(function(){
-            expect(spy).toHaveBeenCalled();
             expect(spy.callCount).toEqual(1);
           });
         });
