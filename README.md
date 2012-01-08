@@ -89,19 +89,19 @@ Kademlia client
       - find closest peer method    [x]
       - refresh                     [x]
 
-  - Value Management                [ ]
+  - Value Management                [x]
   
       - persistent stor.(Lawnchair) [x]
       - session recover             [x]
       - expiration                  [x]
-      - republishing                [ ]
 
   - Node                            [ ]
 
       - iterativeFindNode           [x]
       - iterativeFindValue          [ ]
+      - iterativeStore              [ ]
 
-  - RPC Reactor                     [ ]
+  - RPC Reactor                     [x]
 
       - routing in/out RPC          [x]
 
@@ -115,7 +115,7 @@ Kademlia client
           - 'PING'                  [x]
           - 'FIND_NODE'             [x]
           - 'FIND_VALUE'            [x]
-          - 'STORE'                 [ ]
+          - 'STORE'                 [x]
 
       - RPC protocol
           - JSON-RPC2               [x]
