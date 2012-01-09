@@ -15,7 +15,7 @@
       }
 
       /* The white background content wrapper */
-      .content {
+      #content {
         min-height: 550px;
         background-color: #fff;
         padding: 20px;
@@ -39,4 +39,14 @@
         font-size: 120%;
         border-style: none;
         margin-bottom: 0px;
+      }
+
+      
+      .popover .inner {
+        width: 400px;
+      }
+    
+
+      .state {
+        float: right;
       }
