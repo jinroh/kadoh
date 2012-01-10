@@ -8,7 +8,7 @@ KadOHui.Logger =  function(console_id) {
 
   KadOHui.Logger.prototype = {
     append: function(type, args) {
-      args = Array.prototype.slice.call(args, 1);
+      args = Array.prototype.slice.call(args);
 
       if (this.node.length === 0) {
         this.node = $('#' + this.consoleID);
@@ -37,14 +37,14 @@ KadOHui.Logger =  function(console_id) {
 
       var html = ['<div class="row '+type+'">',
                     '<div class="span1">',
-                      abbr[group] || 'kadoh',
+                      abbr[group] || 'general',
                     '</div>',
                     '<div class="span1">&nbsp;</div>',
                     '<div class="span12">',
                       message,
                     '</div>',
                     '<div class="span2">',
-                      '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="below">'+human_time+'</time>',
+                      '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+human_time+'</time>',
                     '</div>',
                 '</div>',
                 '<hr>'].join('\n');
