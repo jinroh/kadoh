@@ -46,8 +46,15 @@
       }
     };
     
+    var inputs     = $("#credentials input");
+    var transport  = $("select.transport");
+    var jidInput   = $("#jid");
+    var pswdInput  = $("#password");
+    var connection = $("#connection");
+    var connectBtn = $("#connection input[name=connect]");
+    var joinBtn    = $("#connection input[name=join]");
+    
     // Transport configs
-    var inputs = $("#credentials input");
     var changeTransport = function() {
       var type = config.reactor.type = $(this).val();
       if (type === "XMPP") {
@@ -56,13 +63,10 @@
         disable(inputs);
       }
     }
-    var transport = $("select.transport");
     transport.change(changeTransport);
     changeTransport.call(transport);
 
     // Login configs
-    var jidInput  = $("#jid");
-    var pswdInput = $("#password");
     jidInput.keyup(function() {
       config.reactor.transport.jid = $(this).val();
     });
@@ -71,8 +75,6 @@
     });
 
     // Connection
-    var connection = $("#connection");
-    var connectBtn = $("#connection input[name=connect]");
     var connect = function() {
       var that = $(this);
       that.unbind("click", connect);
@@ -83,6 +85,7 @@
             .addClass("success")
             .attr("value", "Disconnect");
         that.click(disconnect);
+        enable(joinBtn);
       };
       var failure = function() {
         that.removeClass("primary danger disabled")
@@ -102,8 +105,8 @@
             .addClass("primary")
             .attr("value", "Connect");
         that.click(connect);
-        transport.removeClass("disabled")
-                 .removeAttr("disabled");
+        enable(transport);
+        disable(joinBtn);
       };
       var failure = function() {
         that.removeClass("success disabled")
@@ -126,7 +129,7 @@
       </div>
     </div>
     <div id="content">
-      <div id="control">
+      <div id="connection-control">
         <div class="row">
           <div class="span2">
             <select class="span2 transport">
@@ -147,7 +150,8 @@
 
       <div class="page-header">
         <ul class="tabs" data-tabs="tabs">
-          <li class="active"><a href="#node">Node</a></li>
+          <li class="active"><a href="#control">Control</a></li>
+          <li><a href="#node">Node</a></li>
           <li><a href="#reactor">Reactor</a></li>
           <li><a href="#transport">Transport</a></li>
           <li><a href="#routing-table">Routing Table</a></li>
@@ -157,7 +161,10 @@
       </div>
 
       <div class="tab-content">
-        <div class="active tab-pane" id="node">
+        <div class="active tab-pane" id="control">
+          <h3>Control panel</h3>
+        </div>
+        <div class="tab-pane" id="node">
           <h3>Node</h3>
         </div>
         <div class="tab-pane" id="reactor">

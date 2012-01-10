@@ -67,8 +67,8 @@
         color: #333;
       }
 
-      /*** Control ***/
-      #control {
+      /*** Connection Control ***/
+      #connection-control {
         padding: 10px;
         margin-bottom: 30px;
       }
