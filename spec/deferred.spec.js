@@ -5,7 +5,6 @@ describe('Deferred', function() {
   beforeEach(function() {
     Deferred = KadOH.core.Deferred;
     def = new Deferred();
-
     success = jasmine.createSpy();
     failure = jasmine.createSpy();
   });
