@@ -154,8 +154,8 @@
         color: #FF6666;
       }
 
-      #log .row>div:last-child time {
-        float : right;
+      #log .row>div:last-child {
+        text-align : right;
       }
 
       #log .well h5 {
