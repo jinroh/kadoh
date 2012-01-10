@@ -1,6 +1,6 @@
-KadOHui = KadOHui || {};
+KadOHui = (typeof KadOHui !== 'undefined') ? KadOHui : {};
 
-KadOHui.Logger =  function(console_id, options) {
+KadOHui.Logger =  function(console_id) {
     this.consoleID = console_id || 'console';
     this.node      = $('#' + this.consoleID);
     this._currentgroup = null;
@@ -8,12 +8,13 @@ KadOHui.Logger =  function(console_id, options) {
 
   KadOHui.Logger.prototype = {
     append: function(type, args) {
-      args = Array.prototype.slice.call(args);
-      
+      args = Array.prototype.slice.call(args, 1);
+
       if (this.node.length === 0) {
         this.node = $('#' + this.consoleID);
       }
       this.node.prepend(this.template(this._currentgroup, type, args, new Date()));
+      $("time").timeago();
     },
 
     template: function(group, type, args, time) {
@@ -26,44 +27,48 @@ KadOHui.Logger =  function(console_id, options) {
       };
 
       var message = args.map(function(obj) {
-       return '<pre>'+this._stringify(obj)+'</pre>';
+        if(typeof obj == 'string')
+          return " "+obj+" ";
+        else
+          return '<code>'+this._stringify(obj)+'</code>';
       }, this).join('');
 
       var human_time = (time.getMonth()+1)+'/'+time.getDate()+'/'+time.getFullYear()+' '+time.toLocaleTimeString();
 
-      var html = ['<hr>',
-                  '<div class="row">',
+      var html = ['<div class="row '+type+'">',
                     '<div class="span1">',
-                      '<span class="label'+type+'">'+abbr[group]+'</span>',
+                      abbr[group] || 'kadoh',
                     '</div>',
-                    '<div class="span13">',
+                    '<div class="span1">&nbsp;</div>',
+                    '<div class="span12">',
                       message,
                     '</div>',
                     '<div class="span2">',
-                      '<time datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="below">'+human_time+'</time>',
+                      '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="below">'+human_time+'</time>',
                     '</div>',
-                '</div>'].join('\n');
+                '</div>',
+                '<hr>'].join('\n');
       return html;
     },
 
     debug: function() {
-      this.append('default', arguments);
+      this.append('debug', arguments);
     },
 
     info: function() {
-      this.append('notice', arguments);
+      this.append('info', arguments);
     },
     
     warn: function() {
-      this.append('warning', arguments);
+      this.append('warn', arguments);
     },
     
     error: function() {
-      this.append('important', arguments);
+      this.append('error', arguments);
     },
     
     fatal: function() {
-      this.append('important', arguments);
+      this.append('fatal', arguments);
     },
 
     group: function(name) {

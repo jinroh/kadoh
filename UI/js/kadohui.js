@@ -22,5 +22,26 @@ $(function() {
       }
     };
 
+
+  $("*[rel=popover]")
+    .popover({
+      offset: 10,
+      live: true,
+      html: true
+    })
+    .click(function(e) {
+      e.preventDefault();
+    });
+
+  $("*[rel=twipsy]")
+    .twipsy({
+      offset: 10,
+      live: true
+    })
+    .click(function(e) {
+      e.preventDefault();
+    });
+
+
   $("time").timeago();
 });
