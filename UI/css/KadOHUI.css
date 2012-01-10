@@ -147,7 +147,7 @@
       #log .row>div:nth-child(3) {
         color: #666666;
         font-family: "Arial";
-        white-space: nowrap;
+        word-break: break-all;      
       }
 
       #log .error > div:nth-child(3), #log .fatal > div:nth-child(3) {

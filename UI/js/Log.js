@@ -37,10 +37,13 @@ KadOHui.Logger =  function(console_element, control_element) {
 
       var message = args.map(function(obj) {
         if(typeof obj == 'string')
-          return " "+obj+" ";
-        else
-          return '<code>'+this._stringify(obj)+'</code>';
-      }, this).join('');
+          return obj;
+        else {
+          var reg=new RegExp("\"", "g");
+          var code = '<code>'+this._stringify(obj).replace(reg, "'")+'</code>';
+          return '<a href="#" rel="popover" data-content="'+code+'" data-original-title="Object inspector" data-placement="below">[Object]</a>';
+        }
+      }, this).join(', ');
 
       var human_time = (time.getMonth()+1)+'/'+time.getDate()+'/'+time.getFullYear()+' '+time.toLocaleTimeString();
 
