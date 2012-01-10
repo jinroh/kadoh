@@ -70,13 +70,16 @@
       /*** Connection Control ***/
       #connection-control {
         padding: 10px;
-        margin-bottom: 30px;
+        margin-bottom: 10px;
       }
       #connection {
         float: right;
       }
 
       /*** Routing Table ***/
+      #routing-table table {
+        margin-bottom:0px;
+      }
       #routing-table .peer.new td {
         background-color: #CDEACD;
       }
@@ -130,6 +133,10 @@
 
       #log .error > div:nth-child(3), #log .fatal > div:nth-child(3) {
         color: #FF6666;
+      }
+
+      #log .row>div:last-child time {
+        float : right;
       }
 
       

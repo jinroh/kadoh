@@ -1,11 +1,14 @@
-$(function() {
+KadOHui = (typeof KadOHui !== 'undefined') ? KadOHui : {};
+
+KadOHui.init = function() {
+  
   $.timeago.settings = {
       refreshMillis: 3000,
       allowFuture: true,
       strings: {
         prefixAgo: null,
-        prefixFromNow: "in",
-        suffixAgo: "ago",
+        prefixFromNow: null,
+        suffixAgo: null,
         suffixFromNow: null,
         seconds: "%d sec",
         minute: "%d min",
@@ -22,6 +25,7 @@ $(function() {
       }
     };
 
+  $("time").timeago();
 
   $("*[rel=popover]")
     .popover({
@@ -43,5 +47,4 @@ $(function() {
     });
 
 
-  $("time").timeago();
-});
+};
