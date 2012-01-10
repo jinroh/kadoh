@@ -16,7 +16,6 @@
 
       /* The white background content wrapper */
       #content {
-        min-height: 550px;
         background-color: #fff;
         padding: 20px;
         margin: 0 -20px; /* negative indent the amount of the padding to maintain the grid system */
@@ -96,12 +95,32 @@
       }
 
       /*** LOG ****/
+
+      #log .console {
+        background-color: #FFFFFC;
+        border-top: 2px solid #DDD;
+        border-bottom: 2px solid #DDD;
+        margin-right: -15px;
+        padding-right: 15px;
+        height: 530px;
+        overflow: auto;
+      }
+
+      #log .row {
+        padding-top: 6px;
+        padding-bottom: 3px;
+        border-bottom: 1px solid #DDD;
+        margin-left: 0;
+      }
+
+
       #log .row > div:first-child {
         text-transform: uppercase;
         font-weight: bold;
         color: #333;
         text-align: right;
         font-size: 9.75px;
+        margin-left: 0px;
 
       }
 
@@ -137,6 +156,30 @@
 
       #log .row>div:last-child time {
         float : right;
+      }
+
+      #log .well h5 {
+        display: inline;
+        float: left;
+        line-height: 18px;
+        margin-top: 6px;
+      }
+
+      #log .well {
+        padding: 12px;
+      }
+      #log .well img {
+        margin-top :3px;
+      }
+      #log .well span {
+        color : #5E5E5E;
+      }
+
+      #log .well input {
+        margin : 0 5px;
+      }
+      #log .well label {
+        padding : 0 0;
       }
 
       

@@ -1,19 +1,28 @@
 KadOHui = (typeof KadOHui !== 'undefined') ? KadOHui : {};
 
-KadOHui.Logger =  function(console_id) {
-    this.consoleID = console_id || 'console';
-    this.node      = $('#' + this.consoleID);
-    this._currentgroup = null;
-  };
+KadOHui.Logger =  function(console_element, control_element) {
+  this.console = $(console_element);
+  this.control = $(control_element);
+
+  this._currentgroup = null;
+  var console = this.console;
+  this.control.find(':checkbox[name=debugLevel]').change(function(e) {
+    var value = $(e.target).val();
+    var method = ($(e.target).is(':checked')) ? 'show' : 'hide';
+
+    console.find('.'+value)[method]();
+  });
+};
 
   KadOHui.Logger.prototype = {
     append: function(type, args) {
       args = Array.prototype.slice.call(args);
 
-      if (this.node.length === 0) {
-        this.node = $('#' + this.consoleID);
-      }
-      this.node.prepend(this.template(this._currentgroup, type, args, new Date()));
+      var el = this.template(this._currentgroup, type, args, new Date());
+      if(! this.isInLevel(type))
+        el.hide();
+      this.console.prepend(el);
+
       $("time").timeago();
     },
 
@@ -46,9 +55,12 @@ KadOHui.Logger =  function(console_id) {
                     '<div class="span2">',
                       '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+human_time+'</time>',
                     '</div>',
-                '</div>',
-                '<hr>'].join('\n');
-      return html;
+                '</div>'].join('\n');
+      return $(html);
+    },
+
+    isInLevel: function(type) {
+      return this.control.find(':checkbox[name=debugLevel][value='+type+']').is(':checked');
     },
 
     debug: function() {

@@ -160,37 +160,60 @@
         <div class="tab-pane" id="reactor">
             <span class="state label important">Disconnected</span>
             <h3>Reactor</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-            cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adi</p>
             <a href="#" class="btn danger" rel="popover" data-content="And here's some amazing content. It's very engaging. right?" data-original-title="A title" data-placement="below">hover for popover</a>
         </div>
         <div class="tab-pane" id="log">
-            <div class="row error">
-              <div class="span1">node</div>
-              <div class="span1">&nbsp;</div>
-              <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-              tempor incididunt ut labore et dolore magna aliqua. </div>
-              <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:14:17Z">July 17, 2008</time></div>
+            <div class="well control">
+              <h5>Log level :</h5>
+                <label>
+                  <img src="css/images/info-icon16.png" alt="info">
+                  <input type="checkbox" name="debugLevel" value="info" checked>
+                  <span>info</span>
+                </label>
+                <label>
+                  <img src="css/images/warn-icon16.png" alt="warning">
+                  <input type="checkbox" name="debugLevel" value="warning" checked>
+                  <span>warning</span>
+                </label>
+                <label>
+                  <img src="css/images/error-icon16.png" alt="error">
+                  <input type="checkbox" name="debugLevel" value="error" checked>
+                  <span>error</span>
+                </label>
+                <label>
+                  <img src="css/images/skull-icon16.png" alt="fatal">
+                  <input type="checkbox" name="debugLevel" value="fatal" checked>
+                  <span>fatal</span>
+                </label>
+                <label>
+                  <img src="css/images/debug-icon16.png" alt="debug">
+                  <input type="checkbox" name="debugLevel" value="debug" checked>
+                  <span>debug</span>
+                </label>
             </div>
-            <hr>
-            <div class="row fatal">
-              <div class="span1">Routing</div>
-              <div class="span1">&nbsp;</div>
-              <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-              tempor incididunt ut labore et dolore magna aliqua. </div>
-              <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:04:17Z">July 17, 2008</time></div>
-            </div>
-            <hr>
-            <div class="row info">
-              <div class="span1">value</div>
-              <div class="span1">&nbsp;</div>
-              <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-              tempor incididunt ut labore et dolore magna aliqua. </div>
-              <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></div>
+            <div class="console">
+              <div class="row error">
+                <div class="span1">node</div>
+                <div class="span1">&nbsp;</div>
+                <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. </div>
+                <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:14:17Z">July 17, 2008</time></div>
+              </div>
+              <div class="row fatal">
+                <div class="span1">Routing</div>
+                <div class="span1">&nbsp;</div>
+                <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. </div>
+                <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:04:17Z">July 17, 2008</time></div>
+              </div>
+              <div class="row info">
+                <div class="span1">value</div>
+                <div class="span1">&nbsp;</div>
+                <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. </div>
+                <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></div>
+              </div>
             </div>
         </div>
         <div class="tab-pane" id="value-management">
