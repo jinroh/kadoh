@@ -12,6 +12,110 @@
   <script type="text/javascript" src="js/vendor/bootstrap-buttons.js"></script>
   <script type="text/javascript" src="js/kadohui.js"></script>
   <link rel="stylesheet" type="text/css" href="css/KadOHUI.css" media="all">
+
+  <script type="text/javascript">
+  // SOME BULLSHIT JS TO BE REPLACED IN kadohui.js
+  function enable(elt) {
+    return elt.removeClass("disabled")
+              .removeAttr("disabled");
+  }
+
+  function disable(elt) {
+    return elt.addClass("disabled")
+              .attr("disabled", "disabled");
+  }
+
+  $(function () {
+    // Popover
+    $("[rel=popover]").popover({
+      offset: 10
+    }).click(function(e) {
+      e.preventDefault()
+    });
+    
+    // Twipsy
+    $("[rel=twipsy]").twipsy({
+      offset : 8
+    }).click(function(e) {
+      e.preventDefault()
+    });
+
+    var config = {
+      reactor : {
+        tranport : {}
+      }
+    };
+    
+    // Transport configs
+    var inputs = $("#credentials input");
+    var changeTransport = function() {
+      var type = config.reactor.type = $(this).val();
+      if (type === "XMPP") {
+        enable(inputs);
+      } else {
+        disable(inputs);
+      }
+    }
+    var transport = $("select.transport");
+    transport.change(changeTransport);
+    changeTransport.call(transport);
+
+    // Login configs
+    var jidInput  = $("#jid");
+    var pswdInput = $("#password");
+    jidInput.keyup(function() {
+      config.reactor.transport.jid = $(this).val();
+    });
+    pswdInput.keyup(function() {
+      config.reactor.transport.password = $(this).val();
+    });
+
+    // Connection
+    var connection = $("#connection");
+    var connectBtn = $("#connection input[name=connect]");
+    var connect = function() {
+      var that = $(this);
+      that.unbind("click", connect);
+      that.addClass("disabled");
+      disable(transport);
+      var connected = function() {
+        that.removeClass("primary danger disabled")
+            .addClass("success")
+            .attr("value", "Disconnect");
+        that.click(disconnect);
+      };
+      var failure = function() {
+        that.removeClass("primary danger disabled")
+            .addClass("danger")
+            .attr("value", "Retry ?");
+        that.click(connect);
+        enable(transport);
+      };
+      setTimeout(Math.floor(Math.random() * 2) ? connected : failure, 1000);
+    };
+    var disconnect = function() {
+      var that = $(this);
+      that.unbind("click", disconnect);
+      that.addClass("disabled");
+      var disconnected = function() {
+        that.removeClass("success disabled")
+            .addClass("primary")
+            .attr("value", "Connect");
+        that.click(connect);
+        transport.removeClass("disabled")
+                 .removeAttr("disabled");
+      };
+      var failure = function() {
+        that.removeClass("success disabled")
+            .addClass("danger")
+            .attr("value", "Retry ?");
+        that.click(disconnect);
+      };
+      setTimeout(Math.floor(Math.random() * 2) ? disconnected : failure, 1000);
+    }
+    connectBtn.click(connect);
+  });
+  </script>
 </head>
 <body>
 
@@ -22,27 +126,42 @@
       </div>
     </div>
     <div id="content">
+      <div id="control">
+        <div class="row">
+          <div class="span2">
+            <select class="span2 transport">
+              <option value="SimUDP">Mainline</option>
+              <option value="XMPP">XMPP</option>
+            </select>
+          </div>
+          <div id="credentials" class="span10">
+            <input class="span3" type="text"     id="jid"      placeholder="Jabber or GMail login" />
+            <input class="span3" type="password" id="password" placeholder="Password" />
+          </div>
+          <div id="connection" class="span3">
+            <input type="submit" class="btn primary"  name="connect" value="Connect" />
+            <input type="submit" class="btn disabled" name="join"    value="Join" />
+          </div>
+        </div>
+      </div>
+
       <div class="page-header">
         <ul class="tabs" data-tabs="tabs">
-          <li class="active"><a href="#control">Control panel</a></li>
-          <li><a href="#node">Node</a></li>
+          <li class="active"><a href="#node">Node</a></li>
           <li><a href="#reactor">Reactor</a></li>
           <li><a href="#transport">Transport</a></li>
-          <li><a href="#routing-table">Routing table</a></li>
-          <li><a href="#value-management">Value management</a></li>
+          <li><a href="#routing-table">Routing Table</a></li>
+          <li><a href="#value-management">Value Management</a></li>
           <li><a href="#log">Log</a></li>
         </ul>
       </div>
 
       <div class="tab-content">
-        <div class="tab-pane active" id="control">
-            <h3>Control</h3>
-        </div>
-        <div class="tab-pane" id="node">
-            <h3>Node</h3>
+        <div class="active tab-pane" id="node">
+          <h3>Node</h3>
         </div>
         <div class="tab-pane" id="reactor">
-            <span class="state label important">Disonnected</span>
+            <span class="state label important">Disconnected</span>
             <h3>Reactor</h3>
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
             tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
@@ -51,17 +170,6 @@
             cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
             proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
             <a href="#" class="btn danger" rel="popover" data-content="And here's some amazing content. It's very engaging. right?" data-original-title="A title" data-placement="below">hover for popover</a>
-            <script>
-            $(function () {
-              $("a[rel=popover]")
-                .popover({
-                  offset: 10
-                })
-                .click(function(e) {
-                  e.preventDefault()
-                })
-            })
-          </script>
         </div>
         <div class="tab-pane" id="log">
             <div class="row error">
@@ -89,22 +197,78 @@
             </div>
         </div>
         <div class="tab-pane" id="value-management">
-            <h3>Value management</h3>
+            <h3>Value Management</h3>
         </div>
         <div class="tab-pane" id="routing-table">
-            <h3>Routing table</h3>
+          <div class="well">
+            <div style="line-height:1em">Routing Table contains a total of <strong>4 peers</strong> in <strong>2 buckets</strong></div>
+          </div>
+          <div class="kbucket row">
+            <div class="kb-title span3">
+              <h4>Bucket #1 <small>[160, 159[</small></h4>
+              <span class="kb-refresh">refresh in 3 sec</span>
+            </div>
+            <div class="peers span13">
+              <table class="zebra-striped">
+                <tr class="peer">
+                  <td class="distance">160</td>
+                  <td class="jid">jinroh@jabber.org</td>
+                  <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                  <td class="last-seen">10 min</td>
+                </tr>
+                <tr class="peer">
+                  <td class="distance">160</td>
+                  <td class="jid">jinroh@jabber.org</td>
+                  <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                  <td class="last-seen">10 min</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <hr />
+          <div class="kbucket row">
+            <div class="kb-title span3">
+              <h4>Bucket #2 <small>[159, 158[</small></h4>
+              <span class="kb-refresh">refresh in 1 h</span>
+            </div>
+            <div class="peers span13">
+              Empty
+            </div>
+          </div>
+          <hr />
+          <div class="kbucket row">
+            <div class="kb-title span3">
+              <h4>Bucket #3 <small>[158, 0[</small></h4>
+              <span class="kb-refresh">refresh in 1 h</span>
+            </div>
+            <div class="peers span13">
+              <table class="zebra-striped">
+                <tr class="peer new">
+                  <td class="distance">160</td>
+                  <td class="jid">jinroh@jabber.org</td>
+                  <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                  <td class="last-seen">5 min</td>
+                </tr>
+                <tr class="peer">
+                  <td class="distance">160</td>
+                  <td class="jid">jinroh@jabber.org</td>
+                  <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                  <td class="last-seen">10 min</td>
+                </tr>
+              </table>
+            </div>
+          </div>
         </div>
         <div class="tab-pane" id="transport">
-            <h3>Transport</h3>
+          <h3>Transport</h3>
         </div>
       </div>
-      
     </div>
 
     <footer>
-      <p><b>Pierre Guilleminot</b>t & <b>Alexandre Lacheze</b></p>
+      <p><strong>Pierre Guilleminot</strong> &amp; <strong>Alexandre Lacheze</strong></p>
       <p><a href="https://github.com/jinroh/kadoh">KadOH on Github</a></p>
     </footer>
-  </div>  
+  </div>
 </body>
 </html>

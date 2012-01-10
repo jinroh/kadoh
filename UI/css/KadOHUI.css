@@ -45,6 +45,9 @@
       .popover .inner {
         width: 400px;
       }
+      .twipsy-inner {
+        max-width: 400px;
+      }
     
       hr {
         margin: 3px 0 2px;
@@ -54,10 +57,39 @@
         float: right;
       }
 
+      .sha {
+        font-family: "Monaco", "Courier", monospace;
+      }
+
       time {
         font-family: "Monaco", "Courier", monospace;
         font-size: 12px;
         color: #333;
+      }
+
+      /*** Control ***/
+      #control {
+        padding: 10px;
+        margin-bottom: 30px;
+      }
+      #connection {
+        float: right;
+      }
+
+      /*** Routing Table ***/
+      #routing-table .peer.new td {
+        background-color: #CDEACD;
+      }
+      #routing-table .distance {
+        font-family: "Monaco", "Courier", monospace;
+        font-size: 12px;
+      }
+      #routing-table .last-seen {
+        font-family: "Monaco", "Courier", monospace;
+        font-size: 12px;
+      }
+      #routing-table .jid {
+        font-weight: bold;
       }
 
       /*** LOG ****/
