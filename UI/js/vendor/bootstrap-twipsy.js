@@ -127,7 +127,7 @@
       var that = this
         , $tip = this.tip()
 
-      $tip.removeClass('in')
+      if($tip.is('.in')) $tip.removeClass('in')
 
       function removeElement () {
         $tip.remove()
@@ -208,9 +208,19 @@
  /* TWIPSY PLUGIN DEFINITION
   * ======================== */
 
-  $.fn.twipsy = function (options) {
-    $.fn.twipsy.initWith.call(this, options, Twipsy, 'twipsy')
-    return this
+  $.fn.twipsy = function (options, method) {
+    var twipsy =  $.fn.twipsy.initWith.call(this, options, Twipsy, 'twipsy');
+
+    if (method === true || method === 'get') {
+      return twipsy
+    } else if (typeof method == 'string') {
+      if (twipsy) {
+        twipsy[method]()
+      }
+      return this
+    }
+
+    return this;
   }
 
   $.fn.twipsy.initWith = function (options, Constructor, name) {
@@ -219,15 +229,6 @@
       , eventIn
       , eventOut
 
-    if (options === true) {
-      return this.data(name)
-    } else if (typeof options == 'string') {
-      twipsy = this.data(name)
-      if (twipsy) {
-        twipsy[options]()
-      }
-      return this
-    }
 
     options = $.extend({}, $.fn[name].defaults, options)
 
@@ -285,7 +286,7 @@
       this[binder](eventIn, enter)[binder](eventOut, leave)
     }
 
-    return this
+    return this.map(function(e) {return get(this)})
   }
 
   $.fn.twipsy.Twipsy = Twipsy

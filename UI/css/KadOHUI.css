@@ -5,6 +5,14 @@
       body {
         padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
       }
+
+      .twipsy {
+        z-index: 12100;
+      }
+
+      .popover .content {
+        padding: 6px;
+      }
       .container > footer {
         margin-top: 6px;
         padding-top: 6px;
@@ -181,5 +189,27 @@
       #log .well label {
         padding : 0 0;
       }
+
+      /** Reactor **/
+
+      #reactor tbody tr > td:first-child {
+        font-family: "Monaco", "Courier", monospace;
+        font-size: 12px;
+      }
+      #reactor tbody tr > td:nth-child(2) {
+        text-align: center;
+      }
+
+      #reactor div.table {
+        height: 700px;
+        overflow: auto;
+        margin-right: -15px;
+        padding-right: 15px;
+
+      }
+      #reactor table>thead {
+        display: table-header-group;
+      }
+
 
       

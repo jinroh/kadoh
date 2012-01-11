@@ -60,11 +60,9 @@
     }
 
   , tip: function() {
-      if (!this.$tip) {
-        this.$tip = $('<div class="popover" />')
-          .html(this.options.template)
-      }
-      return this.$tip
+    if(!this.$tip)
+      this.$tip = $('<div class="popover" />').html(this.options.template);
+    return this.$tip;
     }
 
   })
@@ -73,11 +71,21 @@
  /* POPOVER PLUGIN DEFINITION
   * ======================= */
 
-  $.fn.popover = function (options) {
+  $.fn.popover = function (options ,method) {
     if (typeof options == 'object') options = $.extend({}, $.fn.popover.defaults, options)
-    $.fn.twipsy.initWith.call(this, options, Popover, 'popover')
-    return this
-  }
+    var popover = $.fn.twipsy.initWith.call(this, options, Popover, 'popover')
+
+     if (method === true || method === 'get') {
+      return popover;
+    } else if (typeof method == 'string') {
+      if (popover) {
+        popover[method]();
+      }
+      return this;
+    }
+
+    return this;
+  };
 
   $.fn.popover.defaults = $.extend({} , $.fn.twipsy.defaults, {
     placement: 'right'

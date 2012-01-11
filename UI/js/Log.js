@@ -23,7 +23,7 @@ KadOHui.Logger =  function(console_element, control_element) {
         el.hide();
       this.console.prepend(el);
 
-      $("time").timeago();
+      $(el).find('time').timeago();
     },
 
     template: function(group, type, args, time) {
