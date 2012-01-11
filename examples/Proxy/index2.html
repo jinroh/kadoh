@@ -50,6 +50,7 @@
   KadOH.log.subscribeTo(node, 'Node');
   KadOH.log.subscribeTo(node.reactor(), 'Reactor');
   KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
+  KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
 
   logger = new KadOHui.Logger('#log .console', '#log .control');
   KadOH.log.addLogger('UILogger', logger);
