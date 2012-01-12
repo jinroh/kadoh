@@ -11,12 +11,12 @@ pool.on('hook::ready', function() {
 
   pool.on('*::poisson-spawn', function(args) {
     console.log('Start spawning ' + nodes + ' nodes in poisson law with lambda=' + lambda);
-    poissonSpawn.apply(null, arguments);
+    poissonSpawn.apply(null, args);
   });
 
   pool.on('*::spawn', function(args) {
     console.log('Start spawning a node');
-    spawn.apply(null, arguments);
+    spawn.apply(null, args);
   });
 
 });
@@ -25,7 +25,7 @@ pool.start();
 
 function spawn(jid, resource, password, delay) {
   delay = delay || 0;
-  var proc = spawnProcess(__dirname + '/bot.js', arguments);
+  var proc = spawnProcess('node', [__dirname + '/bot.js', jid, resource, password, delay]);
   bots.push({
     jid      : jid,
     resource : resource,
