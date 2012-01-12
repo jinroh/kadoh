@@ -16,7 +16,6 @@ var Bot = exports.Bot = function(options) {
   Hook.call(this, options.hook);
   var self = this;
   self.on('hook::ready', function() {
-    console.log("Ready");
     self.kadoh = new KadOH.Node(null, options.node);
   });
 };
@@ -62,7 +61,6 @@ if (process.argv.length > 2) {
   bot.start();
   if (debug) {
     bot.on('hook::ready', function() {
-      console.log("Ready");
       KadOH.log.setLevel('debug');
       KadOH.log.subscribeTo(bot.kadoh);
       KadOH.log.subscribeTo(bot.kadoh._reactor);
