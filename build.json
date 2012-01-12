@@ -1,5 +1,6 @@
 { 
   "basedir"     : ".",
+  "#logger"      : "verbose",
   "directories" : {
     "KadOH"            : "lib/client",
     "socket.io-client" : "node_modules/socket.io-client/dist",
@@ -26,7 +27,7 @@
       "build"   : "[spec-dist]/KadOH.js"
     },
     "node" : {
-      "depends" : "normal",
+      "entry"   : "[KadOH]/node",
       "exclude" : [
         "[socket.io-client]/*",
         "[jquery]/*",
