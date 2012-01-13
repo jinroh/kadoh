@@ -62,6 +62,15 @@
     $('#info').empty().append('<h3>'+iam+' / <small><a href="#" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>')
   })
 
+  $('#ping_btn').click(function() {
+    $('#ping_result').html('<img src="UI/css/images/ajax-loader.gif" >');
+    node._reactor.sendRPC(new KadOH.Peer($('#ping_addr').val(), null), 'PING')
+      .then(function() {
+        $('#ping_result').html('<img src="UI/css/images/success-icon24.png" >');
+      }, function() {
+        $('#ping_result').html('<img src="UI/css/images/fail-icon24.png" >');
+      })
+  })
 
   function onClickJoin(event) {
     try {
@@ -115,7 +124,13 @@
       <div class="tab-content">
         <div class="active tab-pane" id="control">
           <h3>Control panel</h3>
-
+          <div class="row">
+            <input class="xlarge span4" id="ping_addr" placeholder="ip:port" name="ping_addr" size="30" type="text">
+            <div class="span3">
+              <button style="margin-right : 15px;" id="ping_btn" class="btn success">Ping !</button> 
+            <span id="ping_result"></span>
+            </div>
+          </div>
         </div>
 
 
