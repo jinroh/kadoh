@@ -19,7 +19,7 @@ var Bot = exports.Bot = function(options) {
   var self = this;
   self.on('hook::ready', function() {
     try {
-      self.emit('initialized');
+      self.emit('initialized', options);
       if (options.delay) {
         setTimeout(function() {
           self.k_connect();
@@ -59,15 +59,15 @@ if (process.argv.length > 2) {
               .argv;
 
   var debug     = !!argv.debug,
-      delay     = argv.d,
-      protocol  = argv.protocol  || 'node_xmlrpc',
-      type      = argv.transport || 'NodeXMPP',
+      protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
+      type      = argv.udp ? 'UDP'      : 'NodeXMPP',
+      delay     = argv.delay || 0,
       transport = {
-        jid      : argv.j,
-        resource : argv.r,
-        password : argv.p
+        jid      : argv.jid,
+        resource : argv.resource,
+        password : argv.password,
+        port     : argv.port
       };
-
   var config = {
     hook : {
       name: 'bot'
@@ -94,7 +94,3 @@ if (process.argv.length > 2) {
     });
   }
 }
-
-// hook.on('*::')
-// node.connect();
-// node.join(['67.215.242.139:6881', '67.215.242.138:6881']);

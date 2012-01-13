@@ -10,7 +10,6 @@ var pool = new Hook({
 pool.on('hook::ready', function() {
 
   pool.on('*::poisson-spawn', function(args) {
-    console.log('Start spawning ' + nodes + ' nodes in poisson law with lambda=' + lambda);
     poissonSpawn.apply(null, args);
   });
 
@@ -25,7 +24,7 @@ pool.start();
 
 function spawn(jid, resource, password, delay) {
   delay = delay || 0;
-  var proc = spawnProcess('node', [__dirname + '/bot.js', jid, resource, password, delay]);
+  var proc = spawnProcess('node', [__dirname + '/bot.js', '--jid=' + jid, '--resource=' + resource, '--password=' + password, '--delay=' + delay]);
   bots.push({
     jid      : jid,
     resource : resource,
@@ -45,6 +44,7 @@ function spawn(jid, resource, password, delay) {
  * @return {Number[]} The times of spawning
  */
 function poissonSpawn(jid, resource, password, nodes, lambda) {
+  console.log('Start spawning ' + nodes + ' nodes in poisson law with lambda=' + lambda);
   // The mean time of execution is nodes / lambda
   nodes  = nodes  || 100;
   lambda = lambda || 0.1;
@@ -53,7 +53,7 @@ function poissonSpawn(jid, resource, password, nodes, lambda) {
       s = 0;
   for (; n < nodes; n++) {
     s += Math.floor((-Math.log(Math.random()) / lambda * 1000));
-    spawn(jid, resource + '-' + n, password, s);
+    spawn(jid, resource + n, password, s);
   }
 }
 
