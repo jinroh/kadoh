@@ -87,6 +87,15 @@
       #routing-table table {
         margin-bottom:0px;
       }
+
+      #routing-table .kbucket {
+        padding: 3px 0px;
+        border-bottom: 1px solid #DDD;
+      }
+      #routing-table .kbucket:last-child {
+        border-bottom: none;
+      }
+
       #routing-table .peer.new td {
         background-color: #CDEACD;
       }
