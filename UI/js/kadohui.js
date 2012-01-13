@@ -25,7 +25,7 @@ KadOHui.init = function() {
       }
     };
 
-  $("time").timeago();
+  //$("time").timeago();
 
   var popover_options = {
       offset: 10,
