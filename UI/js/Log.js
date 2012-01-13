@@ -56,7 +56,7 @@ KadOHui.Logger =  function(console_element, control_element) {
                       message,
                     '</div>',
                     '<div class="span2">',
-                      '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+human_time+'</time> ago',
+                      '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="below">'+human_time+'</time> ago',
                     '</div>',
                 '</div>'].join('\n');
       return $(html);
