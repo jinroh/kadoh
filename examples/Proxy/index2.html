@@ -58,6 +58,9 @@
 
   routing = new KadOHui.Routing(node._routingTable, '#routing-table');
 
+  node._reactor.on('connected', function(iam) {
+    $('#info').empty().append('<h3>'+iam+' / <small><a href="#" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>')
+  })
 
 
   function onClickJoin(event) {
@@ -89,15 +92,8 @@
       <div class="page-header">
         <div id="connection-control">
           <div class="row">
-            <div class="span2">
-              <select class="span2 transport">
-                <option value="SimUDP">Mainline</option>
-                <option value="XMPP">XMPP</option>
-              </select>
-            </div>
-            <div id="credentials" class="span10">
-              <input class="span3" type="text"     id="jid"      placeholder="Jabber or GMail login" />
-              <input class="span3" type="password" id="password" placeholder="Password" />
+            <div class="span12" id='info'>
+              <h3>Click on join</h3>
             </div>
             <div id="connection" class="span3">
               <input type="submit" class="btn primary"  name="connect" value="Connect" />
@@ -168,7 +164,6 @@
 
         <div class="tab-pane" id="routing-table">
           <div class="well">
-            <div style="line-height:1em">Routing Table contains a total of <strong>4 peers</strong> in <strong>2 buckets</strong></div>
           </div>
           <div class="console">
           </div>
