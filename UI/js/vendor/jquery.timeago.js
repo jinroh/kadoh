@@ -107,7 +107,12 @@
 
     var $s = $t.settings;
     if ($s.refreshMillis > 0) {
-      setInterval(function() { self.each(refresh); }, $s.refreshMillis);
+      var id = setInterval(function() {
+        if(self.length === 0) {
+          clearInterval(id);
+        }
+        self.each(refresh);
+    }, $s.refreshMillis);
     }
     return self;
   };
