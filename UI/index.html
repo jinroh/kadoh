@@ -335,7 +335,7 @@
                 </label>
                 <label>
                   <img src="css/images/warn-icon16.png" alt="warning">
-                  <input type="checkbox" name="debugLevel" value="warning" checked>
+                  <input type="checkbox" name="debugLevel" value="warn" checked>
                   <span>warning</span>
                 </label>
                 <label>
@@ -393,62 +393,68 @@
           <div class="well">
             <div style="line-height:1em">Routing Table contains a total of <strong>4 peers</strong> in <strong>2 buckets</strong></div>
           </div>
-          <div class="kbucket row">
-            <div class="kb-title span3">
-              <h4>Bucket #1 <small>[160, 159[</small></h4>
-              <span class="kb-refresh">refresh in 3 sec</span>
+          <div class="console">
+            
+
+            <div class="kbucket row">
+              <div class="kb-title span3">
+                <h4>Bucket #1 <small>[160, 159[</small></h4>
+                <span class="kb-refresh">refresh in 3 sec</span>
+              </div>
+              <div class="peers span13">
+                <table class="zebra-striped">
+                  <tr class="peer">
+                    <td class="distance">160</td>
+                    <td class="jid">jinroh@jabber.org</td>
+                    <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td class="last-seen">10 min</td>
+                  </tr>
+                  <tr class="peer">
+                    <td class="distance">160</td>
+                    <td class="jid">jinroh@jabber.org</td>
+                    <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td class="last-seen">10 min</td>
+                  </tr>
+                </table>
+              </div>
             </div>
-            <div class="peers span13">
-              <table class="zebra-striped">
-                <tr class="peer">
-                  <td class="distance">160</td>
-                  <td class="jid">jinroh@jabber.org</td>
-                  <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
-                  <td class="last-seen">10 min</td>
-                </tr>
-                <tr class="peer">
-                  <td class="distance">160</td>
-                  <td class="jid">jinroh@jabber.org</td>
-                  <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
-                  <td class="last-seen">10 min</td>
-                </tr>
-              </table>
+
+            
+            <div class="kbucket row">
+              <div class="kb-title span3">
+                <h4>Bucket #2 <small>[159, 158[</small></h4>
+                <span class="kb-refresh">refresh in 1 h</span>
+              </div>
+              <div class="peers span13">
+                <i>Empty</i>
+              </div>
             </div>
-          </div>
-          <hr />
-          <div class="kbucket row">
-            <div class="kb-title span3">
-              <h4>Bucket #2 <small>[159, 158[</small></h4>
-              <span class="kb-refresh">refresh in 1 h</span>
-            </div>
-            <div class="peers span13">
-              <i>Empty</i>
-            </div>
-          </div>
-          <hr />
-          <div class="kbucket row">
-            <div class="kb-title span3">
-              <h4>Bucket #3 <small>[158, 0[</small></h4>
-              <span class="kb-refresh">refresh in 1 h</span>
-            </div>
-            <div class="peers span13">
-              <table class="zebra-striped">
-                <tr class="peer new">
-                  <td class="distance">160</td>
-                  <td class="jid">jinroh@jabber.org</td>
-                  <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
-                  <td class="last-seen">5 min</td>
-                </tr>
-                <tr class="peer">
-                  <td class="distance">160</td>
-                  <td class="jid">jinroh@jabber.org/blala</td>
-                  <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
-                  <td class="last-seen">10 min</td>
-                </tr>
-              </table>
+            
+            <div class="kbucket row">
+              <div class="kb-title span3">
+                <h4>Bucket #3 <small>[158, 0[</small></h4>
+                <span class="kb-refresh">refresh in 1 h</span>
+              </div>
+              <div class="peers span13">
+                <table class="zebra-striped">
+                  <tr class="peer new">
+                    <td class="distance">160</td>
+                    <td class="jid">jinroh@jabber.org</td>
+                    <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td class="last-seen">5 min</td>
+                  </tr>
+                  <tr class="peer">
+                    <td class="distance">160</td>
+                    <td class="jid">jinroh@jabber.org/blala</td>
+                    <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td class="last-seen">10 min</td>
+                  </tr>
+                </table>
+              </div>
             </div>
           </div>
         </div>
+
         <div class="tab-pane" id="transport">
           <h3>Transport</h3>
         </div>
