@@ -8,7 +8,7 @@ var server = connect.createServer()
              .use('/jquery', connect.static(path.join(__dirname, '../..', 'lib/ext/jquery')))
              .use('/UI'    , connect.static(path.join(__dirname, '../..', 'UI')));
 
-console.log('http://localhost:8081');
+console.log('http://localhost:8080');
 proxy = require('../../lib/server/udpproxy').listen(server);
 
-server.listen(8081);
+server.listen(8080);
