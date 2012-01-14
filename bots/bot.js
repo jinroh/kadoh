@@ -59,6 +59,7 @@ if (process.argv.length > 2) {
               .argv;
 
   var debug     = !!argv.debug,
+      name      = argv.udp ? 'udpbot'   : 'xmppbot'
       protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
       type      = argv.udp ? 'UDP'      : 'NodeXMPP',
       delay     = argv.delay || 0,
@@ -70,7 +71,7 @@ if (process.argv.length > 2) {
       };
   var config = {
     hook : {
-      name: 'bot'
+      name: name
     },
     node : {
       reactor : {
