@@ -37,7 +37,7 @@ KadOHui.Routing.prototype = {
     RT.kbuckets.forEach(function(kbucket, index) {
       var buck = $(this._renderKbucket(kbucket, index));
       this.console.append(buck);
-      buck.find('time').timeago();
+      //buck.find('time').timeago();
     },this);
   },
 
