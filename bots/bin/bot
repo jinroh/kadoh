@@ -15,7 +15,7 @@ var argv  = require('optimist')
             .argv;
 
 var debug     = !!argv.debug,
-    name      = argv.udp ? 'udpbot'   : 'xmppbot'
+    name      = argv.udp ? 'udpbot'   : 'xmppbot',
     protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
     type      = argv.udp ? 'UDP'      : 'NodeXMPP',
     delay     = argv.delay || 0,
@@ -28,7 +28,8 @@ var debug     = !!argv.debug,
 
 var config = {
   hook : {
-    name: name
+    name   : name,
+    silent : true
   },
   node : {
     reactor : {
@@ -50,4 +51,8 @@ if (debug) {
     KadOH.log.subscribeTo(bot.kadoh._reactor);
     KadOH.log.subscribeTo(bot.kadoh._reactor._transport);
   });
+}
+
+if (argv.cli) {
+  require('repl').start('> ').context.node = bot.kadoh;
 }
