@@ -14,7 +14,10 @@ npm-debug.log
 # argo-uml
 *~
 
-#jake
+# hookio
+config.json
+
+# jake
 .jake_tasks
 
 # jasmine-node
