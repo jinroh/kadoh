@@ -2,7 +2,7 @@
  * Pool which *instanciates* a given number of nodes and 
  * spawn a new pool when full
  */
-var DEFAULT_SIZE = 30;
+var DEFAULT_SIZE = 50;
 var LAMBDA       = 2;
 
 var util  = require('util');
@@ -33,8 +33,11 @@ Pool.prototype.launch = function() {
         s = 0;
     for (; n >= 0; n--) {
       s += Math.floor((-Math.log(Math.random()) / LAMBDA * 1000));
+      var config = this._options;
+      config.reactor.transport.port += 1;
+      config.reactor.transport.resource = s.toString();
       this._nodes.push(new Bot({
-        node  : this._options,
+        node  : config,
         hook  : {
           name : 'bot',
           silent : true
@@ -53,24 +56,22 @@ Pool.prototype.launch = function() {
         self._duplicate();
       }, (DEFAULT_SIZE / LAMBDA * 1000) * (1 + 3/10), this);
     } else {
-      this.emit('pool::dht-launched')
+      this.emit('pool::dht-launched');
     }
     this._launched = true;
   }
 };
 
 Pool.prototype._duplicate = function() {
-  if (this._sizeLeft > 0) {
-    var opts = this._options;
-    var args = [__filename, '--size=' + this._sizeLeft];
-    if (opts.reactor.type === 'UDP') {
-      args.push('--udp',
-                '--port=' + (opts.reactor.transport.port + 1));
-    } else {
-      args.push('--jid='  + opts.reactor.transport.jid,
-                '--resource=' + opts.reactor.transport.resource,
-                '--password=' + opts.reactor.transport.password);
-    }
-    spawn('node', args);
+  var opts = this._options;
+  var args = [__filename, '--size=' + this._sizeLeft];
+  if (opts.reactor.type === 'UDP') {
+    args.push('--udp',
+              '--port=' + (opts.reactor.transport.port + DEFAULT_SIZE));
+  } else {
+    args.push('--jid='  + opts.reactor.transport.jid,
+              '--resource=' + opts.reactor.transport.resource,
+              '--password=' + opts.reactor.transport.password);
   }
+  spawn('node', args);
 };

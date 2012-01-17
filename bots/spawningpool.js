@@ -45,9 +45,9 @@ function spawnXMPPBot(jid, resource, password, delay) {
   return spawnBot(args);
 }
 
-function spawnUDPBot(delay) {
+function spawnUDPBot(port, delay) {
   delay = parseInt(delay, 10) || 0;
-  var args = ['--udp', '--delay=' + delay];
+  var args = ['--udp', '--port=' + port, '--delay=' + delay];
   return spawnBot(args);
 }
 

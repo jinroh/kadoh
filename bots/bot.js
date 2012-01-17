@@ -27,7 +27,7 @@ var Bot = exports.Bot = function(options) {
         }, options.delay);
       }
     } catch(e) {
-      self.emit('error::initialize', e);
+      self.emit('error::initialized', e);
     }
   });
 };
@@ -35,12 +35,13 @@ util.inherits(Bot, Hook);
 
 Bot.prototype.k_connect = function() {
   this.kadoh.connect(function() {
-    this.emit('connected');
+    this.emit('connected', this.kadoh.getAddress());
   }, this);
 };
 
 Bot.prototype.k_join = function() {
-  this.once('bootstraps', function(bootstraps) {
+  this.once('spawner::bootstraps', function(bootstraps) {
+    this.kadoh.join(bootstraps);
   });
   this.emit('bootstraps');
 };

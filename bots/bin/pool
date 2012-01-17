@@ -20,7 +20,7 @@ var protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
       jid      : argv.jid,
       resource : argv.resource,
       password : argv.password,
-      port     : argv.port
+      port     : parseInt(argv.port, 10) || 8000
     };
 
 var config = {

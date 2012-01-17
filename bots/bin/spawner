@@ -4,6 +4,22 @@
 // Main CLI
 
 var Hook = require('hook.io').Hook;
-var hook = new Hook({
+var spawner = new Hook({
   name: 'spawner'
 });
+
+var bootstraps = [];
+
+spawner.on('hook::ready', function() {
+  spawner.on('*::connected', function(address) {
+    bootstraps.push(address);
+  });
+
+  spawner.on('*::bootstraps', function() {
+    this.emit('bootstraps', [bootstraps[Math.floor(Math.random() * (bootstraps.length - 1))]]);
+  });
+
+  require('repl').start('> ').context = spawner;
+});
+
+spawner.start();
