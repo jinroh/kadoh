@@ -164,6 +164,26 @@ describe('Deferred', function() {
 
   });
 
+  describe('pipe', function() {
+    
+    it('should pipe deferred', function() {
+      KadOH.log.addLogger('ConsoleLogger');
+      var pipe1 = new Deferred();
+      var pipe2 = new Deferred();
+      def.pipe(function(value) {
+        pipe1.resolve(value + 1);
+        return pipe1;
+      }).pipe(function(value) {
+        pipe2.resolve(value + 1);
+        return pipe2;
+      });
+      pipe2.addCallback(success);
+      def.resolve(10);
+      expect(success).toHaveBeenCalledWith(12);
+    });
+
+  });
+
   describe('when', function() {
     
     var promises;
