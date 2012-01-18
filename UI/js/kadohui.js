@@ -3,7 +3,7 @@ KadOHui = (typeof KadOHui !== 'undefined') ? KadOHui : {};
 KadOHui.helper = {};
 
 KadOHui.helper.timeDif = function(date) {
-  var now = new Date.now();
+  var now = Date.now();
   date = (date instanceof Date) ? date.getTime() : date;
   var dif = date - now;
   var absdif = Math.abs(dif);
@@ -14,12 +14,12 @@ KadOHui.helper.timeDif = function(date) {
   var S = Math.floor(absdif/(1000         )); absdif = absdif - S*(1000);
 
   return [
-    (dif>0) ? 'in'   : '',
+    (dif>0) ? 'in '   : '',
     (D>0)   ? D+'d ' : '',
     (H>0)   ? H+'h ' : '',
     (M>0)   ? M+'m ' : '',
     (S>0)   ? S+'s ' : '',
-    (dif<0) ? 'ago'  : ''
+    (dif<0) ? ' ago'  : ''
   ].join('');
 
 };
@@ -59,6 +59,15 @@ KadOHui.init = function() {
 
   $("[rel=twipsy]")
     .twipsy({
+      title : function() {
+        var self = $(this);
+
+        if(self.is('time')) {
+          return KadOHui.helper.timeDif(new Date(self.attr('datetime')));
+        } else {
+          return self.attr('data-original-title');
+        }
+      },
       offset: 10,
       live: true
     })

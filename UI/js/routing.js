@@ -49,8 +49,8 @@ KadOHui.Routing.prototype = {
    '<div class="kbucket row">',
       '<div class="kb-title span3">',
         '<h4>Bucket #'+(index+1)+' <small>['+kbucket.range.min+','+ kbucket.range.max+'[</small></h4>',
-        '<span class="kb-refresh">refresh in',
-          '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+human_time+'</time>',
+        '<span class="kb-refresh">refresh : ',
+          '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+time.toLocaleTimeString()+'</time>',
         '</span>',
         '</div>',
           '<div class="peers span13">'].join('\n');
@@ -71,8 +71,8 @@ KadOHui.Routing.prototype = {
                   '<td class="jid">'+peer[0]+'</td>',
                   '<td class="sha"><a href="#" data-placement="below" rel="twipsy" title="'+peer[1]+'">'+peer[1].slice(0,10)+'</a></td>',
                   '<td class="last-seen">',
-                    '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+human_time+'</time>',
-                  'ago</td>',
+                    '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="below">'+time.toLocaleTimeString()+'</time>',
+                  '</td>',
                 '</tr>'
               ].join('\n');
             }).join('\n') +
