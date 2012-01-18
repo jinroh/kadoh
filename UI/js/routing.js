@@ -49,7 +49,7 @@ KadOHui.Routing.prototype = {
     var head = [
    '<div class="kbucket row">',
       '<div class="kb-title span3">',
-        '<h4>Bucket #'+(index+1)+' <small>['+kbucket.range.min+','+ kbucket.range.max+'[</small></h4>',
+        '<h4>Bucket #'+(index+1)+' <small>]'+kbucket.range.min+','+ kbucket.range.max+']</small></h4>',
         '<span class="kb-refresh">refresh : ',
           '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+time.toLocaleTimeString()+'</time>',
         '</span>',
