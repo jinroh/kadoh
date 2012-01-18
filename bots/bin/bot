@@ -5,6 +5,7 @@
 //
 
 var Bot = require(__dirname + '/../bot.js').Bot;
+process.listening = true;
 
 var argv  = require('optimist')
             .usage('Usage: $0 -j foo@bar -r kadoh -p azerty -d [num]')
@@ -43,15 +44,6 @@ var config = {
 
 var bot = new Bot(config);
 bot.start();
-
-if (debug) {
-  bot.on('hook::ready', function() {
-    KadOH.log.setLevel('debug');
-    KadOH.log.subscribeTo(bot.kadoh);
-    KadOH.log.subscribeTo(bot.kadoh._reactor);
-    KadOH.log.subscribeTo(bot.kadoh._reactor._transport);
-  });
-}
 
 if (argv.cli) {
   require('repl').start('> ').context.node = bot.kadoh;

@@ -4,6 +4,7 @@
 // Main CLI
 
 var Hook = require('hook.io').Hook;
+process.listening = true;
 var spawner = new Hook({
   name: 'spawner'
 });
@@ -16,10 +17,14 @@ spawner.on('hook::ready', function() {
   });
 
   spawner.on('*::bootstraps', function() {
-    this.emit('bootstraps', [bootstraps[Math.floor(Math.random() * (bootstraps.length - 1))]]);
+    this.emit('bootstraps', ['jinroh@jabber.org/kadoh', 'alexstrat@jabber.org/kadoh']);
   });
 
-  require('repl').start('> ').context = spawner;
+  require('repl').start('> ').context.spawner = spawner;
 });
+
+spawner.disconnectNodes = function() {
+  this.emit('disconnect-nodes');
+};
 
 spawner.start();

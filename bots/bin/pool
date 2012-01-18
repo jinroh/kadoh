@@ -7,10 +7,9 @@
 var Pool = require(__dirname + '/../pool.js');
 
 var argv = require('optimist')
-          .usage('Usage: $0 -s [num] -j foo@bar -r kadoh -p azerty')
+          .usage('Usage: $0 -s [num] -j foo@bar -p azerty')
           .alias('s', 'size')
           .alias('j', 'jid')
-          .alias('r', 'resource')
           .alias('p', 'password')
           .argv;
 var protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
@@ -18,9 +17,8 @@ var protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
     size      = argv.size || 10,
     transport = {
       jid      : argv.jid,
-      resource : argv.resource,
       password : argv.password,
-      port     : parseInt(argv.port, 10) || 8000
+      port     : parseInt(argv.port, 10) || 8000
     };
 
 var config = {
@@ -31,5 +29,5 @@ var config = {
   }
 };
 
-var pool = new Pool(argv.size, config);
+var pool = new Pool(parseInt(argv.size, 10), config);
 pool.start();

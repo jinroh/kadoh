@@ -2,8 +2,8 @@
  * Pool which *instanciates* a given number of nodes and 
  * spawn a new pool when full
  */
-var DEFAULT_SIZE = 50;
-var LAMBDA       = 2;
+var DEFAULT_SIZE = 20;
+var LAMBDA       = 0.8;
 
 var util  = require('util');
 var Hook  = require('hook.io').Hook;
@@ -22,6 +22,7 @@ var Pool = module.exports = function(size, options) {
 
   var self = this;
   this.on('hook::ready', function() {
+    console.log('Launch', self._sizeLeft);
     self.launch();
   });
 };
@@ -35,7 +36,7 @@ Pool.prototype.launch = function() {
       s += Math.floor((-Math.log(Math.random()) / LAMBDA * 1000));
       var config = this._options;
       config.reactor.transport.port += 1;
-      config.reactor.transport.resource = s.toString();
+      config.reactor.transport.resource = Math.random().toString();
       this._nodes.push(new Bot({
         node  : config,
         hook  : {
@@ -52,11 +53,12 @@ Pool.prototype.launch = function() {
     });
 
     if (this._sizeLeft > 0) {
+      console.log('Launch duplicate');
       setTimeout(function(self) {
         self._duplicate();
-      }, (DEFAULT_SIZE / LAMBDA * 1000) * (1 + 3/10), this);
+      }, (DEFAULT_SIZE / LAMBDA * 1000) * 1.1, this);
     } else {
-      this.emit('pool::dht-launched');
+      this.emit('dht-launched');
     }
     this._launched = true;
   }
@@ -64,14 +66,15 @@ Pool.prototype.launch = function() {
 
 Pool.prototype._duplicate = function() {
   var opts = this._options;
-  var args = [__filename, '--size=' + this._sizeLeft];
+  var args = [__dirname + '/bin/pool', '--size=' + this._sizeLeft];
   if (opts.reactor.type === 'UDP') {
     args.push('--udp',
               '--port=' + (opts.reactor.transport.port + DEFAULT_SIZE));
   } else {
     args.push('--jid='  + opts.reactor.transport.jid,
-              '--resource=' + opts.reactor.transport.resource,
               '--password=' + opts.reactor.transport.password);
   }
-  spawn('node', args);
+  spawn('node', args).stdout.on('data', function(data) {
+    process.stdout.write(String(data));
+  });
 };
