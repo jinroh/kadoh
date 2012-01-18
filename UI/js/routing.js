@@ -33,6 +33,7 @@ KadOHui.Routing.prototype = {
       '</div>');
 
     this.console.empty();
+    $('.twipsy').remove();
 
     RT.kbuckets.forEach(function(kbucket, index) {
       var buck = $(this._renderKbucket(kbucket, index));
