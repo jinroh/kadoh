@@ -1,85 +1,249 @@
-<html>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script type="text/javascript" src="../../dist/KadOH.js"></script>
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KadOH</title>
+  <script type="text/javascript" src="jquery/jquery-1.7.js"></script>
+  <script type="text/javascript" src="/dist/KadOH.js"></script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-tabs.js"></script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-twipsy.js"></script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-popover.js"> </script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-buttons.js"></script>
+  <script type="text/javascript" src="UI/js/kadohui.js"></script>
+  <script type="text/javascript" src="UI/js/Log.js"></script>
+  <script type="text/javascript" src="UI/js/routing.js"></script>
+  <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
-<script type="text/javascript">
-$(function() {
-  var KadOH = window.KadOH;
-  node = undefined;
+  <script type="text/javascript">
+  // SOME BULLSHIT JS TO BE REPLACED IN kadohui.js
+  $(function() { KadOHui.init();}); 
+  
+  function enable(elt) {
+    return elt.removeClass("disabled")
+              .removeAttr("disabled");
+  }
 
-  function init(event) {
-    var log = node ? false : true;
-    node    = node || new KadOH.Node(null, {
-      reactor: {
-        transport: {
-          jid: $('#login').val().trim() || 'kadoh@jabber.org',
-          password: $('#password').val().trim() || 'azerty'
+  function disable(elt) {
+    return elt.addClass("disabled")
+              .attr("disabled", "disabled");
+  }
+
+  $(function () {
+    node = undefined;
+
+    KadOH.log.setLevel('debug');
+    logger = new KadOHui.Logger('#log .console', '#log .control');
+    KadOH.log.addLogger('UILogger', logger);
+
+    var config = {
+      reactor : {
+        transport : {
+          jid      : 'kadoh@jabber.org',
+          password : 'azerty',
+          resource : 'kadoh'
         }
       }
+    };
+    
+    var inputs     = $("#credentials input");
+    var transport  = $("select.transport");
+    var jidInput   = $("#jid");
+    var pswdInput  = $("#password");
+    var connection = $("#connection");
+    var connectBtn = $("#connection input[name=connect]");
+    var joinBtn    = $("#connection input[name=join]");
+    
+    // Transport configs
+    var changeTransport = function() {
+      var type = config.reactor.type = $(this).val();
+      if (type === "XMPP") {
+        enable(inputs);
+      } else {
+        disable(inputs);
+      }
+    }
+    transport.change(changeTransport);
+    changeTransport.call(transport);
+
+    // Login configs
+    jidInput.keyup(function() {
+      config.reactor.transport.jid = $(this).val();
     });
-    if (log) {
-      KadOH.log.setLevel('debug');
+    pswdInput.keyup(function() {
+      config.reactor.transport.password = $(this).val();
+    });
+
+    // Connection
+    var connect = function() {
+      var that = $(this);
+      that.unbind("click", connect);
+      that.addClass("disabled");
+      disable(transport);
+      var connected = function() {
+        that.removeClass("primary danger disabled")
+            .addClass("success")
+            .attr("value", "Disconnect");
+        that.click(disconnect);
+        enable(joinBtn);
+      };
+      var failure = function() {
+        that.removeClass("primary danger disabled")
+            .addClass("danger")
+            .attr("value", "Retry ?");
+        that.click(connect);
+        enable(transport);
+      };
+
+      node = new KadOH.Node(undefined, config);
       KadOH.log.subscribeTo(node, 'Node');
-      KadOH.log.subscribeTo(node._reactor, 'Reactor')
-      KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
+      KadOH.log.subscribeTo(node.reactor(), 'Reactor');
+      KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
+      KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
+      new KadOHui.Routing(node._routingTable, '#routing-table');
+      node.once('connected', connected);
+      node.connect();
+    };
+    var disconnect = function() {
+      var that = $(this);
+      that.unbind("click", disconnect);
+      that.addClass("disabled");
+      var disconnected = function() {
+        that.removeClass("success disabled")
+            .addClass("primary")
+            .attr("value", "Connect");
+        that.click(connect);
+        enable(transport);
+        disable(joinBtn);
+      };
+      var failure = function() {
+        that.removeClass("success disabled")
+            .addClass("danger")
+            .attr("value", "Retry ?");
+        that.click(disconnect);
+      };
+      node.disconnect();
+      node.once('disconnected', function() {
+        disconnected();
+      });
     }
-    event.preventDefault();
-  }
+    connectBtn.click(connect);
 
-  function connect(event) {
-    node.connect();
-    event.preventDefault();
-  }
-
-  function disconnect(event) {
-    node.disconnect();
-    event.preventDefault();
-  }
-
-  function join(event) {
-    node.join(['alexstrat@jabber.org/kadoh', 'jinroh@jabber.org/kadoh']);
-    event.preventDefault();
-  }
-
-  function ping(event) {
-    try {
-      var dst = $('#ping_dst').val();
-      node.reactor().PING(new KadOH.Peer(dst));
-    }
-    catch(e) {
-      console.debug(e);
-    }
-    finally {
-      event.preventDefault();
-    }
-  }
-
-  $('#init').click(init);
-  $('#connect').click(connect);
-  $('#disconnect').click(disconnect);
-  $('#join').click(join);
-  $('#ping').click(ping);
-});
-</script>
+    joinBtn.click(function() {
+      node.join(['alexstrat@jabber.org/kadoh', 'jinroh@jabber.org/kadoh']);
+    });
+  });
+  </script>
+</head>
 <body>
-<h2>Send message to node :</h2>
-<form id='form'>
-  <p>
-    <input type="text" value="kadoh@jabber.org" name="login" id="login">
-    <input type="password" value="azerty" name="password" id="password">
-    <input type="submit" value="Init" name="init" id="init">
-  </p>
-  <p>
-    <input type="submit" value="Connect" name="connect" id="connect">
-    <input type="submit" value="Disconnect" name="disconnect" id="disconnect">
-  </p>
-  <p>
-    <input type="submit" value="Join" name="join" id="join">
-  </p>
-  <p>
-    <input type="text" name="ping_dst" id="ping_dst" value=""> 
-    <input type="submit" value="Ping" name="ping" id="ping">
-  </p>
-</form>
+
+  <div class="container">
+    <div class="topbar">
+      <div class="fill">
+        <div class="container"><a href="#" class="brand">KadOH</a></div>
+      </div>
+    </div>
+    <div id="content">
+
+      <div class="page-header">
+        <div id="connection-control">
+          <div class="row">
+            <div class="span2">
+              <select class="span2 transport">
+                <option value="XMPP">XMPP</option>
+              </select>
+            </div>
+            <div id="credentials" class="span10">
+              <input class="span3" type="text"     id="jid"      placeholder="Jabber or GMail login" />
+              <input class="span3" type="password" id="password" placeholder="Password" />
+            </div>
+            <div id="connection" class="span3">
+              <input type="submit" class="btn primary"  name="connect" value="Connect" />
+              <input type="submit" class="btn disabled" name="join"    value="Join" />
+            </div>
+          </div>
+        </div>
+        <ul class="tabs" data-tabs="tabs">
+          <li class="active"><a href="#control">Control</a></li>
+          <li><a href="#node">Node</a></li>
+          <li><a href="#reactor">Reactor</a></li>
+          <li><a href="#transport">Transport</a></li>
+          <li><a href="#routing-table">Routing Table</a></li>
+          <li><a href="#value-management">Value Management</a></li>
+          <li><a href="#log">Log</a></li>
+        </ul>
+      </div>
+
+      <div class="tab-content">
+
+        <div class="active tab-pane" id="control">
+          <h3>Control panel</h3>
+        </div>
+
+
+        <div class="tab-pane" id="node">
+          <h3>WIP</h3>
+        </div>
+        <div class="tab-pane" id="reactor">
+            <span class="state label important">Disconnected</span>
+            <h3>WIP</h3>
+        </div>
+        <div class="tab-pane" id="log">
+            <div class="well control">
+              <h5>Log level :</h5>
+                <label>
+                  <img src="UI/css/images/info-icon16.png" alt="info">
+                  <input type="checkbox" name="debugLevel" value="info" checked>
+                  <span>info</span>
+                </label>
+                <label>
+                  <img src="UI/css/images/warn-icon16.png" alt="warning">
+                  <input type="checkbox" name="debugLevel" value="warn" checked>
+                  <span>warning</span>
+                </label>
+                <label>
+                  <img src="UI/css/images/error-icon16.png" alt="error">
+                  <input type="checkbox" name="debugLevel" value="error" checked>
+                  <span>error</span>
+                </label>
+                <label>
+                  <img src="UI/css/images/skull-icon16.png" alt="fatal">
+                  <input type="checkbox" name="debugLevel" value="fatal" checked>
+                  <span>fatal</span>
+                </label>
+                <label>
+                  <img src="UI/css/images/debug-icon16.png" alt="debug">
+                  <input type="checkbox" name="debugLevel" value="debug" checked>
+                  <span>debug</span>
+                </label>
+            </div>
+            <div class="console">
+            </div>
+        </div>
+        <div class="tab-pane" id="value-management">
+            <h3>WIP</h3>
+        </div>
+
+
+        <div class="tab-pane" id="routing-table">
+          <div class="well">
+          </div>
+          <div class="console">
+          </div>
+        </div>
+
+
+        <div class="tab-pane" id="transport">
+          <h3>WIP</h3>
+        </div>
+        
+      </div>
+    </div>
+
+    <footer>
+      <p><strong>Pierre Guilleminot</strong> &amp; <strong>Alexandre Lacheze</strong></p>
+      <p><a href="https://github.com/jinroh/kadoh">KadOH on Github</a></p>
+    </footer>
+  </div>
 </body>
 </html>
