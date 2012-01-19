@@ -12,6 +12,7 @@
   <script type="text/javascript" src="UI/js/kadohui.js"></script>
   <script type="text/javascript" src="UI/js/Log.js"></script>
   <script type="text/javascript" src="UI/js/routing.js"></script>
+  <script type="text/javascript" src="UI/js/reactor.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
@@ -56,6 +57,7 @@
   KadOH.log.addLogger('UILogger', logger);
 
   routing = new KadOHui.Routing(node._routingTable, '#routing-table');
+  reactor = new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent');
 
   node._reactor.on('connected', function(iam) {
     $('#info').empty().append('<h3>'+iam+' / <small><a href="#" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>')
@@ -136,10 +138,33 @@
         <div class="tab-pane" id="node">
           <h3>WIP</h3>
         </div>
+
         <div class="tab-pane" id="reactor">
+          <div class="row">
             <span class="state label important">Disconnected</span>
-            <h3>WIP</h3>
+          </div>
+          <div class="row">
+            <div class="span8">
+              <h4>Received RPCs</h4>
+              <div class ="table">
+                <table class='condensed-table'>
+                  <tbody class="received">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="span8">
+              <h4>Sent RPCs</h4>
+              <div class ="table">
+                <table class='condensed-table'>
+                  <tbody class="sent">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
+
         <div class="tab-pane" id="log">
             <div class="well control">
               <h5>Log level :</h5>
