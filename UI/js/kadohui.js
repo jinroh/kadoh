@@ -57,6 +57,14 @@ KadOHui.init = function() {
        popover.hide();
      });
 
+    $('.popover .title').live('click', function(e){
+        e.preventDefault();
+        
+       $('[rel=popover].popover-hold').each(function(){
+            $(this).removeClass('popover-hold').data('popover').hide();
+        });
+    });
+    
   $("[rel=twipsy]")
     .twipsy({
       title : function() {
