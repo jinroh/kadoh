@@ -17,14 +17,18 @@ KadOHui.Reactor.prototype = {
   addToReceived: function(rpc) {
     var param;
     var el = $(this._encodeRPC(rpc, false));
-    rpc.then(function(){this._resolve(el);}, function(){this._reject(el);}, this); //debugger;
+    rpc.then(function() {
+      this._resolve(el, this._encodeResolveRes(rpc, arguments));
+    }, function(e){this._reject(el, '<b style="color: red;">'+e.toString()+'</b>');}, this);
     this.received.prepend(el);
   },
 
   addToSent: function(rpc) {
     var param;
     var el = $(this._encodeRPC(rpc, true));
-    rpc.then(function(){this._resolve(el);}, function(){this._reject(el);}, this); //debugger;
+    rpc.then(function() {
+      this._resolve(el, this._encodeResolveRes(rpc, arguments));
+      }, function(e){this._reject(el, '<b style="color: red;">'+e.toString()+'</b>');}, this);
     this.sent.prepend(el);
   },
 
@@ -98,5 +102,51 @@ KadOHui.Reactor.prototype = {
                        .attr('data-original-title', 'Rejected')
                        .attr('data-placement', 'below')
                        .attr('data-content', html);
+  },
+
+  _encodeResolveRes: function(rpc, args) {
+    var html;
+
+    //help
+    function table(peers) {
+      var html;
+      html = '<table class=\'condensed-table zebra-striped\'>';
+      peers.forEach(function(peer) {
+        html = html + '<tr><td>'+peer.getDistanceTo(rpc.getTarget())+'</td>'+
+                             '<td><b>'+peer.getAddress()+'</b></td>'+
+                             '<td><a href=\'#\' class=\'sh\' data-placement=\'below\' rel=\'twipsy\' title=\''+peer.getID()+'\'>'+peer.getID().slice(0,10)+'</a></td>'+
+                        '</tr>';
+      });
+      if(peers.length() ===0) html = html + '<i>empty</i>';
+
+      html = html+'</table>';
+      return html;
+    }
+
+
+    switch(rpc.getMethod()) {
+      case 'PING': break;
+      case 'FIND_NODE':
+        html = table(args[0]);
+        break;
+      case 'FIND_VALUE':
+        if(args[1]) {
+          html = [
+          '<ul>',
+            '<li><b>Value : </b><code>'+args[0].value+'</code></li>',
+            '<li><b>Expiration : </b>',
+                (args[0].exp<0) ?
+                '<i>never</i>':
+                '<time rel=\'twipsy\' datetime=\''+(new Date(args[0].exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(args[0].exp).toString())+'</time>',
+            '</li>',
+          '</ul>'].join('\n');
+        } else{
+          html = table(args[0]);
+        }
+        break;
+      case 'STORE' : break;
+      default: break;
+    }
+    return html;
   }
 };
