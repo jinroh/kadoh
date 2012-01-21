@@ -42,7 +42,7 @@ KadOHui.init = function() {
           popover.hide();
          $(e.target).removeClass('popover-hold');
        } else {
-          popover.show();
+          //popover.show();
          $(e.target).addClass('popover-hold');
        }
     })
@@ -64,7 +64,7 @@ KadOHui.init = function() {
             $(this).removeClass('popover-hold').data('popover').hide();
         });
     });
-    
+
   $("[rel=twipsy]")
     .twipsy({
       title : function() {
