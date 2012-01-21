@@ -5,6 +5,8 @@ KadOHui.Reactor = function(reactor, received, sent) {
   this.received = $(received);
   this.sent = $(sent);
   this.reactor  = reactor;
+
+  this.MAX = 50;
  
   this.reactor.on({
     queried  : this.addToReceived,
@@ -20,6 +22,10 @@ KadOHui.Reactor.prototype = {
     rpc.then(function() {
       this._resolve(el, this._encodeResolveRes(rpc, arguments));
     }, function(e){this._reject(el, '<b style="color: red;">'+e.toString()+'</b>');}, this);
+
+    if(this.received.children().length > this.MAX)
+        this.received.children().last().remove();
+
     this.received.prepend(el);
   },
 
@@ -29,6 +35,10 @@ KadOHui.Reactor.prototype = {
     rpc.then(function() {
       this._resolve(el, this._encodeResolveRes(rpc, arguments));
       }, function(e){this._reject(el, '<b style="color: red;">'+e.toString()+'</b>');}, this);
+
+    if(this.sent.children().length > this.MAX)
+      this.sent.children().last().remove();
+
     this.sent.prepend(el);
   },
 

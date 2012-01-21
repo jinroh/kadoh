@@ -4,6 +4,8 @@ KadOHui.Logger =  function(console_element, control_element) {
   this.console = $(console_element);
   this.control = $(control_element);
 
+  this.MAX = 100;
+
   this._currentgroup = null;
   var console = this.console;
   this.control.find(':checkbox[name=debugLevel]').change(function(e) {
@@ -15,14 +17,18 @@ KadOHui.Logger =  function(console_element, control_element) {
 };
 
   KadOHui.Logger.prototype = {
+
     append: function(type, args) {
       args = Array.prototype.slice.call(args);
 
       var el = this.template(this._currentgroup, type, args, new Date());
       if(! this.isInLevel(type))
         el.hide();
-      this.console.prepend(el);
 
+      if(this.console.children().length > this.MAX)
+        this.console.children().last().remove();
+
+      this.console.prepend(el);
     },
 
     template: function(group, type, args, time) {
