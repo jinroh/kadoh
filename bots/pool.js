@@ -22,7 +22,7 @@ var Pool = module.exports = function(size, options) {
 
   var self = this;
   this.on('hook::ready', function() {
-    console.log('Launch', self._sizeLeft);
+    console.log(self.name + ' launching ' + self._sizeLeft + ' bots');
     self.launch();
   });
 };
@@ -53,7 +53,6 @@ Pool.prototype.launch = function() {
     });
 
     if (this._sizeLeft > 0) {
-      console.log('Launch duplicate');
       setTimeout(function(self) {
         self._duplicate();
       }, (DEFAULT_SIZE / LAMBDA * 1000) * 1.1, this);

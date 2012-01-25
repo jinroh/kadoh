@@ -6,52 +6,54 @@ var Hook  = require('hook.io').Hook;
 var KadOH = require(__dirname + '/../dist/KadOH.node.js');
 var util  = require('util');
 
+KadOH.log.setLevel('error');
+
 var Bot = exports.Bot = function(options) {
-  options = options || {
+  options = this._options = options || {
     node : {},
     hook : {
-      name : 'bot'
+      name   : 'bot',
+      silent : true
     },
     delay : undefined
   };
+
   Hook.call(this, options.hook);
   this.kadoh = new KadOH.Node(null, options.node);
-
-  KadOH.log.setLevel('error');
-  // KadOH.log.subscribeTo(this.kadoh);
-  // KadOH.log.subscribeTo(this.kadoh._reactor);
-  // KadOH.log.subscribeTo(this.kadoh._reactor._transport);
 
   var self = this;
   self.on('hook::ready', function() {
     self.emit('initialized', options);
-    if (options.delay) {
-      setTimeout(function() {
-        console.log('connecting');
-        self.k_connect();
-      }, options.delay);
-    }
-
+    
     self.on('spawner::disconnect-nodes', function() {
       self.kadoh.disconnect();
     });
+
+    self.kLaunch();
   });
 };
 util.inherits(Bot, Hook);
 
-Bot.prototype.k_connect = function() {
+Bot.prototype.kLaunch = function() {
+  setTimeout(function(self) {
+    console.log(self.name + ' connecting');
+    self.kConnect();
+  }, this._options.delay || 1, this);
+};
+
+Bot.prototype.kConnect = function() {
   this.kadoh.connect(function() {
     this.emit('connected', this.kadoh.getAddress());
-    this.k_join();
+    this.kJoin();
   }, this);
 };
 
-Bot.prototype.k_join = function() {
+Bot.prototype.kJoin = function() {
   var self = this;
-  self.once('spawner::bootstraps', function(bootstraps) {
-    console.log('join');
+  this.once('spawner::bootstraps', function(bootstraps) {
+    console.log(self.name + ' joining');
     self.kadoh.join(bootstraps, function(error) {
-      self.emit('joined', self.kadoh._routingTable.howManyPeers());
+      self.emit('joined', self.kadoh._routingTable.howManyPeers());      
     });
   });
   this.emit('bootstraps');
