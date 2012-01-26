@@ -34,6 +34,16 @@
         "[lawnchair]/*" 
       ],
       "build"   : "[dist]/KadOH.node.js"
+    }, 
+    "bootstrap" : {
+      "entry"   : "[KadOH]/bootstrap",
+      "exclude" : [
+        "[socket.io-client]/*",
+        "[jquery]/*",
+        "[strophejs]/*",
+        "[lawnchair]/*" 
+      ],
+      "build"   : "[dist]/KadOH_bootstrap.node.js"
     }
   }
 }

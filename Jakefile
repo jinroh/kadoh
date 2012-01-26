@@ -90,7 +90,7 @@ task('doc', ['default'], function(){
 desc('Building and minifing the embedded code');
 task('build', ['default'], function() {
   var builder = new CICADA.builder(BUILD_CONF_FILE);
-  builder.build(['normal', 'min', 'node']);
+  builder.build(['normal', 'min', 'node', 'bootstrap']);
 });
 
 namespace('build', function() {
@@ -113,5 +113,10 @@ namespace('build', function() {
   desc('Building the code for node');
   task('node', ['default'], function() {
     builder.build('node');
+  });
+
+  desc('Building the code for a node bootstrap');
+  task('bootstrap', ['default'], function() {
+    builder.build('bootstrap');
   });
 });
