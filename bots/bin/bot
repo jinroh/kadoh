@@ -13,6 +13,7 @@ var argv  = require('optimist')
             .alias('r', 'resource')
             .alias('p', 'password')
             .alias('d', 'delay')
+            .alias('b', 'bootstraps')
             .argv;
 
 var debug     = !!argv.debug,
@@ -25,7 +26,8 @@ var debug     = !!argv.debug,
       resource : argv.resource,
       password : argv.password,
       port     : argv.port
-    };
+    },
+    bootstraps = argv.bootstraps.split(',');
 
 var config = {
   hook : {
@@ -39,7 +41,8 @@ var config = {
       transport : transport
     }
   },
-  delay : delay
+  delay : delay,
+  bootstraps : bootstraps
 };
 
 var bot = new Bot(config);
