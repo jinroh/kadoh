@@ -209,6 +209,10 @@
         text-align: center;
       }
 
+      #reactor tbody tr > td:nth-child(3) {
+        text-align: center;
+      }
+
       #reactor div.table {
         height: 700px;
         overflow: auto;
