@@ -12,6 +12,7 @@
   <script type="text/javascript" src="UI/js/kadohui.js"></script>
   <script type="text/javascript" src="UI/js/Log.js"></script>
   <script type="text/javascript" src="UI/js/routing.js"></script>
+  <script type="text/javascript" src="UI/js/reactor.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
@@ -101,6 +102,7 @@
       KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
       KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
       new KadOHui.Routing(node._routingTable, '#routing-table');
+      new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent');
       node.once('connected', connected);
       node.connect();
     };
@@ -130,7 +132,7 @@
     connectBtn.click(connect);
 
     joinBtn.click(function() {
-      node.join(['alexstrat@jabber.org/kadoh', 'jinroh@jabber.org/kadoh']);
+      node.join(['alexstrat@jabber.org/kadoh', 'jinroh@jabber.org/kadoh', 'kadoh1@jabber.org/kadoh']);
     });
   });
   </script>
@@ -184,10 +186,33 @@
         <div class="tab-pane" id="node">
           <h3>WIP</h3>
         </div>
+
         <div class="tab-pane" id="reactor">
+          <div class="row">
             <span class="state label important">Disconnected</span>
-            <h3>WIP</h3>
+          </div>
+          <div class="row">
+            <div class="span8">
+              <h4>Received RPCs</h4>
+              <div class ="table">
+                <table class='condensed-table'>
+                  <tbody class="received">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="span8">
+              <h4>Sent RPCs</h4>
+              <div class ="table">
+                <table class='condensed-table'>
+                  <tbody class="sent">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
+
         <div class="tab-pane" id="log">
             <div class="well control">
               <h5>Log level :</h5>
