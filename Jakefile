@@ -90,7 +90,7 @@ task('doc', ['default'], function(){
 desc('Building and minifing the embedded code');
 task('build', ['default'], function() {
   var builder = new CICADA.builder(BUILD_CONF_FILE);
-  builder.build(['normal', 'min', 'node', 'bootstrap']);
+  builder.build(['normal', 'node', 'bootstrap', 'min']);
 });
 
 namespace('build', function() {
