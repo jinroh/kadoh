@@ -9,6 +9,6 @@ var server = connect.createServer()
              .use('/UI'    , connect.static(path.join(__dirname, '../..', 'UI')));
 
 console.log('http://localhost:8080');
-proxy = require('../../lib/server/udpproxy').listen(server);
+proxy = require('../../lib/server/mainlineproxy').listen(server);
 
 server.listen(8080);
