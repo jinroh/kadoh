@@ -13,6 +13,9 @@ function launchPools() {
   pproc.stdout.on('data', function(data) {
     process.stdout.write(String(data));
   });
+  pproc.stderr.on('data', function(data) {
+    process.stderr.write(String(data));
+  });
 }
 
 var connected = 0;
@@ -25,5 +28,8 @@ bootstraps.forEach(function(bootstrap) {
         launchPools();
       }
     }
+  });
+  bproc.stderr.on('data', function(data) {
+    process.stderr.write(String(data));
   });
 });

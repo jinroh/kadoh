@@ -30,10 +30,7 @@ var debug     = !!argv.debug,
     bootstraps = argv.bootstraps.split(',');
 
 var config = {
-  hook : {
-    name   : name,
-    silent : true
-  },
+  name : name,
   node : {
     reactor : {
       protocol  : protocol,

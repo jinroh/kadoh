@@ -3,7 +3,7 @@
  * spawn a new pool when full
  */
 var DEFAULT_SIZE = 20;
-var LAMBDA       = 1;
+var LAMBDA       = 3;
 
 var spawn = require('child_process').spawn;
 var Bot   = require(__dirname + '/bot').Bot;
@@ -62,7 +62,14 @@ Pool.prototype._duplicate = function() {
     args.push('--jid='  + opts.reactor.transport.jid,
               '--password=' + opts.reactor.transport.password);
   }
-  spawn('node', args).stdout.on('data', function(data) {
+  var dup = spawn('node', args)
+  dup.stdout.on('data', function(data) {
     process.stdout.write(String(data));
+  });
+  dup.stderr.on('data', function(data) {
+    process.stderr.write(String(data));
+  });
+  dup.on('exit', function(error) {
+    process.stderr.write(String(error));
   });
 };
