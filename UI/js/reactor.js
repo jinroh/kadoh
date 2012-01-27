@@ -82,8 +82,7 @@ KadOHui.Reactor.prototype = {
         '<b>'+addr+'</b><br>',
         (nodeid !== null) ? '<a href="#" class="sha" data-placement="below" rel="twipsy" data-original-title="'+nodeid+'">'+nodeid.slice(0,10)+'</a>' : '<i>null</i>',
       '</td>',
-      '<td><code>'+meth+'</code></td>',
-      '<td>'+param+'</td>',
+      '<td><code>'+meth+'</code><br>'+param+'</td>',
       '<td><span class="state label warning">Progress</span></td>',
       '<td><time rel="twipsy" datetime="'+time.toISOString()+'" data-placement="below">'+time.toLocaleTimeString()+'</time></td>',
     '</tr>'];
