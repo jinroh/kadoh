@@ -11,11 +11,13 @@ var argv = require('optimist')
           .alias('s', 'size')
           .alias('j', 'jid')
           .alias('p', 'password')
+          .alias('b', 'bootstraps')
           .argv;
-var protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
-    type      = argv.udp ? 'UDP'      : 'NodeXMPP',
-    size      = argv.size || 10,
-    transport = {
+var protocol   = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
+    type       = argv.udp ? 'UDP'      : 'NodeXMPP',
+    size       = parseInt(argv.size, 10) || 10,
+    bootstraps = argv.bootstraps.split(',');
+    transport  = {
       jid      : argv.jid,
       password : argv.password,
       port     : parseInt(argv.port, 10) || 8000
@@ -29,5 +31,5 @@ var config = {
   }
 };
 
-var pool = new Pool(parseInt(argv.size, 10), config);
+var pool = new Pool(size, bootstraps, config);
 pool.start();

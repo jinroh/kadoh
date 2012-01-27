@@ -3,33 +3,26 @@
  * spawn a new pool when full
  */
 var DEFAULT_SIZE = 20;
-var LAMBDA       = 0.8;
+var LAMBDA       = 1;
 
-var util  = require('util');
-var Hook  = require('hook.io').Hook;
 var spawn = require('child_process').spawn;
 var Bot   = require(__dirname + '/bot').Bot;
 
-var Pool = module.exports = function(size, options) {
-  Hook.call(this, {
-    name   : 'pool',
-    silent : true
-  });
-  this._options  = options;
-  this._sizeLeft = size || DEFAULT_SIZE;
-  this._nodes    = [];
-  this._launched = false;
-
-  var self = this;
-  this.on('hook::ready', function() {
-    console.log(self.name + ' launching ' + self._sizeLeft + ' bots');
-    self.launch();
-  });
+var Pool = module.exports = function(size, bootstraps, options) {
+  this._options    = options;
+  this._sizeLeft   = size || DEFAULT_SIZE;
+  this._nodes      = [];
+  this._launched   = false;
+  this._bootstraps = bootstraps;
 };
-util.inherits(Pool, Hook);
 
-Pool.prototype.launch = function() {
+Pool.prototype.start = function() {
   if (!this._launched) {
+
+    console.log('');
+    console.log('-- New pool (~' + this._sizeLeft + ' bots left)');
+    console.log('');
+
     var n = Math.min(DEFAULT_SIZE, this._sizeLeft) - 1,
         s = 0;
     for (; n >= 0; n--) {
@@ -39,11 +32,9 @@ Pool.prototype.launch = function() {
       config.reactor.transport.resource = Math.random().toString();
       this._nodes.push(new Bot({
         node  : config,
-        hook  : {
-          name : 'bot',
-          silent : true
-        },
-        delay : s
+        delay : s,
+        name  : 'bot-' + this._sizeLeft,
+        bootstraps : this._bootstraps
       }));
       this._sizeLeft--;
     }
@@ -56,8 +47,6 @@ Pool.prototype.launch = function() {
       setTimeout(function(self) {
         self._duplicate();
       }, (DEFAULT_SIZE / LAMBDA * 1000) * 1.1, this);
-    } else {
-      this.emit('dht-launched');
     }
     this._launched = true;
   }
@@ -65,7 +54,7 @@ Pool.prototype.launch = function() {
 
 Pool.prototype._duplicate = function() {
   var opts = this._options;
-  var args = [__dirname + '/bin/pool', '--size=' + this._sizeLeft];
+  var args = [__dirname + '/bin/pool', '--size=' + this._sizeLeft, '--bootstraps=' + this._bootstraps.join(',')];
   if (opts.reactor.type === 'UDP') {
     args.push('--udp',
               '--port=' + (opts.reactor.transport.port + DEFAULT_SIZE));
