@@ -8,17 +8,33 @@ var LAMBDA       = 3;
 var spawn = require('child_process').spawn;
 var Bot   = require(__dirname + '/bot').Bot;
 
-var Pool = module.exports = function(size, bootstraps, options) {
-  this._options    = options;
-  this._sizeLeft   = size || DEFAULT_SIZE;
+var Pool = module.exports = function(config) {
+  this._options    = config.bot;
+  this._sizeLeft   = config.size       || DEFAULT_SIZE;
+  this._bootstraps = config.bootstraps || [];
+  this._activity   = config.activity   || false;
+  this._values     = config.values     || 10
+
   this._nodes      = [];
   this._launched   = false;
-  this._bootstraps = bootstraps;
 };
+
+Pool.prototype._botConfig = function(name, delay) {
+  var config = this._options;
+  config.reactor.transport.port += 1;
+  config.reactor.transport.resource = name;
+  return {
+    node  : config,
+    name  : name,
+    delay : delay,
+    bootstraps : this._bootstraps,
+    activity   : this._activity,
+    values     : this._values
+  }
+}
 
 Pool.prototype.start = function() {
   if (!this._launched) {
-
     console.log('');
     console.log('-- New pool (~' + this._sizeLeft + ' bots left)');
     console.log('');
@@ -27,15 +43,7 @@ Pool.prototype.start = function() {
         s = 0;
     for (; n >= 0; n--) {
       s += Math.floor((-Math.log(Math.random()) / LAMBDA * 1000));
-      var config = this._options;
-      config.reactor.transport.port += 1;
-      config.reactor.transport.resource = Math.random().toString();
-      this._nodes.push(new Bot({
-        node  : config,
-        delay : s,
-        name  : 'bot-' + this._sizeLeft,
-        bootstraps : this._bootstraps
-      }));
+      this._nodes.push(new Bot(this._botConfig('bot-' + this._sizeLeft, s)));
       this._sizeLeft--;
     }
 
@@ -54,7 +62,14 @@ Pool.prototype.start = function() {
 
 Pool.prototype._duplicate = function() {
   var opts = this._options;
-  var args = [__dirname + '/bin/pool', '--size=' + this._sizeLeft, '--bootstraps=' + this._bootstraps.join(',')];
+  var args = [
+    __dirname + '/bin/pool',
+    '--size='       + this._sizeLeft,
+    '--bootstraps=' + this._bootstraps.join(','),
+    '--activity='   + this._activity,
+    '--values='     + this._values
+  ];
+
   if (opts.reactor.type === 'UDP') {
     args.push('--udp',
               '--port=' + (opts.reactor.transport.port + DEFAULT_SIZE));
@@ -62,6 +77,7 @@ Pool.prototype._duplicate = function() {
     args.push('--jid='  + opts.reactor.transport.jid,
               '--password=' + opts.reactor.transport.password);
   }
+
   var dup = spawn('node', args)
   dup.stdout.on('data', function(data) {
     process.stdout.write(String(data));

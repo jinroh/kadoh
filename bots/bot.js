@@ -2,14 +2,16 @@
 // Bot
 //
 var KadOH = require(__dirname + '/../dist/KadOH.node.js');
-KadOH.log.setLevel('error');
 
+KadOH.log.setLevel('warn');
 var Bot = exports.Bot = function(options) {
   options = this._options = options || {
-    node : {},
-    delay : undefined,
-    name : 'bot',
-    bootstraps : []
+    node       : {},
+    delay      : undefined,
+    name       : 'bot',
+    bootstraps : [],
+    activity   : false,
+    values     : 10
   };
   options.node.reactor = options.node.reactor || {};
   options.node.reactor.transport = options.node.reactor.transport || {};
@@ -35,6 +37,29 @@ Bot.prototype.join = function() {
   var self = this;
   console.log(self._options.name + ' joining');      
   this.kadoh.join(this._options.bootstraps, function(error) {
-    console.log(self._options.name + ' joined', self.kadoh._routingTable.howManyPeers());      
+    console.log(self._options.name + ' joined', self.kadoh._routingTable.howManyPeers());
+    if (self._options.activity) {
+      self.randomActivity();
+    }
   });
+};
+
+Bot.prototype.randomActivity = function() {
+  var timeout = Math.floor((-Math.log(Math.random()) / this._options.activity * 60000));
+  var self = this;
+  setTimeout(function() {
+    var random = Math.floor(Math.random() * 2);
+    var value  = String(Math.floor(Math.random() * self._options.values));
+    switch(random) {
+      case 0:
+        console.log("search " + value);
+        self.kadoh.iterativeFindValue(KadOH.util.Crypto.digest.SHA1(value));
+        break;
+      case 1:
+        console.log("store " + value);
+        self.kadoh.iterativeStore(value);
+        break;
+    }
+    self.randomActivity();
+  }, timeout);
 };
