@@ -15,7 +15,6 @@ var BBIN = BOTS_PATH + "/bootstrap";
 var PBIN = BOTS_PATH + "/pool";
 var size = parseInt(process.argv[2], 10) || 10;
 
-
 function launchPools() {
   var pproc = spawn("node", [
     PBIN,
