@@ -55,15 +55,15 @@ KadOHui.Reactor.prototype = {
       case 'STORE' :
         var code = [
           '<ul>',
-            '<li><b>Key : </b><a href="#" class="sha" data-placement="below" rel="twipsy" data-original-title="'+rpc.getKey()+'">'+rpc.getKey().slice(0,10)+'</a></li>',
+            '<li><b>Key : </b><a href=\'#\' class=\'sha\' data-placement=\'below\' rel=\'twipsy\' data-original-title=\''+rpc.getKey()+'\'>'+rpc.getKey().slice(0,10)+'</a></li>',
             '<li><b>Value : </b><code>'+rpc.getValue()+'</code></li>',
             '<li><b>Expiration : </b>',
                 (rpc.getExpiration()<0) ?
                 '<i>never</i>':
-                '<time rel="twipsy" datetime="'+(new Date(rpc.getExpiration())).toISOString()+'" data-placement="below">'+(new Date(rpc.getExpiration()).toString())+'</time>',
+                '<time rel=\'twipsy\' datetime=\''+(new Date(rpc.getExpiration())).toISOString()+'\' data-placement=\'below\'>'+(new Date(rpc.getExpiration()).toString())+'</time>',
             '</li>',
           '</ul>'].join('\n');
-        param = '<a rel="popover" data-content="'+code+'" data-original-title="Params" data-placement="below">param</a>';
+        param = '<i><a rel="popover" data-content="'+code+'" data-original-title="Params" data-placement="below">params</a></i>';
         break;
       default:
         break;
