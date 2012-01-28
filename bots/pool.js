@@ -2,7 +2,7 @@
  * Pool which *instanciates* a given number of nodes and 
  * spawn a new pool when full
  */
-var DEFAULT_SIZE = 20;
+var DEFAULT_SIZE = 50;
 var LAMBDA       = 3;
 
 var spawn = require('child_process').spawn;
