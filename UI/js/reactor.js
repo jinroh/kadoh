@@ -142,6 +142,7 @@ KadOHui.Reactor.prototype = {
         if(args[1]) {
           html = [
           '<ul>',
+            '<i>FOUND</i><br>',
             '<li><b>Value : </b><code>'+args[0].value+'</code></li>',
             '<li><b>Expiration : </b>',
                 (args[0].exp<0) ?
@@ -150,7 +151,7 @@ KadOHui.Reactor.prototype = {
             '</li>',
           '</ul>'].join('\n');
         } else{
-          html = table(args[0]);
+          html = '<i>NOT FOUND</i><br>'+table(args[0]);
         }
         break;
       case 'STORE' : break;
