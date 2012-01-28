@@ -3,7 +3,7 @@
 //
 // Configurations
 //
-var bootstraps = ["0.0.0.0:3000"];
+var bootstraps = ["127.0.0.1:3000"];
 var activity   = 2;
 var values     = 100;
 var port       = 10000;
