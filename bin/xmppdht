@@ -1,13 +1,19 @@
 #!/usr/bin/env node
-var exec = require("child_process").exec;
+
+//
+// Configurations
+//
+var bootstraps = [["kadoh1@jabber.org","kadoh","azerty"]];
+var address    = ["kadoh@jabber.org", "azerty"];
+var activity   = 2;
+var values     = 100;
+
+var spawn = require("child_process").spawn;
 
 var BOTS_PATH = __dirname + "/../bots/bin";
 var BBIN = BOTS_PATH + "/bootstrap";
 var PBIN = BOTS_PATH + "/pool";
 var size = parseInt(process.argv[2], 10) || 10;
-
-var bootstraps = [["kadoh1@jabber.org","kadoh","azerty"]];
-var address    = ["kadoh@jabber.org", "azerty"];
 
 function launchPools() {
   var jid = address[0];
@@ -16,9 +22,20 @@ function launchPools() {
     return bootstrap[0] + "/" + bootstrap[1];
   }).join(',');
 
-  var pproc = exec(PBIN + " --jid="+ jid +" --password="+ psw +" --size=" + size + " --bootstraps=" + btp);
+  var pproc = spawn("node", [
+    PBIN,
+    "--jid="        + jid,
+    "--password="   + psw,
+    "--size="       + size,
+    "--bootstraps=" + btp,
+    "--activity="   + activity,
+    "--values="     + values
+  ]);
   pproc.stdout.on('data', function(data) {
     process.stdout.write(String(data));
+  });
+  pproc.stderr.on('data', function(data) {
+    process.stderr.write(String(data));
   });
 }
 
@@ -27,7 +44,12 @@ bootstraps.forEach(function(bootstrap) {
   var jid = bootstrap[0];
   var res = bootstrap[1];
   var psw = bootstrap[2];
-  bproc = exec(BBIN + " --jid="+ jid +" --resource="+ res +" --password="+ psw);
+  bproc = spawn("node", [
+    BBIN,
+    "--jid="      + jid,
+    "--resource=" + res,
+    "--password=" + psw
+  ]);
   bproc.stdout.on('data', function(data) {
     if (/connected/.test(data)) {
       console.log('-- Bootstrap ' + data);
@@ -35,5 +57,8 @@ bootstraps.forEach(function(bootstrap) {
         launchPools();
       }
     }
+  });
+  bproc.stderr.on('data', function(data) {
+    process.stderr.write(String(data));
   });
 });

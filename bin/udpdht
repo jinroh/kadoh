@@ -1,29 +1,55 @@
 #!/usr/bin/env node
-var exec = require("child_process").exec;
+
+//
+// Configurations
+//
+var bootstraps = ["0.0.0.0:3000"];
+var activity   = 2;
+var values     = 100;
+var port       = 10000;
+
+var spawn = require("child_process").spawn;
 
 var BOTS_PATH = __dirname + "/../bots/bin";
 var BBIN = BOTS_PATH + "/bootstrap";
 var PBIN = BOTS_PATH + "/pool";
 var size = parseInt(process.argv[2], 10) || 10;
 
-var bootstraps = ["0.0.0.0:3000"];
 
 function launchPools() {
-  var pproc = exec(PBIN + " --udp --port=8000 --size=" + size + " --bootstraps=" + bootstraps.join(','));
+  var pproc = spawn("node", [
+    PBIN,
+    "--udp",
+    "--port="       + port,
+    "--size="       + size,
+    "--bootstraps=" + bootstraps.join(','),
+    "--activity="   + activity,
+    "--values="     + values
+  ]);
   pproc.stdout.on('data', function(data) {
     process.stdout.write(String(data));
+  });
+  pproc.stderr.on('data', function(data) {
+    process.stderr.write(String(data));
   });
 }
 
 var connected = 0;
 bootstraps.forEach(function(bootstrap) {
   var port = bootstrap.split(":")[1];
-  bproc = exec(BBIN + " --udp --port=" + port);
+  bproc = spawn("node", [
+    BBIN,
+    "--udp",
+    "--port=" + port
+  ]);
   bproc.stdout.on('data', function(data) {
     if (/connected/.test(data)) {
       if (++connected === bootstraps.length) {
         launchPools();
       }
     }
+  });
+  bproc.stderr.on('data', function(data) {
+    process.stderr.write(String(data));
   });
 });

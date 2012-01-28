@@ -9,27 +9,39 @@ var Pool = require(__dirname + '/../pool.js');
 var argv = require('optimist')
           .usage('Usage: $0 -s [num] -j foo@bar -p azerty')
           .alias('s', 'size')
+          .alias('b', 'bootstraps')
+          .alias('a', 'activity')
+          .alias('v', 'values')
           .alias('j', 'jid')
           .alias('p', 'password')
-          .alias('b', 'bootstraps')
           .argv;
+
 var protocol   = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
     type       = argv.udp ? 'UDP'      : 'NodeXMPP',
     size       = parseInt(argv.size, 10) || 10,
-    bootstraps = argv.bootstraps.split(',');
+    values     = parseInt(argv.values, 10) || 10,
+    activity   = argv.activity || false,
+    bootstraps = argv.bootstraps.split(','),
     transport  = {
-      jid      : argv.jid,
-      password : argv.password,
-      port     : parseInt(argv.port, 10) || 8000
+      jid       : argv.jid,
+      password  : argv.password,
+      port      : parseInt(argv.port, 10) || 10000,
+      reconnect : true
     };
 
 var config = {
-  reactor : {
-    protocol  : protocol,
-    type      : type,
-    transport : transport
+  size       : size,
+  bootstraps : bootstraps,
+  activity   : activity,
+  values     : values,
+  bot : {
+      reactor : {
+      protocol  : protocol,
+      type      : type,
+      transport : transport
+    }
   }
 };
 
-var pool = new Pool(size, bootstraps, config);
+var pool = new Pool(config);
 pool.start();

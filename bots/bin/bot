@@ -16,24 +16,21 @@ var argv  = require('optimist')
             .alias('b', 'bootstraps')
             .argv;
 
-var debug     = !!argv.debug,
-    name      = argv.udp ? 'udpbot'   : 'xmppbot',
+var name      = argv.udp ? 'udpbot'   : 'xmppbot',
     protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
     type      = argv.udp ? 'UDP'      : 'NodeXMPP',
     delay     = argv.delay || 0,
     transport = {
-      jid      : argv.jid,
-      resource : argv.resource,
-      password : argv.password,
-      port     : argv.port
+      jid       : argv.jid,
+      resource  : argv.resource,
+      password  : argv.password,
+      port      : parseInt(argv.port, 10) || 10000,
+      reconnect : true
     },
     bootstraps = argv.bootstraps.split(',');
 
 var config = {
-  hook : {
-    name   : name,
-    silent : true
-  },
+  name : name,
   node : {
     reactor : {
       protocol  : protocol,
@@ -41,8 +38,9 @@ var config = {
       transport : transport
     }
   },
-  delay : delay,
-  bootstraps : bootstraps
+  delay      : delay,
+  bootstraps : bootstraps,
+  activity   : false
 };
 
 var bot = new Bot(config);
