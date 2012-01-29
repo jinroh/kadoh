@@ -3,8 +3,12 @@
 //
 // Configurations
 //
-var bootstraps = [["kadoh1@jabber.org","kadoh","azerty"]];
-var address    = ["kadoh@jabber.org", "azerty"];
+var bootstraps = [
+  ["bootstrap0@ec2-50-19-161-198.compute-1.amazonaws.com","kadoh","azerty"]
+  ["bootstrap1@ec2-50-19-161-198.compute-1.amazonaws.com","kadoh","azerty"]
+  ["bootstrap2@ec2-50-19-161-198.compute-1.amazonaws.com","kadoh","azerty"]
+];
+var address    = ["kadoh%d@ec2-50-19-161-198.compute-1.amazonaws.com", "azerty"];
 var activity   = 2;
 var values     = 100;
 

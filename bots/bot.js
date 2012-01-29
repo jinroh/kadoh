@@ -3,7 +3,7 @@
 //
 var KadOH = require(__dirname + '/../dist/KadOH.node.js');
 
-KadOH.log.setLevel('warn');
+KadOH.log.setLevel('error');
 var Bot = exports.Bot = function(options) {
   options = this._options = options || {
     node       : {},

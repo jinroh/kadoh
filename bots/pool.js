@@ -10,28 +10,33 @@ var Bot   = require(__dirname + '/bot').Bot;
 
 var Pool = module.exports = function(config) {
   this._options    = config.bot;
+  this._jid        = config.bot.reactor.transport.jid;
   this._sizeLeft   = config.size       || DEFAULT_SIZE;
   this._bootstraps = config.bootstraps || [];
   this._activity   = config.activity   || false;
-  this._values     = config.values     || 10
+  this._values     = config.values     || 10;
 
   this._nodes      = [];
   this._launched   = false;
 };
 
-Pool.prototype._botConfig = function(name, delay) {
+Pool.prototype._botConfig = function(number, delay) {
   var config = this._options;
   config.reactor.transport.port += 1;
-  config.reactor.transport.resource = name;
+  config.reactor.transport.resource = 'bot-' + number;
+  var regex = /\%d/;
+  if (this._jid && regex.test(this._jid)) {
+    config.reactor.transport.jid = this._jid.replace(regex, number);
+  }
   return {
     node  : config,
     name  : name,
     delay : delay,
     bootstraps : this._bootstraps,
     activity   : this._activity,
-    values     : this._values
-  }
-}
+    values     : this._values
+  };
+};
 
 Pool.prototype.start = function() {
   if (!this._launched) {
@@ -43,7 +48,7 @@ Pool.prototype.start = function() {
         s = 0;
     for (; n >= 0; n--) {
       s += Math.floor((-Math.log(Math.random()) / LAMBDA * 1000));
-      this._nodes.push(new Bot(this._botConfig('bot-' + this._sizeLeft, s)));
+      this._nodes.push(new Bot(this._botConfig(this._sizeLeft, s)));
       this._sizeLeft--;
     }
 
@@ -78,7 +83,7 @@ Pool.prototype._duplicate = function() {
               '--password=' + opts.reactor.transport.password);
   }
 
-  var dup = spawn('node', args)
+  var dup = spawn('node', args);
   dup.stdout.on('data', function(data) {
     process.stdout.write(String(data));
   });
