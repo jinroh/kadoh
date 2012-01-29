@@ -23,14 +23,14 @@ var Pool = module.exports = function(config) {
 Pool.prototype._botConfig = function(number, delay) {
   var config = this._options;
   config.reactor.transport.port += 1;
-  config.reactor.transport.resource = 'bot-' + number;
+  config.reactor.transport.resource = Math.random().toString().split('.')[1];
   var regex = /\%d/;
   if (this._jid && regex.test(this._jid)) {
     config.reactor.transport.jid = this._jid.replace(regex, number);
   }
   return {
     node  : config,
-    name  : name,
+    name  : 'bot-' + number,
     delay : delay,
     bootstraps : this._bootstraps,
     activity   : this._activity,
