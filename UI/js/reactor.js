@@ -36,7 +36,13 @@ KadOHui.Reactor.prototype = {
     var el = $(this._encodeRPC(rpc, true));
     rpc.then(function() {
       this._resolve(el, this._encodeResolveRes(rpc, arguments));
-      }, function(e){this._reject(el, '<b style="color: red;">'+e.toString()+'</b>');}, this);
+      }, function(e){
+        var details = '';
+        if(e=='outdated') {
+          details = '<br>'+'<i>'+arguments[2]+'</i>';
+        }
+        this._reject(el, '<b style="color: red;">'+e.toString()+'</b>'+details);
+        }, this);
 
     if(this.sent.children().length > this.MAX)
       this.sent.children().last().remove();
