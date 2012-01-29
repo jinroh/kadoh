@@ -19,6 +19,7 @@ KadOHui.helper.timeDif = function(date) {
     (H>0)   ? H+'h ' : '',
     (M>0)   ? M+'m ' : '',
     (S>0)   ? S+'s ' : '',
+    (Math.abs(dif) < 999) ? '<1s' :'',
     (dif<0) ? ' ago'  : ''
   ].join('');
 
