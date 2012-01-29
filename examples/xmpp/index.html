@@ -13,6 +13,7 @@
   <script type="text/javascript" src="UI/js/Log.js"></script>
   <script type="text/javascript" src="UI/js/routing.js"></script>
   <script type="text/javascript" src="UI/js/reactor.js"></script>
+  <script type="text/javascript" src="UI/js/valueM.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
@@ -103,6 +104,10 @@
       KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
       new KadOHui.Routing(node._routingTable, '#routing-table');
       new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
+      node.once('connected', function() {
+        valueM = new KadOHui.ValueM(node._store, '#value-management');
+      }, this);
+
       node.once('connected', connected);
       node.connect();
     };
@@ -250,8 +255,26 @@
             </div>
         </div>
         <div class="tab-pane" id="value-management">
-            <h3>WIP</h3>
-        </div>
+            <div class="well">
+              <div style="line-height:1em">Value Management not initialized.</div>
+              </div>
+              <div class="row">
+                <div class="span16">
+                  <table class='condensed-table zebra-striped'>
+                    <thead>
+                      <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                        <th>Replication</th>
+                        <th>Expiration</th>
+                      </tr>
+                    </thead>
+                    <tbody class="values">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+       </div>
 
 
         <div class="tab-pane" id="routing-table">
