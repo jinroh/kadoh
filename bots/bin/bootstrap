@@ -40,7 +40,8 @@ bootstrap.connect(function() {
 });
 
 var hook = new Hook({
-    name: 'bootstrap'
+    name   : 'bootstrap',
+    silent : true
 });
 hook.on('hook::ready', function() {
   require('repl').start('> ').context.bootstrap = bootstrap;

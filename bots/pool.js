@@ -11,6 +11,7 @@ var Bot   = require(__dirname + '/bot').Bot;
 var Pool = module.exports = function(config) {
   this._options    = config.bot;
   this._jid        = config.bot.reactor.transport.jid;
+  this._port       = config.bot.reactor.transport.port;
   this._sizeLeft   = config.size       || DEFAULT_SIZE;
   this._bootstraps = config.bootstraps || [];
   this._activity   = config.activity   || false;
@@ -21,8 +22,8 @@ var Pool = module.exports = function(config) {
 };
 
 Pool.prototype._botConfig = function(number, delay) {
-  var config = this._options;
-  config.reactor.transport.port += 1;
+  var config = getCloneOfObject(this._options);
+  config.reactor.transport.port = this._port + number;
   config.reactor.transport.resource = Math.random().toString().split('.')[1];
   var regex = /\%d/;
   if (this._jid && regex.test(this._jid)) {
@@ -94,3 +95,20 @@ Pool.prototype._duplicate = function() {
     process.stderr.write(String(error));
   });
 };
+
+function getCloneOfObject(oldObject) {
+  var tempClone = {};
+
+  if (typeof(oldObject) == "object")
+    for (var prop in oldObject) {
+      if ((typeof(oldObject[prop]) == "object") &&
+                      Array.isArray(oldObject[prop]))
+        tempClone[prop] = oldObject[prop].slice();
+      else if (typeof(oldObject[prop]) == "object")
+        tempClone[prop] = getCloneOfObject(oldObject[prop]);
+      else
+        tempClone[prop] = oldObject[prop];
+    }
+
+  return tempClone;
+}
