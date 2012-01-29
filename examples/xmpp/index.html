@@ -102,7 +102,7 @@
       KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
       KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
       new KadOHui.Routing(node._routingTable, '#routing-table');
-      new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent');
+      new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
       node.once('connected', connected);
       node.connect();
     };
@@ -189,7 +189,7 @@
 
         <div class="tab-pane" id="reactor">
           <div class="row">
-            <span class="state label important">Disconnected</span>
+            <span class="connection_state label important">Disconnected</span>
           </div>
           <div class="row">
             <div class="span8">

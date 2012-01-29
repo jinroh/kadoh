@@ -1,9 +1,10 @@
 KadOHui = (typeof KadOHui !== 'undefined') ? KadOHui : {};
 
 
-KadOHui.Reactor = function(reactor, received, sent) {
+KadOHui.Reactor = function(reactor, received, sent, state) {
   this.received = $(received);
   this.sent = $(sent);
+  this.state = $(state);
   this.reactor  = reactor;
 
   this.MAX = 50;
@@ -12,6 +13,7 @@ KadOHui.Reactor = function(reactor, received, sent) {
     queried  : this.addToReceived,
     querying : this.addToSent
   }, this);
+  this.reactor.onStateChange(this.changeState, this);
 };
 
 KadOHui.Reactor.prototype = {
@@ -158,5 +160,14 @@ KadOHui.Reactor.prototype = {
       default: break;
     }
     return html;
+  },
+
+  changeState: function(state) {
+    var labels = {
+      'disconnected' : 'important',
+      'connected'    : 'success'
+    };
+
+    this.state.html('<span class="state label '+labels[state]+'">'+state+'</span>');
   }
 };
