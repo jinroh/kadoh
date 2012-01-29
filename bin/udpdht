@@ -3,9 +3,10 @@
 //
 // Configurations
 //
-var bootstraps = ["127.0.0.1:3000"];
-var activity   = 2;
-var values     = 100;
+var size       = parseInt(process.argv[2], 10) || 10;
+var bootstraps = ["127.0.0.1:3000", "127.0.0.1:3001", "127.0.0.1:3002"];
+var activity   = 200 / size;
+var values     = 10000;
 var port       = 10000;
 
 var spawn = require("child_process").spawn;
@@ -13,7 +14,6 @@ var spawn = require("child_process").spawn;
 var BOTS_PATH = __dirname + "/../bots/bin";
 var BBIN = BOTS_PATH + "/bootstrap";
 var PBIN = BOTS_PATH + "/pool";
-var size = parseInt(process.argv[2], 10) || 10;
 
 function launchPools() {
   var pproc = spawn("node", [

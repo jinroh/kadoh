@@ -132,7 +132,11 @@
     connectBtn.click(connect);
 
     joinBtn.click(function() {
-      node.join(['alexstrat@jabber.org/kadoh', 'jinroh@jabber.org/kadoh', 'kadoh1@jabber.org/kadoh']);
+      node.join([
+        'bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh',
+        'bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh',
+        'bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh'
+      ]);
     });
   });
   </script>

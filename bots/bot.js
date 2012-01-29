@@ -3,7 +3,7 @@
 //
 var KadOH = require(__dirname + '/../dist/KadOH.node.js');
 
-KadOH.log.setLevel('warn');
+KadOH.log.setLevel('error');
 var Bot = exports.Bot = function(options) {
   options = this._options = options || {
     node       : {},
@@ -52,11 +52,9 @@ Bot.prototype.randomActivity = function() {
     var value  = String(Math.floor(Math.random() * self._options.values));
     switch(random) {
       case 0:
-        console.log("search " + value);
         self.kadoh.iterativeFindValue(KadOH.util.Crypto.digest.SHA1(value));
         break;
       case 1:
-        console.log("store " + value);
         self.kadoh.iterativeStore(value);
         break;
     }

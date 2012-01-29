@@ -3,9 +3,14 @@
 //
 // Configurations
 //
-var bootstraps = [["kadoh1@jabber.org","kadoh","azerty"]];
-var address    = ["kadoh@jabber.org", "azerty"];
-var activity   = 2;
+var size       = parseInt(process.argv[2], 10) || 10;
+var bootstraps = [
+  ["bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"],
+  ["bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"],
+  ["bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"]
+];
+var address    = ["kadoh%d@ec2-107-21-104-96.compute-1.amazonaws.com", "azerty"];
+var activity   = 200 / size;
 var values     = 100;
 
 var spawn = require("child_process").spawn;
@@ -13,7 +18,6 @@ var spawn = require("child_process").spawn;
 var BOTS_PATH = __dirname + "/../bots/bin";
 var BBIN = BOTS_PATH + "/bootstrap";
 var PBIN = BOTS_PATH + "/pool";
-var size = parseInt(process.argv[2], 10) || 10;
 
 function launchPools() {
   var jid = address[0];

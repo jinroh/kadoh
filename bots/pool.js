@@ -2,7 +2,7 @@
  * Pool which *instanciates* a given number of nodes and 
  * spawn a new pool when full
  */
-var DEFAULT_SIZE = 20;
+var DEFAULT_SIZE = 50;
 var LAMBDA       = 3;
 
 var spawn = require('child_process').spawn;
@@ -10,28 +10,34 @@ var Bot   = require(__dirname + '/bot').Bot;
 
 var Pool = module.exports = function(config) {
   this._options    = config.bot;
+  this._jid        = config.bot.reactor.transport.jid;
+  this._port       = config.bot.reactor.transport.port;
   this._sizeLeft   = config.size       || DEFAULT_SIZE;
   this._bootstraps = config.bootstraps || [];
   this._activity   = config.activity   || false;
-  this._values     = config.values     || 10
+  this._values     = config.values     || 10;
 
   this._nodes      = [];
   this._launched   = false;
 };
 
-Pool.prototype._botConfig = function(name, delay) {
-  var config = this._options;
-  config.reactor.transport.port += 1;
-  config.reactor.transport.resource = name;
+Pool.prototype._botConfig = function(number, delay) {
+  var config = getCloneOfObject(this._options);
+  config.reactor.transport.port = this._port + number;
+  config.reactor.transport.resource = Math.random().toString().split('.')[1];
+  var regex = /\%d/;
+  if (this._jid && regex.test(this._jid)) {
+    config.reactor.transport.jid = this._jid.replace(regex, number);
+  }
   return {
     node  : config,
-    name  : name,
+    name  : 'bot-' + number,
     delay : delay,
     bootstraps : this._bootstraps,
     activity   : this._activity,
-    values     : this._values
-  }
-}
+    values     : this._values
+  };
+};
 
 Pool.prototype.start = function() {
   if (!this._launched) {
@@ -43,7 +49,7 @@ Pool.prototype.start = function() {
         s = 0;
     for (; n >= 0; n--) {
       s += Math.floor((-Math.log(Math.random()) / LAMBDA * 1000));
-      this._nodes.push(new Bot(this._botConfig('bot-' + this._sizeLeft, s)));
+      this._nodes.push(new Bot(this._botConfig(this._sizeLeft, s)));
       this._sizeLeft--;
     }
 
@@ -78,7 +84,7 @@ Pool.prototype._duplicate = function() {
               '--password=' + opts.reactor.transport.password);
   }
 
-  var dup = spawn('node', args)
+  var dup = spawn('node', args);
   dup.stdout.on('data', function(data) {
     process.stdout.write(String(data));
   });
@@ -89,3 +95,20 @@ Pool.prototype._duplicate = function() {
     process.stderr.write(String(error));
   });
 };
+
+function getCloneOfObject(oldObject) {
+  var tempClone = {};
+
+  if (typeof(oldObject) == "object")
+    for (var prop in oldObject) {
+      if ((typeof(oldObject[prop]) == "object") &&
+                      Array.isArray(oldObject[prop]))
+        tempClone[prop] = oldObject[prop].slice();
+      else if (typeof(oldObject[prop]) == "object")
+        tempClone[prop] = getCloneOfObject(oldObject[prop]);
+      else
+        tempClone[prop] = oldObject[prop];
+    }
+
+  return tempClone;
+}
