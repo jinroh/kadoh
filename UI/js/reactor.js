@@ -7,7 +7,7 @@ KadOHui.Reactor = function(reactor, received, sent, state) {
   this.state = $(state);
   this.reactor  = reactor;
 
-  this.MAX = 50;
+  this.MAX = 200;
  
   this.reactor.on({
     queried  : this.addToReceived,

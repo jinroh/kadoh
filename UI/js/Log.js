@@ -4,7 +4,7 @@ KadOHui.Logger =  function(console_element, control_element) {
   this.console = $(console_element);
   this.control = $(control_element);
 
-  this.MAX = 100;
+  this.MAX = 500;
 
   this._currentgroup = null;
   var console = this.console;
