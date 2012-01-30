@@ -254,7 +254,7 @@ describe('Deferred', function() {
         promises[2].resolve('bar');
         expect(success).not.toHaveBeenCalled();
         promises[1].reject();
-        expect(success).toHaveBeenCalled();
+        expect(success).toHaveBeenCalledWith([promises[2]], [promises[0], promises[1]]);
         expect(atl.isResolved()).toBeTruthy();
       });
 
@@ -263,7 +263,7 @@ describe('Deferred', function() {
         promises[1].reject();
         promises[2].reject();
         expect(failure).toHaveBeenCalled();
-        expect(success).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalledWith([], [promises[0], promises[1], promises[2]]);
         expect(atl.isRejected()).toBeTruthy();
       });
 
