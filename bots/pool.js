@@ -78,7 +78,7 @@ Pool.prototype._duplicate = function() {
 
   if (opts.reactor.type === 'UDP') {
     args.push('--udp',
-              '--port=' + (opts.reactor.transport.port + DEFAULT_SIZE));
+              '--port=' + opts.reactor.transport.port);
   } else {
     args.push('--jid='  + opts.reactor.transport.jid,
               '--password=' + opts.reactor.transport.password);
