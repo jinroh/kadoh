@@ -27,7 +27,7 @@ describe('In Value Management', function() {
 
   describe('when i instanciate one (no recover)', function() {
     beforeEach(function(){
-      v = new VM(node, {recover : false});
+      v = new VM(node, {recover : false, delayedRep : false});
     });
 
     afterEach(function(){
