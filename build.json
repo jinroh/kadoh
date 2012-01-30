@@ -19,11 +19,11 @@
     "browser" : {
       "entry"   : "[KadOH]/node",
       "exclude" : [
-        "[KadOH]/storage/basicstorage",
         "[KadOH]/rpc/p2ptransport/udp",
         "[KadOH]/rpc/p2ptransport/node-xmpp",
         "[KadOH]/rpc/protocol/node-xmlrpc"
-      ]
+      ],
+      "build"   : "[dist]/KadOH.browser.js"
     },
     "min" : {
       "depends" : "normal",
@@ -31,7 +31,7 @@
       "build"   : "[dist]/KadOH.min.js"
     },
     "test" : {
-      "depends" : "normal",
+      "depends" : "browser",
       "build"   : "[spec-dist]/KadOH.js"
     },
     "node" : {
