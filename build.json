@@ -16,6 +16,15 @@
       "entry"   : "[KadOH]/node",
       "build"   : "[dist]/KadOH.js"
     },
+    "browser" : {
+      "entry"   : "[KadOH]/node",
+      "exclude" : [
+        "[KadOH]/storage/basicstorage",
+        "[KadOH]/rpc/p2ptransport/udp",
+        "[KadOH]/rpc/p2ptransport/node-xmpp",
+        "[KadOH]/rpc/protocol/node-xmlrpc"
+      ]
+    },
     "min" : {
       "depends" : "normal",
       "mignify" : true,
@@ -31,7 +40,9 @@
         "[socket.io-client]/*",
         "[jquery]/*",
         "[strophejs]/*",
-        "[lawnchair]/*" 
+        "[lawnchair]/*",
+        "[KadOH]/rpc/p2ptransport/xmpp",
+        "[KadOH]/rpc/protocol/xmlrpc"
       ],
       "build"   : "[dist]/KadOH.node.js"
     }, 
@@ -41,7 +52,9 @@
         "[socket.io-client]/*",
         "[jquery]/*",
         "[strophejs]/*",
-        "[lawnchair]/*" 
+        "[lawnchair]/*",
+        "[KadOH]/rpc/p2ptransport/xmpp",
+        "[KadOH]/rpc/protocol/xmlrpc"
       ],
       "build"   : "[dist]/KadOH_bootstrap.node.js"
     }
