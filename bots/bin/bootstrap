@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-// @TODO
-// Main CLI
-
-var Hook = require('hook.io').Hook;
 var util = require('util');
 var Bootstrap = require('../../dist/KadOH_bootstrap.node.js').Bootstrap;
 process.listening = true;
@@ -38,12 +34,3 @@ var bootstrap = new Bootstrap(null, config);
 bootstrap.connect(function() {
   console.log('connected', bootstrap.getAddress());
 });
-
-var hook = new Hook({
-    name   : 'bootstrap',
-    silent : true
-});
-hook.on('hook::ready', function() {
-  require('repl').start('> ').context.bootstrap = bootstrap;
-});
-hook.start();
