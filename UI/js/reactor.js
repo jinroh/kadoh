@@ -66,7 +66,7 @@ KadOHui.Reactor.prototype = {
             '<li><b>Key : </b><a href=\'#\' class=\'sha\' data-placement=\'below\' rel=\'twipsy\' data-original-title=\''+rpc.getKey()+'\'>'+rpc.getKey().slice(0,10)+'</a></li>',
             '<li><b>Value : </b><code>'+rpc.getValue()+'</code></li>',
             '<li><b>Expiration : </b>',
-                (rpc.getExpiration()<0) ?
+                (!rpc.getExpiration() || rpc.getExpiration()<0) ?
                 '<i>never</i>':
                 '<time rel=\'twipsy\' datetime=\''+(new Date(rpc.getExpiration())).toISOString()+'\' data-placement=\'below\'>'+(new Date(rpc.getExpiration()).toString())+'</time>',
             '</li>',
