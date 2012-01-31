@@ -32,7 +32,6 @@
         "jasmine-node"   : "~1.0"
       , "jasmine-runner" : "https://github.com/alexstrat/jasmine-tool/tarball/master"
       , "optimist"       : "~0.3"
-      , "hook.io"        : "https://github.com/hookio/hook.io/tarball/master"
     }
   , "engines": { "node": ">= 0.4.0" }
 }
