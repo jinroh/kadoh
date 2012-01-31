@@ -25,6 +25,26 @@ KadOHui.helper.timeDif = function(date) {
 
 };
 
+KadOHui.helper.peerTable = function(peerArray, relative_node_id) {
+   var html;
+   html = '<table class=\'condensed-table zebra-striped\'>';
+   peerArray.forEach(function(peer) {
+     var tr = '<tr><td>'+String((relative_node_id) ? peer.getDistanceTo(relative_node_id) : peer.getDistance())+'</td>'+
+                  '<td><b>'+peer.getAddress()+'</b></td>'+
+                  '<td>'+
+                    ((peer.getID() !== null) ?
+                    '<a href=\'#\' class=\'sh\' data-placement=\'below\' rel=\'twipsy\' title=\''+peer.getID()+'\'>'+peer.getID().slice(0,10)+'</a>' :
+                    '<i>null</i>')+
+                  '</td>'+
+               '</tr>';
+     html = html + tr;
+   });
+   if(peerArray.length() ===0) html = html + '<i>empty</i>';
+
+   html = html+'</table>';
+   return html;
+};
+
 
 KadOHui.init = function() {
   

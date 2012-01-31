@@ -123,28 +123,10 @@ KadOHui.Reactor.prototype = {
 
   _encodeResolveRes: function(rpc, args) {
     var html;
-
-    //help
-    function table(peers) {
-      var html;
-      html = '<table class=\'condensed-table zebra-striped\'>';
-      peers.forEach(function(peer) {
-        html = html + '<tr><td>'+peer.getDistanceTo(rpc.getTarget())+'</td>'+
-                             '<td><b>'+peer.getAddress()+'</b></td>'+
-                             '<td><a href=\'#\' class=\'sh\' data-placement=\'below\' rel=\'twipsy\' title=\''+peer.getID()+'\'>'+peer.getID().slice(0,10)+'</a></td>'+
-                        '</tr>';
-      });
-      if(peers.length() ===0) html = html + '<i>empty</i>';
-
-      html = html+'</table>';
-      return html;
-    }
-
-
     switch(rpc.getMethod()) {
       case 'PING': break;
       case 'FIND_NODE':
-        html = table(args[0]);
+        html = KadOHui.helper.peerTable(args[0], rpc.getTarget());
         break;
       case 'FIND_VALUE':
         if(args[1]) {
@@ -159,7 +141,7 @@ KadOHui.Reactor.prototype = {
             '</li>',
           '</ul>'].join('\n');
         } else{
-          html = '<i>NOT FOUND</i><br>'+table(args[0]);
+          html = '<i>NOT FOUND</i><br>'+KadOHui.helper.peerTable(args[0], rpc.getTarget());
         }
         break;
       case 'STORE' : break;
