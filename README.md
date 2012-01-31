@@ -95,11 +95,11 @@ Kademlia client
       - session recover             [x]
       - expiration                  [x]
 
-  - Node                            [ ]
+  - Node                            [x]
 
       - iterativeFindNode           [x]
-      - iterativeFindValue          [ ]
-      - iterativeStore              [ ]
+      - iterativeFindValue          [x]
+      - iterativeStore              [x]
 
   - RPC Reactor                     [x]
 
