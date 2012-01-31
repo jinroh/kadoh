@@ -29,10 +29,12 @@ KadOHui.helper.peerTable = function(peerArray, relative_node_id) {
    var html;
    html = '<table class=\'condensed-table zebra-striped\'>';
    peerArray.forEach(function(peer) {
-     var tr = '<tr><td>'+String((relative_node_id) ? peer.getDistanceTo(relative_node_id) : peer.getDistance())+'</td>'+
+     var tr = '<tr><td>'+ ((peer.getID() !== null) ?
+                    String((relative_node_id) ? peer.getDistanceTo(relative_node_id) : peer.getDistance()) :
+                    '<i>undef.</i>')+
+                  '</td>'+
                   '<td><b>'+peer.getAddress()+'</b></td>'+
-                  '<td>'+
-                    ((peer.getID() !== null) ?
+                  '<td>'+ ((peer.getID() !== null) ?
                     '<a href=\'#\' class=\'sh\' data-placement=\'below\' rel=\'twipsy\' title=\''+peer.getID()+'\'>'+peer.getID().slice(0,10)+'</a>' :
                     '<i>null</i>')+
                   '</td>'+
