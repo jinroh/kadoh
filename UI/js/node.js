@@ -17,22 +17,48 @@ KadOHui.Node = function(node, el, modal_pool) {
 KadOHui.Node.prototype = {
   handle: function(iterfind, peers) {
     this.iterID ++;
+    var start = (new Date().getTime());
 
     var el = $(this.template(this.iterID, iterfind._target, iterfind._targetType, peers));
 
-    this.table.append(el);
+    if(this.table.children().length > this.MAX)
+      this.table.children().last().remove();
+
+    this.table.prepend(el);
 
     iterfind.then(
-      function() {
+      function(res, reached) {
+        var html =[
+        '<ul>',
+            '<li><b>Value : </b><code>'+res.value+'</code></li>',
+            '<li><b>Expiration : </b>',
+                (!res.exp || res.exp<0) ?
+                '<i>never</i>':
+                '<time rel=\'twipsy\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(res.exp).toString())+'</time>',
+            '</li>',
+          '</ul>'].join('\n');
+
+          html += this.iterfindInfo(iterfind, peers, start);
+
         el.find('.state').removeClass('warning')
                          .addClass('success')
-                         .text('resolved');
+                         .text('resolved')
+                         .attr('rel', 'popover')
+                         .attr('data-original-title', 'Resolved')
+                         .attr('data-placement', 'below')
+                         .attr('data-content', html);
       },
-      function() {
+      function(peers) {
+        var html = this.iterfindInfo(iterfind, peers, start);
+
         el.find('.state').removeClass('warning')
                          .addClass('important')
-                         .text('rejected');
-    });
+                         .text('rejected')
+                         .attr('rel', 'popover')
+                         .attr('data-original-title', 'Rejected')
+                         .attr('data-placement', 'below')
+                         .attr('data-content', html);
+    },this);
   },
 
   template: function(id, target, target_type, start_peers) {
@@ -48,6 +74,35 @@ KadOHui.Node.prototype = {
     '</tr>'];
 
     return tr.join('\n');
+  },
+
+  iterfindInfo: function(iterfind, peers, start) {
+     var html = '';
+     var elaps = (new Date().getTime()) - start;
+     var s = Math.floor(elaps/1000); elaps = elaps - 1000*s;
+
+     html += '<h5>Info</h5>'+
+              '<table class=\'bordered-table condensed-table\'>'+
+                '<thead>'+
+                  '<tr>'+
+                    '<th>Elapse</th>'+
+                    '<th>Queries</th>'+
+                    '<th>HeardOf</th>'+
+                  '</tr>'+
+                '</thead>'+
+                '<tbody>'+
+                  '<tr>'+
+                    '<td>'+s+'s '+elaps+'ms</td>'+
+                    '<td>'+iterfind.Queried.length()+'</td>'+
+                    '<td>'+iterfind.HeardOf.length()+' peers</td>'+
+                  '</tr>'+
+                '</tbody>'+
+             '</table>';
+
+     html += '<h5>'+peers.length()+' reached peers</h5>';
+     html += KadOHui.helper.peerTable(peers, iterfind._target);
+
+     return html;
   }
 
 
