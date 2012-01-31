@@ -1,3 +1,5 @@
+before_install: "sudo apt-get install libavahi-compat-libdnssd-dev"
+
 notifications:
   email: false
 
