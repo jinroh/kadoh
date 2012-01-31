@@ -69,7 +69,7 @@ Pool.prototype.start = function() {
 Pool.prototype._duplicate = function() {
   var opts = this._options;
   var args = [
-    __dirname + '/bin/pool',
+    __dirname + '/../bin/pool',
     '--size='       + this._sizeLeft,
     '--bootstraps=' + this._bootstraps.join(','),
     '--activity='   + this._activity,

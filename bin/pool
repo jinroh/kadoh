@@ -4,7 +4,7 @@
 // Pool CLI
 //
 
-var Pool = require(__dirname + '/../pool.js');
+var Pool = require(__dirname + '/../bots/pool');
 
 var argv = require('optimist')
           .usage('Usage: $0 -s [num] -j foo@bar -p azerty')

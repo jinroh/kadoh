@@ -15,9 +15,8 @@ var values     = 100;
 
 var spawn = require("child_process").spawn;
 
-var BOTS_PATH = __dirname + "/../bots/bin";
-var BBIN = BOTS_PATH + "/bootstrap";
-var PBIN = BOTS_PATH + "/pool";
+var BBIN = __dirname + "/bootstrap";
+var PBIN = __dirname + "/pool";
 
 function launchPools() {
   var jid = address[0];
