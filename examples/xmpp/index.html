@@ -14,6 +14,7 @@
   <script type="text/javascript" src="UI/js/routing.js"></script>
   <script type="text/javascript" src="UI/js/reactor.js"></script>
   <script type="text/javascript" src="UI/js/valueM.js"></script>
+  <script type="text/javascript" src="UI/js/node.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
@@ -107,7 +108,7 @@
       node.once('connected', function() {
         valueM = new KadOHui.ValueM(node._store, '#value-management');
       }, this);
-
+      new KadOHui.Node(node, '#node')
       node.once('connected', connected);
       node.connect();
     };
@@ -193,7 +194,17 @@
 
 
         <div class="tab-pane" id="node">
-          <h3>WIP</h3>
+          <div class="row">
+            <div class="span10 offset3">
+              <h4>IterativeFind processes</h4>
+              <div class ="table">
+                <table class='condensed-table'>
+                  <tbody class="iterfinds">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="tab-pane" id="reactor">
