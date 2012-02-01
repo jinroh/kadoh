@@ -33,7 +33,7 @@ Pool.prototype._botConfig = function(number, delay) {
     node  : config,
     name  : 'bot-' + number,
     delay : delay,
-    bootstraps : this._bootstraps,
+    bootstraps : [this._bootstraps[Math.floor(Math.random()*this._bootstraps.length)]],
     activity   : this._activity,
     values     : this._values
   };
