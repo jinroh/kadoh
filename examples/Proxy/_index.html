@@ -46,8 +46,9 @@ $(function() {
   function onClickJoin(event) {
     try {
       var bootstraps = ['67.215.242.139:6881', '67.215.242.138:6881'];
-      node.connect();
-      node.join(bootstraps);
+      node.connect().once('connected', function() {
+        node.join(bootstraps);
+      });
     } catch(e) {
       console.error(e.stack);
     }
