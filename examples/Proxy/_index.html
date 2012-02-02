@@ -74,7 +74,7 @@ $(function() {
     try {
       var key = $('#key').val().toString();
       var dst = new Peer($('#dst').val().toString());
-      node.reactor().FIND_NODE(dst, key).then(
+      node._reactor.FIND_NODE(dst, key).then(
         function(result) {
           node._routingTable.addPeers(result);
           console.log(result);
@@ -266,8 +266,8 @@ iterFindRecorder.prototype =  {
   node = new KadOH.Node(undefined, options);
   KadOH.log.setLevel('debug');
   KadOH.log.subscribeTo(node, 'Node');
-  KadOH.log.subscribeTo(node.reactor(), 'Reactor');
-  KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
+  KadOH.log.subscribeTo(node._reactor, 'Reactor');
+  KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
 
   node._reactor.on('connected', function(iam) {
     $('#info').append('<h3>Node info<h3>')

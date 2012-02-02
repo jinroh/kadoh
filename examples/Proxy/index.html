@@ -52,8 +52,8 @@
   node = new KadOH.Node(undefined, options);
   KadOH.log.setLevel('debug');
   KadOH.log.subscribeTo(node, 'Node');
-  KadOH.log.subscribeTo(node.reactor(), 'Reactor');
-  KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
+  KadOH.log.subscribeTo(node._reactor, 'Reactor');
+  KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
   KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
 
   logger = new KadOHui.Logger('#log .console', '#log .control');

@@ -100,8 +100,8 @@
 
       node = new KadOH.Node(undefined, config);
       KadOH.log.subscribeTo(node, 'Node');
-      KadOH.log.subscribeTo(node.reactor(), 'Reactor');
-      KadOH.log.subscribeTo(node.reactor()._transport, 'Transport');
+      KadOH.log.subscribeTo(node._reactor, 'Reactor');
+      KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
       KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
       new KadOHui.Routing(node._routingTable, '#routing-table');
       new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');

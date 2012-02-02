@@ -43,7 +43,7 @@ $(function() {
   function onClickPing(event) {
     var dst = $('#form [name=dest]').val(); // IP:PORT
     try {
-      node.reactor().PING(dst).then(
+      node._reactor.PING(dst).then(
         function(pong) {
           $('#received').append('<p><b>' + pong + '</b></p>');
         },
