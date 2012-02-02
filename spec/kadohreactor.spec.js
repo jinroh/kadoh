@@ -18,13 +18,8 @@ describe('in Reactor', function() {
     KadOH.rpc.protocol.test = 'test';
     KadOH.transport.test = function() {};
 
-    node = {
-      me : new Peer('me@me.me', 'a2cfd6254f8dcfa189b0c1142056df9d3daca861'),
-
-      getMe : function() {
-        return this.me;
-      }
-    };
+    node = new Peer('me@me.me', 'a2cfd6254f8dcfa189b0c1142056df9d3daca861');
+    
     R = new Reactor(node, {protocol : 'test', type : 'test'});
     R.connectTransport();
 
