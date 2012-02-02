@@ -124,6 +124,8 @@ Kademlia client
       - P2P transport
           - SimUDP                  [x]
           - XMPP over BOSH          [x]
+          - raw XMPP in Node        [x]
+          - raw UDP in Node         [x]
 
 ```
 
