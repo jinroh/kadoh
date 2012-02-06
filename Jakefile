@@ -1,4 +1,5 @@
 var DOC_DIR     = __dirname + '/doc/jsdoc/';
+var LIB_DIR     = __dirname + '/lib/client/';
 var JsDoc3_CONF = __dirname + '/doc/JsDocConf.json';
 var JsDoc3_EXEC = __dirname + '/doc/jsdoc3/jsdoc';
 
@@ -74,7 +75,7 @@ task('doc', ['default'], function(){
 
   console.log('[Doc] Generating documentation..');
 
-  var cmd = JsDoc3_EXEC+' --recurse '+LIB_DIR.kadoh+' --destination '+DOC_DIR +' -c '+JsDoc3_CONF;
+  var cmd = JsDoc3_EXEC+' --recurse '+LIB_DIR +' --destination '+DOC_DIR +' -c '+JsDoc3_CONF;
   console.log(cmd);
 
   PROC.exec(cmd, function (error, stdout, stderr) {
