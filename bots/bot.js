@@ -52,10 +52,10 @@ Bot.prototype.randomActivity = function() {
     var value  = String(Math.floor(Math.random() * self._options.values));
     switch(random) {
       case 0:
-        self.kadoh.iterativeFindValue(KadOH.util.Crypto.digest.SHA1(value));
+        self.kadoh.get(KadOH.util.Crypto.digest.SHA1(value), function(){});
         break;
       case 1:
-        self.kadoh.iterativeStore(value);
+        self.kadoh.set(null, value);
         break;
     }
     self.randomActivity();
