@@ -4,7 +4,7 @@ describe('in Reactor', function() {
     PeerArray = KadOH.PeerArray;
 
     //mocking
-    Reactor = KadOH.rpc.KadOHReactor.extend({
+    Reactor = KadOH.rpc.Reactor.extend({
       connectTransport: function() {
         this.setState('connected');
       },
