@@ -90,12 +90,12 @@ describe('Crypto', function() {
       var foo = SHA1('foo');
       
       expect(distance(foo, foo)).toEqual(0);
-      expect(distance([35,90,34], [35,90,34])).toEqual(0);
+      expect(distance([35,90,34], [35,90,34], true)).toEqual(0);
     });
 
     // 'and ask the distance between two different length objects': {
     it('should throw when I give two different sized objects', function() {
-      expect(function() { distance([123,45,67], [34,67,45,90]); }).toThrow();
+      expect(function() { distance([123,45,67], [34,67,45,90], true); }).toThrow();
     });
     
     it('should return positive number', function() {
@@ -109,21 +109,21 @@ describe('Crypto', function() {
       
       for(var i=1; i < 256; i++) {
         if (i < 2)
-          expect(distance([36,i,45],   test)).toEqual(1+8);
+          expect(distance([36,i,45],  test, true)).toEqual(1+8);
         else if (i < 4)
-          expect(distance([36,i,54],  test)).toEqual(2+8);
+          expect(distance([36,i,54],  test, true)).toEqual(2+8);
         else if (i < 8)
-          expect(distance([36,i,3],  test)).toEqual(3+8);
+          expect(distance([36,i,3],   test, true)).toEqual(3+8);
         else if (i < 16)
-          expect(distance([36,i,124], test)).toEqual(4+8);
+          expect(distance([36,i,124], test, true)).toEqual(4+8);
         else if (i < 32)
-          expect(distance([36,i,78],  test)).toEqual(5+8);
+          expect(distance([36,i,78],  test, true)).toEqual(5+8);
         else if (i < 64)
-          expect(distance([36,i,4], test)).toEqual(6+8);
+          expect(distance([36,i,4],   test, true)).toEqual(6+8);
         else if (i < 128)
-          expect(distance([36,i,45],   test)).toEqual(7+8);
+          expect(distance([36,i,45],  test, true)).toEqual(7+8);
         else if (i < 256)
-          expect(distance([36,i,36],  test)).toEqual(8+8);
+          expect(distance([36,i,36],  test, true)).toEqual(8+8);
       }
     });
   });
