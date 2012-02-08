@@ -35,7 +35,7 @@ Bot.prototype.connect = function() {
 
 Bot.prototype.join = function() {
   var self = this;
-  console.log(self._options.name + ' joining');      
+  console.log(self._options.name + ' joining');
   this.kadoh.join(this._options.bootstraps, function(error) {
     console.log(self._options.name + ' joined', self.kadoh._routingTable.howManyPeers());
     if (self._options.activity) {
@@ -55,7 +55,7 @@ Bot.prototype.randomActivity = function() {
         self.kadoh.get(KadOH.util.Crypto.digest.SHA1(value), function(){});
         break;
       case 1:
-        self.kadoh.set(null, value);
+        self.kadoh.put(null, value);
         break;
     }
     self.randomActivity();
