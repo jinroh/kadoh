@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KadOH</title>
+<script type="text/javascript" src="/dist/KadOH.js"></script>
+<script type="text/javascript" src="bench.js"></script>
+</head>
+<body>
+<input type="submit" value="Start" id="start" />
+<pre id="results"></pre>
+<script type="text/javascript">
+KadOH.log.setLevel('warn');
+var pre  = document.getElementById("results");
+var from = 'kadoh@jabber.org';
+var to   = ['alexstrat@jabber.org', 'jinroh@jabber.org'];
+var id   = 'b21108ffbbff076647a0ac0662acf4e4a5244b66';
+var node = new KadOH.Node(id, {
+  reactor : {
+    transport : {
+      jid      : from,
+      password : 'azerty',
+      resource : 'kadoh'
+    }
+  }
+});
+
+var bench = new KadOHBench(node, {
+  hopes : 2,
+  idle  : 1000,
+  bootstraps : [
+    "bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh",
+    "bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh",
+    "bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh"
+  ]
+});
+bench.on('results', function(results) {
+  results = JSON.stringify(results, null, "\t");
+  to.forEach(function(jid) {
+    node._reactor._transport._connection.send($msg({to: jid, from: 'kadoh@jabber.org/kadoh'})
+                      .c('body').t(results).tree());
+  });
+  pre.innerHTML = results;
+  setTimeout(function() {
+    node.disconnect();
+  }, 2000);
+});
+
+var submit = document.getElementById("start");
+submit.addEventListener("click", function() {
+  node.connect(function() {
+    bench.start();
+  });
+});
+</script>
+</body>

@@ -297,19 +297,22 @@ KadOHBench.prototype = {
     var self = this;
 
     var iter_reached = function() { setTimeout(function(){
-      if(count_re++ > self.hopes) return;
+      if(++count_re > self.hopes) {
+        self.emit('results', self.results);
+        return;
+      }
       var key = KadOH.util.Crypto.digest.SHA1(String(count_re));
       self.executeIterativeFindValue(count_re, self.results.iterFind_reached, 'addCallback', key, iter_reached);
-    },self.idle)};
+    }, self.idle)};
 
     var iter = function() { setTimeout(function(){
-      if(count++ > self.hopes) {
+      if(++count > self.hopes) {
         iter_reached.call(self);
         return;
       }
       var key = KadOH.util.Crypto.digest.randomSHA1();
       self.executeIterativeFindValue(count, self.results.iterFind, 'addErrback', key, iter);
-    },self.idle)};
+    }, self.idle)};
 
     this.executeJoin(iter);
   },
