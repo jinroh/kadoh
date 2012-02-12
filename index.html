@@ -1,0 +1,414 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<title>Semester project report</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<nav id="toc"><ul></li>
+<li>
+<a href="#introduction">Introduction</a></li>
+<li>
+<a href="#kademlia-principles">Kademlia principles</a><ul>
+<li>
+<ul>
+<li>
+<a href="#routing-table">Routing table</a></li>
+<li>
+<a href="#remote-procedure-calls">Remote Procedure Calls</a></li>
+<li>
+<a href="#iterative-lookup">Iterative Lookup</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#approaches-and-choices">Approaches and choices</a><ul>
+<li>
+<a href="#javascript">Javascript</a></li>
+<li>
+<a href="#the-transport-layer">The transport layer</a></li>
+</ul>
+</li>
+<li>
+<a href="#application&#39;s-design">Application&#39;s Design</a><ul>
+<li>
+<a href="#patterns">Patterns</a><ul>
+<li>
+<a href="#class-inheritance">Class inheritance</a></li>
+<li>
+<a href="#event-driven-programming">Event-driven programming</a></li>
+<li>
+<a href="#deferred-objects">Deferred objects</a></li>
+<li>
+<a href="#ubiquitous-structures">Ubiquitous structures</a></li>
+</ul>
+</li>
+<li>
+<a href="#architecture">Architecture</a><ul>
+<li>
+<a href="#reactor-and-rpc-objects">Reactor and RPC Objects</a></li>
+<li>
+<a href="#routing-table">Routing Table</a><ul>
+<li>
+<a href="#bucket-splitting">Bucket splitting</a></li>
+<li>
+<a href="#refresh-process">Refresh process</a></li>
+</ul>
+</li>
+<li>
+<a href="#value-management">Value Management</a><ul>
+<li>
+<a href="#persistent-storage">Persistent storage</a></li>
+</ul>
+</li>
+<li>
+<a href="#node">Node</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#development-process">Development Process</a><ul>
+<li>
+<a href="#node.js">Node.js</a></li>
+<li>
+<a href="#git-and-github">Git and Github</a></li>
+<li>
+<a href="#testing">Testing</a><ul>
+<li>
+<ul>
+<li>
+<a href="#misc">Misc</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#evaluation">Evaluation</a></li>
+<li>
+<a href="#future-work">Future work</a></ul></nav>
+</header>
+<section id="title">
+<h1>Design and testing of a mobile DHT</h1>
+
+<p><em>Abstract</em> — Peer to Peer protocols are widely used in desktop applications where they have been deployed and improved over the years. Particularly, the Kademlia protocol is used by most eMule and BitTorrent – as part of the Mainline protocol – clients. However, mobile terminals are not supported by these softwares, even though they would allow new applications of DHTs that could go further file sharing. In this report, we will introduce a full Javascript implementation of the Kademlia DHT protocol designed for both desktop and mobile browsers. Firstly, we introduce our technology choices and development architecture, and secondly, we evaluate the protocol on medium scale deployments.</p>
+
+<p><strong>Alexandre Lachèze</strong> and <strong>Pierre Guilleminot</strong></p>
+</section>
+<section id="introduction">
+<h1>Introduction</h1>
+
+<p>The main application Peer to Peer softwares are known for is file sharing without relying on a central server. However, the main idea of Distributed Hash Tables (DHT) is simply to lay on end systems intelligence for routing, transmitting, searching or storing flows of data. This model has many advantages, and can be the basis for numerous applications.</p>
+
+<p>By delegating logical decisions to nodes, it becomes possible to build scalable networks, with no single point of failure where the sharing of content between users does not require any centralized storage unit.</p>
+
+<p>Taking mobile users into account is a real challenge. From a network perspective, the routing precision and reliability of the system are greatly affected by the increasing number of stale peers. From an development point of view, the variety of mobile frameworks makes a cross platform implementation hazardous.</p>
+
+<p>We tried to depend on web technologies to allow the development of web applications based on this promising decentralized architecture. We believe that P2P networks, accessible from any browser and any mobile phone could lead to truly new and innovative concepts.</p>
+</section>
+<section id="kademlia-principles">
+<h1>Kademlia principles</h1>
+
+<p>Kademlia is a Distributed Hash Table (DHT) algorithm described in <em><a href="http://pdos.csail.mit.edu/%7Epetar/papers/maymounkov-kademlia-lncs.pdf" title="Kademlia: A Peer-to-Peer Information System Based on the XOR Metric, Petar Maymounkov and David Mazières, 2002">Kademlia: A Peer-to-peer information system based on the XOR Metric</a></em> and designed by Petar Maymounkov and David Mazières in 2002. Nowadays, Kademlia is used in particular for file sharing by most eMule and BitTorrent clients as part of the Mainline protocol.</p>
+
+<p>The algorithm aims to store <em>(key, value)</em> tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.</p>
+<section id="routing-table">
+<h3>Routing table</h3>
+
+<p>Each peer has a partial knowledge of the other peers connected to the DHT, that allows it to route the requests of others. However this knowledge is more accurate in the close space.</p>
+
+<p>The knowledge of the network is provided by the routing table, where peers are grouped in K-buckets. Each K-bucket contains maximum K peers which distance with the actual peer is in a specific range. For instance, the first K-bucket, which contains the farther peers, have peers which distance is in ]2<sup>159</sup>, 2<sup>160</sup>]. The second one has range ]2<sup>159</sup>, 2<sup>158</sup>], and so on. Thus, the actual peer has more accurate knowledge of peers that are closer to him.</p>
+
+<p><img src="images/kbuckets.png" alt="KBuckets"/></p>
+
+<p>Each time a peer is successfully contacted or contacts us, it is added in the routing table and sorted in the right K-bucket.</p>
+
+<p><a href="http://www.daimi.au.dk/%7Ebouvin/dP2P/2006/lectures/03/">http:&#47;&#47;www.daimi.au.dk&#47;~bouvin&#47;dP2P&#47;2006&#47;lectures&#47;03&#47;</a></p>
+</section>
+<section id="remote-procedure-calls">
+<h3>Remote Procedure Calls</h3>
+</section>
+<section id="iterative-lookup">
+<h3>Iterative Lookup</h3>
+</section>
+</section>
+</section>
+<section id="approaches-and-choices">
+<h1>Approaches and choices</h1>
+
+<p>This section is intended to justify our main choices of development. These decisions are the result of our investigations and considerations on the sensitive issues of the project.</p>
+
+<p>Our conclusions took time to mature as they were elaborated throughout the development.</p>
+<section id="javascript">
+<h2>Javascript</h2>
+
+<p>We decided to use Javascript because it has many advantages to develop network oriented mobile applications :</p>
+
+<ul>
+<li>facilitates cross platform applications because of the youth and freshness of most smartphone browsers</li>
+<li>applications can be both distributed as native applications or as web pages discharging the costs of installations, upgrades or controls from third parties</li>
+<li>event-driven language with closures, no need for event loops or additional framework, and single threaded from the programmer point of view</li>
+<li>fairly efficient thanks to great improvements towards most Javascript Virtual Machines all available on mobiles (V8, JägerMonkey, Nitro, ...)</li>
+<li>runs both on mobile or desktop browsers, and in theory on any framework based on a Javascript VM like node.js for instance</li>
+</ul>
+</section>
+<section id="the-transport-layer">
+<h2>The transport layer</h2>
+
+<p>The main difficulty with an in-browser Javascript is the impossibility to open a socket to listen to incoming connections. In fact, nowadays, browsers can only send HTTP requests to a given server. We had to find solutions to keep our DHT decentralized and still relying on a server to proxy our requests.</p>
+
+<p>Note that other DHT implementations have the same kind of issue when <a href="http://people.kth.se/%7Erauljc/p2p09/jimenez2009connectivity.pdf" title="Connectivity Properties of Mainline BitTorrent DHT Nodes">receiving incoming packets behind a NAT</a>. For the particular case of mobile-phone application, this is even true since radio-mobile networks are strongly restricted towards incoming connections. Softwares have to use different kind of techniques that also involve critical points in the DHT to get around the NAT, like <em>supernodes</em>.</p>
+
+<p>First, we developed a little proxy to route requests between peers. We thought about semi-decentralized systems where proxies could route messages between each other through UDP or TCP channels. The main drawback is that we wanted the application to depend on an existing, distributed and scalable infrastructure.</p>
+
+<p>This is why we chose the XMPP protocol which meets most of our constraints. XMPP is a widely used open standard to exchange XML based messages between peers. Even though XMPP has a client-server architecture, it is decentralized thanks to its open protocol and server to server communications. Moreover, many XMPP servers are freely available over the Internet, and this protocol is used by large instant messaging servers, like <em>Google Talk</em> or <em>Jabber.org</em>.</p>
+
+<p>The XMPP protocol uses a stateful TCP channel to connect server with clients. But, thanks to the <a href="http://xmpp.org/extensions/xep-0124.html" title="XEP-0124: Bidirectional-streams Over Synchronous HTTP (BOSH)">BOSH</a> — <em>Bidirectional-streams Over Synchronous HTTP</em> — extension, it becomes possible to connect any browser to an XMPP server through synchronous HTTP requests.</p>
+
+<p><img src="images/bosh.png" alt="Decentralized XMPP"/></p>
+
+<p>We based our XMPP transport on <a href="http://strophe.im/strophejs/" title="An XMPP library for JavaScript">Strophe.js</a>. This library is the main reference to perform real-time XMPP applications over BOSH in browsers. It is well documented and has a good support from the community.</p>
+
+<p>Nevertheless, thanks to the <a href="#architecture">modular architecture</a> of the application, we implemented several other transports, such as UDP – only with <a href="#node.js">Node.js</a> – and WebSocket. This has been convenient to test the efficiency of the DHT on different networks. For instance we have been able to <a href="#mainline-dht">join the Mainline DHT</a> through a WebSocket to UDP proxy.</p>
+</section>
+</section>
+<section id="application&#39;s-design">
+<h1>Application&#39;s Design</h1>
+
+<p>During our development process, we had to try many different technical options and refactor number parts of the architecture. Implementing new ideas and concepts had to be painless, therefore our design focus on extensibility and reliability.</p>
+
+<p>The application is developed as a framework, organized in a collection of replaceable and extensible modules. As a simple example, our transport layers implement the same interface which allowed us to test different alternatives. This design principle required efforts of abstraction and anticipation, yet the final application gains legibility and extensibility.</p>
+
+<p>In this chapter, we give details of our development principles to meet our requirements. </p>
+<section id="patterns">
+<h2>Patterns</h2>
+
+<p>Description of the most common patterns that improve the quality of our code and helped us in our development.</p>
+<section id="class-inheritance">
+<h3>Class inheritance</h3>
+
+<p>Despite the fact that Javascript is an object oriented language , it&#39;s important to note that, unlike other OOP (Object Oriented Programming)  languages, it is not possible to define classes. Javascript is <em>prototype based</em>, which makes inheritance not natural, but still possible.</p>
+
+<p>Somehow, to facilitate code reuse by inheritance, some techniques are widely used to imitate classical inheritance syntax in Javascript. Some of them are described in the book <a href="http://shop.oreilly.com/product/9780596806767.do" title="Javascript Patterns, Stoyan Stefanov, O&#39;Reilly">Javascript Patterns</a>, chapter 6 (<em>Code Reuse Patterns</em>). Thus, most popular frameworks implement their own class inheritance system ( e.g. Prototype <a href="http://api.prototypejs.org/language/Class/">Class</a>) for internal use or as API.</p>
+
+<p>Because we wanted our code to depend as less as possible on external framework, we decided to integrate to it an inheritance system. Among many available implementations, we chosen to use the one proposed by <a href="http://dustindiaz.com/klass">Dustin Diaz</a> called <a href="https://github.com/ded/klass">klass</a> because of its simple interface and because it can run on any environment (browser, Node.js). </p>
+
+<p>This is a snippet of code showing how inheritance is used :</p>
+<div class="highlight"><pre><span class="c1">// KBucket class extends PeerArray class</span>
+<span class="nx">KadOH</span><span class="p">.</span><span class="nx">KBucket</span> <span class="o">=</span> <span class="nx">PeerArray</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+  <span class="c1">// constructor of KBucket</span>
+  <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rt</span><span class="p">,</span> <span class="nx">min</span><span class="p">,</span> <span class="nx">max</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">supr</span><span class="p">();</span> <span class="c1">// call the super constructor (PeerArray constructor)</span>
+  <span class="p">},</span>
+
+  <span class="c1">// override a method addPeer</span>
+  <span class="nx">addPeer</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">peer</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// findPeer is a method of PeerArray</span>
+    <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">findPeer</span><span class="p">()</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">supr</span><span class="p">(</span><span class="nx">peer</span><span class="p">);</span> <span class="c1">// call the super method</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+<p>The adapted inheritance system has deeply instigated us to write reusable code (see <em>Architecture</em> section).</p>
+</section>
+<section id="event-driven-programming">
+<h3>Event-driven programming</h3>
+
+<p>Since Javascript was initially design to handle DOM manipulations and user interactions, the language has simple and efficient ways to deal with event calls. We took advantage of this event-driven facility to manage our flow control.</p>
+
+<p><em>Event-emitter</em> is a common pattern in Javascript to control events. Every objects extending the <code>EventEmitter</code> class can <em>emit</em> asynchronous events that can be <em>listened</em> and attached to <em>callback</em> functions. Basically, this pattern allows us to elegantly control our action flow whenever a resource changes.</p>
+
+<p>To implement our own version of the <em>event-emitter</em> pattern, we took inspiration from the <a href="http://api.jquery.com/category/callbacks-object/">jQuery callbacks</a> API and the <a href="http://nodejs.org/docs/latest/api/events.html#events.EventEmitter">EventEmitter object from node.js</a>. More, we added some handy functionalities :</p>
+
+<ul>
+<li>any event emission can be memorized to mimic a constantly emitting event (our starting point for deferred objects)</li>
+<li>it is possible to use one time event or listener</li>
+</ul>
+
+<p>Here is an simple example of the usage of <code>EventEmitter</code> methods to execute a <em>callback</em> function when receiving RPC queries :</p>
+<div class="highlight"><pre><span class="c1">// Reactor class extends the EventEmitter</span>
+<span class="kd">var</span> <span class="nx">reactor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Reactor</span><span class="p">();</span>
+
+<span class="c1">// ...</span>
+
+<span class="nx">reactor</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;queried&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rpc</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// handle the query</span>
+<span class="p">});</span>
+
+<span class="c1">// somewhere else in the code</span>
+<span class="nx">reactor</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s1">&#39;queried&#39;</span><span class="p">,</span> <span class="nx">rpc</span><span class="p">);</span>
+</pre>
+</div>
+
+<p>As an extension to this pattern, we developed another architecture to represent <em>stateful</em> objects (<code>StateEventEmitter</code>). These objects are associated to a unique state at any time. A change of state induces the emission of an associated event. Our three main objects use this pattern. For instance, our Transport object is represented by its connection state, and any change of state provoke a chain of actions in the application.</p>
+</section>
+<section id="deferred-objects">
+<h3>Deferred objects</h3>
+
+<p>Manage several asynchronous and nested operations prompted us to use the deferred pattern to manage them accurately. With this pattern, a chain of actions (asynchronous or not) can be associated to the completion of an asynchronous computation.</p>
+
+<p>The CommonJS definition of the pattern :</p>
+
+<blockquote>
+<p>Promises provide a well-defined interface for interacting with an object that represents the result of an action that is performed asynchronously, and may or may not be finished at any given point in time.</p>
+</blockquote>
+
+<p>@TODO for Alex : explicit why we found this pattern interesting and how we used it to manage our flow control with objects (maybe with an example)</p>
+
+<p>We developed and tested our own version of the deferred pattern based on the EventEmitter class. We took inspiration from the <a href="http://wiki.commonjs.org/wiki/Promises/A">CommonJS</a> recommendation and the <a href="https://github.com/cujojs/when">when.js</a> implementation of these recommendations. However, our implementation is not strictly compliant since we have chosen not to support chainability by default, even if this functionality can be used, for performance reasons.</p>
+
+<p>To help us managing parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :</p>
+
+<ul>
+<li><code>whenAll</code> resolves only when all given deferreds are resolved</li>
+<li><code>whenSome</code> resolves as soon as a specified amount of the given deferreds has resolved</li>
+<li><code>whenAtLeast</code> resolves when all given deferreds have completed, if at least one of them has resolved</li>
+</ul>
+</section>
+<section id="ubiquitous-structures">
+<h3>Ubiquitous structures</h3>
+
+<p>In Kademlia implementations, it is convenient to handle object representing peers of the network. That&#39;s why we wrote a dedicated object (<code>Peer</code>) representing a peer with helpful methods for manipulating it.</p>
+
+<p>We also implemented a dedicated object to handle array of peers (<code>PeerArray</code>), and an extended version to support XOR sorted arrays using an insertion sort algorithm. These objects implement numerous methods dealing with ensemble operation (union, intersection, equality, membership..). They are very helpful and used all over our implementation.</p>
+
+<p>These structures are in response to the weak typing of Javascript : they allow us to have consistent objects throughout our implementation. The definition, instantiation and the handling of these object is indeed defined once, that helps us to rapidly apply changes.</p>
+</section>
+</section>
+<section id="architecture">
+<h2>Architecture</h2>
+
+<p><img src="images/class_diagram.png" alt="Class diagram"/></p>
+<section id="reactor-and-rpc-objects">
+<h3>Reactor and RPC Objects</h3>
+
+<p><img src="images/reactor.png" alt="Reactor, communication diagram"/></p>
+</section>
+<section id="routing-table">
+<h3>Routing Table</h3>
+
+<p>The routing table is responsible for managing peers. It is composed of all the k-buckets. Most parts of this object are implemented in a standard fashion regarding other Kademlia implementations.</p>
+
+<p>The <code>KBucket</code> class extends <code>PeerArray</code> and implements additional functions to handle a range. Indeed, every bucket is associated to a segment of the key space, and ensures that every peer it contains belongs to this segment. Also it will throw an error whenever a peer is added while it is full</p>
+
+<p>One of the most critical algorithm of the routing table is to return the closest peers form a given target key of the space. This routine is performed by retrieving peers from the bucket in charge of the range which contains the target key. If this bucket does not hold enough peers, the search is reiterated in its neighbors.</p>
+<section id="bucket-splitting">
+<h4>Bucket splitting</h4>
+
+<p>An interesting algorithm of the routing table is how it generates new buckets. When first instantiated, the routing table contains only one k-bucket which range included the whole key space ]2<sup>0</sup>, 2<sup>n</sup>]. When this k-bucket is full, the routing split it into two buckets : it generates a new one of range ]2<sup>0</sup>, 2<sup>n-1</sup>] and modify the minimum value of the old k-bucket to 2<sup>n-1</sup>. Peers are then reorganized in the new bucket if necessary.</p>
+
+<p><img src="images/split.png" alt="Split process"/></p>
+
+<p>This process is performed every time the smallest ranged bucket (the only splittable one) becomes full. If a new peer is added to a full and non-splittable bucket, the least recently seen peer is removed and the new peer is added.</p>
+</section>
+<section id="refresh-process">
+<h4>Refresh process</h4>
+
+<p>The routing table is also responsible of the <em>refresh</em> process which occurs when a bucket has not seen any new peer for a long period of time. Each bucket manages its own timer, reseted every time a peer is added to it. The value of this timer is each time randomly chosen in a window around a configured value. This prevent a burst of network activity when multiple buckets have synchronized timers, caused e.g. by simultaneous instantiations of k-buckets during a <a href="#join">join</a> process.</p>
+
+<p>Note that the logic of the this process is not implemented inside of the routing table object since it only involves network routines. In fact the routing table only emit a <em>refresh</em> event, caught by the <a href="#node">Node</a> object.</p>
+</section>
+</section>
+<section id="value-management">
+<h3>Value Management</h3>
+
+<p>The value management is responsible for managing key&#47;values that the node has to store. It provides methods to <em>save</em>, <em>retrieve</em> and <em>remove</em> them, but it is also responsible for managing the associated timers. Indeed, in our implementation, two timers for each key&#47;value are used:</p>
+
+<ul>
+<li><p><em>republish</em>: to ensure the persistent of a key&#47;value, the <a href="http://pdos.csail.mit.edu/%7Epetar/papers/maymounkov-kademlia-lncs.pdf" title="Kademlia: A Peer-to-Peer Information System Based on the XOR Metric, Petar Maymounkov and David Mazières, 2002">original paper</a> requires that key&#47;values are periodically republished. To apply to this, a republish timer is set for each saved key&#47;value (and reset if re-saved). When one of this timer timeouts, a <em>republish</em> event is emitted and caught by <a href="#node">Node</a> that is in charge to republish the concerned value. </p></li>
+<li><p><em>expiration</em>: when a key&#47;value is published, an expiration date is associated to it before spread on the network. This ensure that it will not neither present nor republished on the network after this date. Thus, when saving, an expiration timer should be set according to the expiration date to plan the deletion of the key&#47;value.</p></li>
+</ul>
+
+<p>Since during an <em><a href="#iterative_store">iterativeStore</a></em> process a key&#47;value is stored on several nodes roughly at the same time, the republish timers might be synchronized across the network. This can lead to periodic bursts of activity. To avoid this <em><a href="http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html#convoys">convoy effect</a></em>, each timeout value is randomly chosen in a window around a configuration value. Thus, the first triggered republish cancels most of the other ones on the network, minimizing the number of republish processes.</p>
+<section id="persistent-storage">
+<h4>Persistent storage</h4>
+
+<p>To improve DHT consistency, it would be convenient to store the key&#47;values collection when session stops and to recover it when the session restart. This would limit the loss of data redundancy due to node departures. </p>
+
+<p>Since our implementation targets browser environment, there is no mean to write directly in a file on the hard drive as it would have been simply done on a natively running implementation. However the DOM (Document Object Model) implementations provide two kinds of persistent <a href="https://developer.mozilla.org/en/DOM/Storage">offline storage</a>. Among them <em><a href="http://www.ietf.org/rfc/rfc2965">cookies</a></em> is the oldest one. But the one on which we focused is the <em><a href="http://dev.w3.org/html5/webstorage/#the-localstorage-attribute">localstorage</a></em>, part of the html5 new features, since he has an enhanced capacity.</p>
+
+<p>To leverage <em>localstorage</em> we decided to use <a href="http://westcoastlogic.com/lawnchair/">lawnchair</a> which optimizes its use and provides a simple API over it. Moreover it masks the use of other <em>tricks</em> when <em>localstorage</em> is not available.</p>
+
+<p>Thus, in the browser, the value management is actually backed by <a href="http://westcoastlogic.com/lawnchair/">lawnchair</a> that ensures a persistent storage. In the <em>localstorage</em> data, the key&#47;values collection is associated to the running session (identified by the couple node address&#47; node ID). On the initialization, it checks in the <em>localstorage</em> data if a corresponding session can be recovered. The sessions recover process consists in reseting the timers for each key&#47;value and remove those that would have expired during the session inactivity.</p>
+
+<p>However, since our implementations aims to run in DOM independent environment such as <a href="#node.js">node.js</a>, we have implemented a <code>BasicStorage</code> that replaces <a href="http://westcoastlogic.com/lawnchair/">lawnchair</a> by  imitating its API. This storage is for the moment non persistent, since this is little more than a Javascript key-value object, but we can easily imagine a persistent one leveraging a key-value database such as <a href="http://redis.io/">redis</a>.</p>
+</section>
+</section>
+<section id="node">
+<h3>Node</h3>
+
+<ul>
+<li>Public API</li>
+<li>Iterative processes</li>
+<li>Dumb version : Bootstrap</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="development-process">
+<h1>Development Process</h1>
+
+<p>Many tools and techniques have helped us to improve our productivity and efficiency of coding.  Most of these come from the <em>Open Source</em> community. </p>
+
+<p>We think it is important to express how we used these tools and in what way have we tried sometimes to help their development.</p>
+<section id="node.js">
+<h2>Node.js</h2>
+
+<blockquote>
+<p>Node.js is a platform built on Chrome&#39;s JavaScript runtime for easily building fast, scalable network applications. Node.js uses an event-driven, non-blocking I&#47;O model that makes it lightweight and efficient, perfect for data-intensive real-time applications that run across distributed devices.</p>
+</blockquote>
+</section>
+<section id="git-and-github">
+<h2>Git and Github</h2>
+
+<p>Because we&#39;ve worked both on the same code, we used Git as a version control and .</p>
+
+<p><a href="http://git-scm.com">Git</a> </p>
+
+<p>The common repository is hosted on <a href="https://github.com">Github.com</a> platform where  </p>
+</section>
+<section id="testing">
+<h2>Testing</h2>
+
+<ul>
+<li>Unit testing</li>
+<li>Behavior Driven Development</li>
+</ul>
+<section id="misc">
+<h4>Misc</h4>
+
+<ul>
+<li>code quality tool : JsLint</li>
+<li>embedded documentation</li>
+<li>build tools to assembles (mignify also)</li>
+<li>debugging tools : Chrome inspector, designed UI</li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+<section id="evaluation">
+<h1>Evaluation</h1>
+
+<ul>
+<li>present the process and issues</li>
+<li>show results and discuss them</li>
+</ul>
+</section>
+<section id="future-work">
+<h1>Future work</h1>
+
+<ul>
+<li>Issues + Future work</li>
+<li>Applications</li>
+</ul>
+</body>
+</html>
