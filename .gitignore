@@ -1,0 +1,32 @@
+.DS_Store
+
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+node_modules
+npm-debug.log
+
+# argo-uml
+*~
+
+# hookio
+config.json
+
+# jake
+.jake_tasks
+
+# jasmine-node
+.monitor
+
+# alex
+dht/lib_test
+dht/dist_test
+
+# pierre
+*.sublime-project
+*.sublime-workspace
