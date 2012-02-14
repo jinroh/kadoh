@@ -12,6 +12,7 @@ background:#fefefe;
 body > section {
 	left: 350px;
 	width: 40em;
+	position: relative;
 }
 
 a{ color: #0645ad; text-decoration:none;}
