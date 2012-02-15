@@ -28,15 +28,20 @@ KadOHui.Node.prototype = {
 
     iterfind.then(
       function(res, reached) {
-        var html =[
-        '<ul>',
-            '<li><b>Value : </b><code>'+res.value+'</code></li>',
-            '<li><b>Expiration : </b>',
-                (!res.exp || res.exp<0) ?
-                '<i>never</i>':
-                '<time rel=\'twipsy\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(res.exp).toString())+'</time>',
-            '</li>',
-          '</ul>'].join('\n');
+        var html = "";
+
+        //sometimes iterfind NODE are abusively resolved, typically when guys respond ourselves to a findnode
+        if(iterfind._targetType !== 'NODE') {
+          html =[
+          '<ul>',
+              '<li><b>Value : </b><code>'+res.value+'</code></li>',
+              '<li><b>Expiration : </b>',
+                  (!res.exp || res.exp<0) ?
+                  '<i>never</i>':
+                  '<time rel=\'twipsy\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(res.exp).toString())+'</time>',
+              '</li>',
+            '</ul>'].join('\n');
+        }
 
           html += this.iterfindInfo(iterfind, peers, start);
 
