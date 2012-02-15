@@ -33,7 +33,7 @@
 </ul>
 </li>
 <li>
-<a href="#application&#39;s-design">Application&#39;s Design</a><ul>
+<a href="#application-design">Application Design</a><ul>
 <li>
 <a href="#patterns">Patterns</a><ul>
 <li>
@@ -137,14 +137,14 @@
 
 <p>Accordingly, we had to come up with new ideas to get round these issues, and finally chose technologies that are rarely used in the P2P landscape. For instance, the <a href="#transpot-layer">choice of the XMPP protocol</a> as our main communication layer has turned out to be a really good compromise between a <em>fully decentralized</em> network hardly feasible on mobile devices, and <em>client-router</em> architecture. Also, the <a href="#javascript">Javascript language</a> proved to be a relevant framework to build decentralized systems for mobiles as it is standardized on most platforms and well oriented toward network application development.</p>
 
-<p>Also, depending only on web based technologies allows <em>KadOH</em> to be the building block of new decentralized and easily deployed web applications. As it is also very experimental, we made <em>KadOH</em> highly extensible and modular to more easily anticipate <a href="#future-work">new coming web technologies</a>.</p>
+<p>Also, only depending on web based technologies allows <em>KadOH</em> to be the building block of new decentralized and easily deployed web applications. As it is also very experimental, we made <em>KadOH</em> highly extensible and modular to more easily anticipate <a href="#future-work">new coming web technologies</a>.</p>
 </section>
 <section id="kademlia-principles">
 <h1>Kademlia principles</h1>
 
 <p>Kademlia is a Distributed Hash Table (DHT) algorithm described in <em><a href="http://pdos.csail.mit.edu/%7Epetar/papers/maymounkov-kademlia-lncs.pdf" title="Kademlia: A Peer-to-Peer Information System Based on the XOR Metric, Petar Maymounkov and David Mazières, 2002">Kademlia: A Peer-to-peer information system based on the XOR Metric</a></em> and designed by Petar Maymounkov and David Mazières in 2002. Nowadays, Kademlia is used in particular for file sharing by most eMule and BitTorrent clients as part of the Mainline protocol.</p>
 
-<p>The algorithm aims to store <em>(key, value)</em> tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.</p>
+<p>The algorithm stores <em>(key, value)</em> tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.</p>
 <section id="routing">
 <h3>Routing</h3>
 
@@ -203,8 +203,8 @@
 <p>Nevertheless, thanks to the <a href="#architecture">modular architecture</a> of the application, we implemented several other transports, such as UDP – only with <a href="#node.js">Node.js</a> – and WebSocket (thanks to <a href="http://socket.io/">socket.io</a>). This has been convenient to test the efficiency of the DHT on different networks. For instance we have been able to <a href="#mainline-dht">join the Mainline DHT</a> through a WebSocket to UDP proxy.</p>
 </section>
 </section>
-<section id="application&#39;s-design">
-<h1>Application&#39;s Design</h1>
+<section id="application-design">
+<h1>Application Design</h1>
 
 <p>During our development process, we had to try many different technical options and refactor number parts of the architecture. Implementing new ideas and concepts had to be painless, therefore our design focus on extensibility and reliability.</p>
 
@@ -218,7 +218,7 @@
 <section id="class-inheritance">
 <h3>Class inheritance</h3>
 
-<p>Despite the fact that Javascript is an object oriented language , it&#39;s important to note that, unlike other OOP (Object Oriented Programming)  languages, it is not possible to define classes. Javascript is <em>prototype based</em>, which makes inheritance not natural, but still possible.</p>
+<p>Despite the fact that Javascript is an object oriented language, it&#39;s important to note that, unlike other OOP (Object Oriented Programming)  languages, it is not possible to define classes. Javascript is <em>prototype based</em>, which makes inheritance not natural, but still possible.</p>
 
 <p>Somehow, to facilitate code reuse by inheritance, some techniques are widely used to imitate classical inheritance syntax in Javascript. Some of them are described in the book <a href="http://shop.oreilly.com/product/9780596806767.do" title="Javascript Patterns, Stoyan Stefanov, O&#39;Reilly">Javascript Patterns</a>, chapter 6 (<em>Code Reuse Patterns</em>). Thus, most popular frameworks implement their own class inheritance system ( e.g. Prototype <a href="http://api.prototypejs.org/language/Class/">Class</a>) for internal use or as API.</p>
 
@@ -291,7 +291,7 @@
 
 <p>We developed and tested our own version of the deferred pattern based on the EventEmitter class. We took inspiration from the <a href="http://wiki.commonjs.org/wiki/Promises/A">CommonJS</a> recommendation and the <a href="https://github.com/cujojs/when">when.js</a> implementation of these recommendations. However, our implementation is not strictly compliant since we have chosen not to support chainability by default, even if this functionality can be used, for performance reasons.</p>
 
-<p>To help us managing parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :</p>
+<p>To help us manage parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :</p>
 
 <ul>
 <li><code>whenAll</code> resolves only when all given deferreds are resolved</li>
@@ -615,9 +615,9 @@
 
 <p>We decided to run controlled instances of our implementation, called <em>bots</em>, on node.js VMs. This has many advantages since node VMs are much lighter than browsers – they use around 30MB of memory – and embed only the Javascript engine. Moreover, the node.js framework allows the use of process and implement a <em>forking</em> system.</p>
 
-<p>Bots are designed to make random activity on the network to generate noise. They search and store predetermined value following a <em><a href="http://en.wikipedia.org/wiki/Poisson_process">poisson process</a></em>. They also disconnect and reconnect at random times to mimic stale peers.</p>
+<p>Bots are designed to make random activity on the network to generate noise. They search and store predetermined value following a <em><a href="http://en.wikipedia.org/wiki/Poisson_process">Poisson process</a></em> to simulate user interaction. They also disconnect and reconnect at random times to mimic stale peers.</p>
 
-<p>To make them connecting and joining the DHT, we use spawning pools which are individual node.js processes. Each pool instantiates iteratively 30 bots following a <em>poisson process</em>. When all bots are launched, the pool <em>forks</em> itself and a new spawning process is started.</p>
+<p>Bots connect and join the DHT by using spawning pools which are individual node.js processes. Each pool instantiates iteratively 30 bots following a <em>Poisson process</em>. When all bots are launched, the pool <em>forks</em> itself and a new spawning process is started.</p>
 
 <p><img src="images/ec2.png" alt="EC2"/></p>
 

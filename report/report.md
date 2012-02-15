@@ -12,13 +12,13 @@ However, taking mobile users into account is a real challenge. From a network pe
 
 Accordingly, we had to come up with new ideas to get round these issues, and finally chose technologies that are rarely used in the P2P landscape. For instance, the [choice of the XMPP protocol](#transpot-layer) as our main communication layer has turned out to be a really good compromise between a *fully decentralized* network hardly feasible on mobile devices, and *client-router* architecture. Also, the [Javascript language](#javascript) proved to be a relevant framework to build decentralized systems for mobiles as it is standardized on most platforms and well oriented toward network application development.
 
-Also, depending only on web based technologies allows *KadOH* to be the building block of new decentralized and easily deployed web applications. As it is also very experimental, we made *KadOH* highly extensible and modular to more easily anticipate [new coming web technologies](#future-work).
+Also, only depending on web based technologies allows *KadOH* to be the building block of new decentralized and easily deployed web applications. As it is also very experimental, we made *KadOH* highly extensible and modular to more easily anticipate [new coming web technologies](#future-work).
 
 # Kademlia principles
 
 Kademlia is a Distributed Hash Table (DHT) algorithm described in _[Kademlia: A Peer-to-peer information system based on the XOR Metric][kad_paper]_ and designed by Petar Maymounkov and David Mazières in 2002. Nowadays, Kademlia is used in particular for file sharing by most eMule and BitTorrent clients as part of the Mainline protocol.
 
-The algorithm aims to store _(key, value)_ tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.
+The algorithm stores _(key, value)_ tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.
 
 ### Routing
 
@@ -77,7 +77,7 @@ Nevertheless, thanks to the [modular architecture](#architecture) of the applica
 [prof_xmpp]: http://professionalxmpp.com/ "Professional XMPP Programming with JavaScript and jQuery, Jack Moffitt, 2010"
 [socket.io]: http://socket.io/
 
-# Application's Design
+# Application Design
 
 During our development process, we had to try many different technical options and refactor number parts of the architecture. Implementing new ideas and concepts had to be painless, therefore our design focus on extensibility and reliability.
 
@@ -91,7 +91,7 @@ Description of the most common patterns that improve the quality of our code and
 
 ### Class inheritance
 
-Despite the fact that Javascript is an object oriented language , it's important to note that, unlike other OOP (Object Oriented Programming)  languages, it is not possible to define classes. Javascript is _prototype based_, which makes inheritance not natural, but still possible.
+Despite the fact that Javascript is an object oriented language, it's important to note that, unlike other OOP (Object Oriented Programming)  languages, it is not possible to define classes. Javascript is _prototype based_, which makes inheritance not natural, but still possible.
 
 Somehow, to facilitate code reuse by inheritance, some techniques are widely used to imitate classical inheritance syntax in Javascript. Some of them are described in the book [Javascript Patterns][JsPatterns], chapter 6 (_Code Reuse Patterns_). Thus, most popular frameworks implement their own class inheritance system ( e.g. Prototype [Class](http://api.prototypejs.org/language/Class/)) for internal use or as API.
 
@@ -165,7 +165,7 @@ The CommonJS definition of the pattern :
 
 We developed and tested our own version of the deferred pattern based on the EventEmitter class. We took inspiration from the [CommonJS] [Promises/A] recommendation and the [when.js] implementation of these recommendations. However, our implementation is not strictly compliant since we have chosen not to support chainability by default, even if this functionality can be used, for performance reasons.
 
-To help us managing parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :
+To help us manage parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :
 
   - `whenAll` resolves only when all given deferreds are resolved
   - `whenSome` resolves as soon as a specified amount of the given deferreds has resolved
@@ -481,9 +481,9 @@ Connecting to existing DHTs was not sufficient to prove the good functioning of 
 
 We decided to run controlled instances of our implementation, called *bots*, on node.js VMs. This has many advantages since node VMs are much lighter than browsers – they use around 30MB of memory – and embed only the Javascript engine. Moreover, the node.js framework allows the use of process and implement a *forking* system.
 
-Bots are designed to make random activity on the network to generate noise. They search and store predetermined value following a *[poisson process][poisson]*. They also disconnect and reconnect at random times to mimic stale peers.
+Bots are designed to make random activity on the network to generate noise. They search and store predetermined value following a *[Poisson process][poisson]* to simulate user interaction. They also disconnect and reconnect at random times to mimic stale peers.
 
-To make them connecting and joining the DHT, we use spawning pools which are individual node.js processes. Each pool instantiates iteratively 30 bots following a *poisson process*. When all bots are launched, the pool *forks* itself and a new spawning process is started.
+Bots connect and join the DHT by using spawning pools which are individual node.js processes. Each pool instantiates iteratively 30 bots following a *Poisson process*. When all bots are launched, the pool *forks* itself and a new spawning process is started.
 
 ![EC2](images/ec2.png)
 
