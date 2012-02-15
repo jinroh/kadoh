@@ -13,9 +13,7 @@
   <script type="text/javascript" src="UI/js/Log.js"></script>
   <script type="text/javascript" src="UI/js/routing.js"></script>
   <script type="text/javascript" src="UI/js/reactor.js"></script>
-  <script type="text/javascript" src="UI/js/valueM.js"></script>
   <script type="text/javascript" src="UI/js/node.js"></script>
-  <script type="text/javascript" src="benchmark/KadOHBench.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
@@ -62,9 +60,6 @@
   routing = new KadOHui.Routing(node._routingTable, '#routing-table');
   reactor = new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
   new KadOHui.Node(node, '#node')
-  node.once('connected', function() {
-    valueM = new KadOHui.ValueM(node._store, '#value-management');
-  }, this);
 
   node._reactor.on('connected', function(iam) {
     $('#info').empty().append('<h3>'+iam+' / <small><a href="#" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>')
@@ -129,7 +124,6 @@
           <li><a href="#reactor">Reactor</a></li>
           <li><a href="#transport">Transport</a></li>
           <li><a href="#routing-table">Routing Table</a></li>
-          <li><a href="#value-management">Value Management</a></li>
           <li><a href="#log">Log</a></li>
         </ul>
       </div>
@@ -219,28 +213,6 @@
             <div class="console">
             </div>
         </div>
-        <div class="tab-pane" id="value-management">
-          <div class="well">
-          <div style="line-height:1em">Value Management not initialized.</div>
-          </div>
-          <div class="row">
-            <div class="span16">
-              <table class='condensed-table zebra-striped'>
-                <thead>
-                  <tr>
-                    <th>Key</th>
-                    <th>Value</th>
-                    <th>Republish</th>
-                    <th>Expiration</th>
-                  </tr>
-                </thead>
-                <tbody class="values">
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
 
         <div class="tab-pane" id="routing-table">
           <div class="well">
