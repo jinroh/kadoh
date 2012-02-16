@@ -16,9 +16,9 @@ KadOHui.Transport =  function(transport, console) {
     append: function(raw, out) {
       var el;
       if(out) {
-        el = '<div class="raw out">'+raw+'</div>';
+        el = '<div class="raw output">'+raw+'</div>';
       } else {
-        el = '<div class="raw in">'+raw+'</div>';
+        el = '<div class="raw input">'+raw+'</div>';
       }
 
       if(this.console.children().length > this.MAX)
