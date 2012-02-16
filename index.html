@@ -700,21 +700,35 @@
 <section id="results">
 <h2>Results</h2>
 
-<p><p class="warning">The results shown in the present report are <strong>very</strong> arguable and shall be updated as they doesn&#39;t reflect our goals. We present them for the reader to better understand our testing protocol and discuss the difficulty of testing such applications</div></p>
+<p><p class="warning">The results shown in the present report are <strong>very</strong> arguable and shall be updated as they don&#39;t reflect our goals. We present them for the reader to better understand our testing protocol and discuss the difficulty of testing such applications.</div></p>
 
 <p>The main difficulty to analyze our DHTs was to have a constant environment parameters at each step of the grows. However this proved difficult because we sometimes reached the limit of capacity on some instances without realizing it immediately, or seeing where the problem came from, which has had serious impacts on the metrics.</p>
 
-<p>We want to discuss here what we plan to mitigate these side effects :</p>
+<p>We want to discuss here how we plan to mitigate these side effects :</p>
 
 <ul>
 <li>we rely on a single XMPP server on a medium sized instance which doesn&#39;t scale up to 4000 nodes simultaneously, we still have to deploy one or more other servers on a bigger instances</li>
 <li>we also reached the limits of DHT Spawner&#39;s extra large instances, as a consequence we shall rely on more instances and limit the number of bots spawned on each to around 2000</li>
 </ul>
 
-<p><img src="images/results_01.png" alt="time"/><br/>
-<img src="images/results_02.png" alt="hops"/><br/>
-<img src="images/results_03.png" alt="queries"/><br/>
-<img src="images/results_04.png" alt="closest"/></p>
+<p><img src="images/results_01.png" alt="time"/></p>
+
+<p>These curves are not relevant because they show two accidental variations of our environment parameters. In fact, the peak from 500 to 1500 nodes is due to a CPUs overload of our first DHT spawner instance when reaching a critical amount of active bots. The second one is related to a bottleneck in the Jabber server when handling the activity of 3000 simultaneous peers.</p>
+
+<p>However, we can notice that despite these side effects, the retrieval of the value from the DHT is done in a reasonable time that doesn&#39;t exceed 5 seconds on average, whatever the size and the device.</p>
+
+<p><img src="images/results_02.png" alt="hops"/><br/>
+<img src="images/results_03.png" alt="queries"/></p>
+
+<p>We cannot interpret quantitatively these graphics however, we can see that the number of hops and queries are roughly constants which is a reassuring result. However, in theory we should observer a logarithmic evolution relatively to the size of the DHT, but to show this we shall extend our testing scale order of magnitude.</p>
+
+<p><img src="images/results_04.png" alt="closest"/></p>
+
+<p>In deep search (left), we observe a rough decrease which is what we expected since the value is inversely proportional to the logarithm of the size of the DHT (equidistribution of the peers in the ID space).</p>
+
+<p>In the resolved search (right), we observe a constant value. This may be due to the fact that targeted values are published from the start of our experiments, when the DHT is small and then some peers have stored this value whereas they shouldn&#39;t have in a bigger DHT, where closer peers would have stored it.</p>
+
+<p>In general, we didn&#39;t notice unfavorable results to mobile devices whether they are used in 3G or WiFi which is quite promising. However, these results show weaknesses in our experiment process that should probably be reconsidered.</p>
 </section>
 </section>
 <section id="conclusions">

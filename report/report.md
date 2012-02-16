@@ -549,19 +549,33 @@ We ran these benchmarks on different sized DHT since our main goal is to compare
 
 ## Results
 
-<p class="warning">The results shown in the present report are **very** arguable and shall be updated as they doesn't reflect our goals. We present them for the reader to better understand our testing protocol and discuss the difficulty of testing such applications</div>
+<p class="warning">The results shown in the present report are **very** arguable and shall be updated as they don't reflect our goals. We present them for the reader to better understand our testing protocol and discuss the difficulty of testing such applications.</div>
 
 The main difficulty to analyze our DHTs was to have a constant environment parameters at each step of the grows. However this proved difficult because we sometimes reached the limit of capacity on some instances without realizing it immediately, or seeing where the problem came from, which has had serious impacts on the metrics.
 
-We want to discuss here what we plan to mitigate these side effects :
+We want to discuss here how we plan to mitigate these side effects :
 
   - we rely on a single XMPP server on a medium sized instance which doesn't scale up to 4000 nodes simultaneously, we still have to deploy one or more other servers on a bigger instances
   - we also reached the limits of DHT Spawner's extra large instances, as a consequence we shall rely on more instances and limit the number of bots spawned on each to around 2000
 
 ![time](images/results_01.png)
+
+These curves are not relevant because they show two accidental variations of our environment parameters. In fact, the peak from 500 to 1500 nodes is due to a CPUs overload of our first DHT spawner instance when reaching a critical amount of active bots. The second one is related to a bottleneck in the Jabber server when handling the activity of 3000 simultaneous peers.
+
+However, we can notice that despite these side effects, the retrieval of the value from the DHT is done in a reasonable time that doesn't exceed 5 seconds on average, whatever the size and the device.
+
 ![hops](images/results_02.png)
 ![queries](images/results_03.png)
+
+We cannot interpret quantitatively these graphics however, we can see that the number of hops and queries are roughly constants which is a reassuring result. However, in theory we should observer a logarithmic evolution relatively to the size of the DHT, but to show this we shall extend our testing scale order of magnitude.
+
 ![closest](images/results_04.png)
+
+In deep search (left), we observe a rough decrease which is what we expected since the value is inversely proportional to the logarithm of the size of the DHT (equidistribution of the peers in the ID space).
+
+In the resolved search (right), we observe a constant value. This may be due to the fact that targeted values are published from the start of our experiments, when the DHT is small and then some peers have stored this value whereas they shouldn't have in a bigger DHT, where closer peers would have stored it.
+
+In general, we didn't notice unfavorable results to mobile devices whether they are used in 3G or WiFi which is quite promising. However, these results show weaknesses in our experiment process that should probably be reconsidered.
 
 # Conclusions
 
