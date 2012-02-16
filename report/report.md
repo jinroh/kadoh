@@ -551,7 +551,7 @@ We ran these benchmarks on different sized DHT since our main goal is to compare
 
 <p class="warning">The results shown in the present report are **very** arguable and shall be updated as they don't reflect our goals. We present them for the reader to better understand our testing protocol and discuss the difficulty of testing such applications.</div>
 
-The main difficulty to analyze our DHTs was to have a constant environment parameters at each step of the grows. However this proved difficult because we sometimes reached the limit of capacity on some instances without realizing it immediately, or seeing where the problem came from, which has had serious impacts on the metrics.
+The main difficulty to analyze our DHTs was to have a constant environment parameters at each step of the grows. However this proved difficult because we sometimes reached the limit of capacity on some instances without realizing it immediately, or seeing where the problem came from, which has had serious impacts on the measures.
 
 We want to discuss here how we plan to mitigate these side effects :
 

@@ -1,0 +1,27 @@
+# TITLE
+
+# What have been done so far in the DHT landscape ?
+
+## Theoretical researches
+
+  -> university research : Chord, Kademlia
+  -> strong theoretical base
+  -> improvement proposals
+
+## Practical large scale implementations
+
+  -> largely used implementations designed for FILE-SHARING
+  -> university papers talk about aMule, Bittorrent's Mainline...because they are the only big DHTs
+
+# What is missing ?
+
+## Mobile environments
+
+  -> never taken into account
+  -> huge and promising audience
+
+## Web Apps
+
+  -> beyond file-sharing ?
+
+# What have we done ?
