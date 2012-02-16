@@ -430,7 +430,7 @@ Node.js is an open-source project, heavily supported by the community. It is esp
 
 As a consequence, we made sure that our implementation is able to run in node.js even if some environment specific parts ([transport](#transport) and [persistent storage](#persistent-storage)) shall be replaced. As work proceeds, we were reinforced in the idea that this feature is a strength for our implementation.
 
-## Git and Github
+## Version control
 
 Because we've worked both on the same code, we have had an extensive use of the version control system *[Git][git]*. More than a simple security for our code history, *Git*'s utilities brought us good coding practices :
 
@@ -449,12 +449,38 @@ The ability to easily proofread the code posted by each other and to [post comme
 [github]: https://github.com
 [discussion]: https://github.com/jinroh/kadoh/commit/4f058a051caa57a0b4f389227e04679116205c72#L0R124
 
-## Testing
+## Continuous integration
 
-- Unit testing
-- Behavior Driven Development
+### Code quality tool
 
-## Misc
+Since Javascript implementations diverge from one browser to an other or from one browser version to the older, the language has some dubiousnesses that should be avoided to increase portability. Static code analysis is a good way to avoid these mistakes upstream to portability testing.
+
+We both used [JSHint] as plugin of our text editor to test automatically the quality of our code before saving.
+
+[JSHint]: http://www.jshint.com/about/
+
+### Build automation
+
+We developed our implementation as a [framework](#application-design) by strictly separating each part. To go even deeper in this strategy, we decided to dedicate a file per class. These files need this to be gathered in one before being used. This is quite useful, since depending on the configuration we want to test, we can decide to include or exclude some files. The gathering shall moreover be done in the right order, since Javascript is sensible to declaration order.
+
+We tried to find an adapted tool to do this build but we didn't manage. That's why we decided to develop our own build tool as [node.js](#node.js) module based on dependencies declarations in comments. It's called [jsCicada] and allow us to build different configurations in one command line.
+
+[jsCicada]: https://github.com/alexstrat/jsCicada
+
+### Unit testing
+
+Since we managed to separate our implementation in independent parts, it was easy to apply unit-testing techniques on them. Because our implementation targets both browser and server-side environments, it was important that our test suite was able to be executed on both. That's why we chose to use [Jasmine] test framework. Thanks to CI tool [jasmine-runner] – which development we contribute to – we were able to test our code automatically as soon as file were saved and get immediately feedbacks.
+
+[Jasmine]: http://pivotal.github.com/jasmine/
+[jasmine-runner]: https://github.com/jamescarr/jasmine-tool
+
+### Continuous documentation
+
+To help the development, we continuously wrote documentation in [JsDoc] fashion.
+
+[JsDoc]: http://code.google.com/p/jsdoc-toolkit/
+
+## Debugging
 
 - code quality tool : JsLint
 - embedded documentation
