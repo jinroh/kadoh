@@ -41,18 +41,6 @@
 <li>
 <a href="#application-design">Application Design</a><ul>
 <li>
-<a href="#patterns">Patterns</a><ul>
-<li>
-<a href="#class-inheritance">Class inheritance</a></li>
-<li>
-<a href="#event-driven-programming">Event-driven programming</a></li>
-<li>
-<a href="#deferred-objects">Deferred objects</a></li>
-<li>
-<a href="#ubiquitous-structures">Ubiquitous structures</a></li>
-</ul>
-</li>
-<li>
 <a href="#architecture">Architecture</a><ul>
 <li>
 <a href="#reactor-and-rpcs">Reactor and RPCs</a><ul>
@@ -94,6 +82,18 @@
 <a href="#bootstrap">Bootstrap</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li>
+<a href="#design-patterns">Design patterns</a><ul>
+<li>
+<a href="#code-reuse">Code reuse</a></li>
+<li>
+<a href="#event-driven-programming">Event-driven programming</a></li>
+<li>
+<a href="#deferred-objects">Deferred objects</a></li>
+<li>
+<a href="#ubiquitous-structures">Ubiquitous structures</a></li>
 </ul>
 </li>
 </ul>
@@ -233,105 +233,7 @@
 
 <p>The application is developed as a framework, organized in a collection of replaceable and extensible modules. As a simple example, our transport layers implement the same interface which allowed us to test different alternatives. This design principle required efforts of abstraction and anticipation, yet the final application gains legibility and extensibility.</p>
 
-<p>In this chapter, we give details of our development principles to meet our requirements. </p>
-<section id="patterns">
-<h2>Patterns</h2>
-
-<p>Description of the most common patterns that improve the quality of our code and helped us in our development.</p>
-<section id="class-inheritance">
-<h3>Class inheritance</h3>
-
-<p>Despite the fact that Javascript is an object oriented language, it&#39;s important to note that, unlike other OOP (Object Oriented Programming)  languages, it is not possible to define classes. Javascript is <em>prototype based</em>, which makes inheritance not natural, but still possible.</p>
-
-<p>Somehow, to facilitate code reuse by inheritance, some techniques are widely used to imitate classical inheritance syntax in Javascript. Some of them are described in the book <a href="http://shop.oreilly.com/product/9780596806767.do" title="Javascript Patterns, Stoyan Stefanov, O&#39;Reilly">Javascript Patterns</a>, chapter 6 (<em>Code Reuse Patterns</em>). Thus, most popular frameworks implement their own class inheritance system ( e.g. Prototype <a href="http://api.prototypejs.org/language/Class/">Class</a>) for internal use or as API.</p>
-
-<p>Because we wanted our code to depend as less as possible on external framework, we decided to integrate to it an inheritance system. Among many available implementations, we chosen to use the one proposed by <a href="http://dustindiaz.com/klass">Dustin Diaz</a> called <a href="https://github.com/ded/klass">klass</a> because of its simple interface and because it can run on any environment (browser, Node.js). </p>
-
-<p>This is a snippet of code showing how inheritance is used :</p>
-<div class="highlight"><pre><span class="c1">// KBucket class extends PeerArray class</span>
-<span class="nx">KadOH</span><span class="p">.</span><span class="nx">KBucket</span> <span class="o">=</span> <span class="nx">PeerArray</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
-
-  <span class="c1">// constructor of KBucket</span>
-  <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rt</span><span class="p">,</span> <span class="nx">min</span><span class="p">,</span> <span class="nx">max</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">supr</span><span class="p">();</span> <span class="c1">// call the super constructor (PeerArray constructor)</span>
-  <span class="p">},</span>
-
-  <span class="c1">// override a method addPeer</span>
-  <span class="nx">addPeer</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">peer</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// findPeer is a method of PeerArray</span>
-    <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">findPeer</span><span class="p">()</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-      <span class="k">this</span><span class="p">.</span><span class="nx">supr</span><span class="p">(</span><span class="nx">peer</span><span class="p">);</span> <span class="c1">// call the super method</span>
-  <span class="p">}</span>
-<span class="p">})</span>
-</pre>
-</div>
-
-<p>The adapted inheritance system has deeply instigated us to write reusable code (see <em>Architecture</em> section).</p>
-</section>
-<section id="event-driven-programming">
-<h3>Event-driven programming</h3>
-
-<p>Since Javascript was initially design to handle DOM manipulations and user interactions, the language has simple and efficient ways to deal with event calls. We took advantage of this event-driven facility to manage our flow control.</p>
-
-<p><em>Event-emitter</em> is a common pattern in Javascript to control events. Every objects extending the <code>EventEmitter</code> class can <em>emit</em> asynchronous events that can be <em>listened</em> and attached to <em>callback</em> functions. Basically, this pattern allows us to elegantly control our action flow whenever a resource changes.</p>
-
-<p>To implement our own version of the <em>event-emitter</em> pattern, we took inspiration from the <a href="http://api.jquery.com/category/callbacks-object/">jQuery callbacks</a> API and the <a href="http://nodejs.org/docs/latest/api/events.html#events.EventEmitter">EventEmitter object from node.js</a>. More, we added some handy functionalities :</p>
-
-<ul>
-<li>any event emission can be memorized to mimic a constantly emitting event (our starting point for deferred objects)</li>
-<li>it is possible to use one time event or listener</li>
-</ul>
-
-<p>Here is an simple example of the usage of <code>EventEmitter</code> methods to execute a <em>callback</em> function when receiving RPC queries :</p>
-<div class="highlight"><pre><span class="c1">// Reactor class extends the EventEmitter</span>
-<span class="kd">var</span> <span class="nx">reactor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Reactor</span><span class="p">();</span>
-
-<span class="c1">// ...</span>
-
-<span class="nx">reactor</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;queried&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rpc</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1">// handle the query</span>
-<span class="p">});</span>
-
-<span class="c1">// somewhere else in the code</span>
-<span class="nx">reactor</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s1">&#39;queried&#39;</span><span class="p">,</span> <span class="nx">rpc</span><span class="p">);</span>
-</pre>
-</div>
-
-<p>As an extension to this pattern, we developed another architecture to represent <em>stateful</em> objects (<code>StateEventEmitter</code>). These objects are associated to a unique state at any time. A change of state induces the emission of an associated event. Our three main objects use this pattern. For instance, our Transport object is represented by its connection state, and any change of state provoke a chain of actions in the application.</p>
-</section>
-<section id="deferred-objects">
-<h3>Deferred objects</h3>
-
-<p>Manage several asynchronous and nested operations prompted us to use the deferred pattern to manage them accurately. With this pattern, a chain of actions (asynchronous or not) can be associated to the completion of an asynchronous computation.</p>
-
-<p>The CommonJS definition of the pattern :</p>
-
-<blockquote>
-<p>Promises provide a well-defined interface for interacting with an object that represents the result of an action that is performed asynchronously, and may or may not be finished at any given point in time. <small>CommonJS</small></p>
-</blockquote>
-
-<p>@TODO for Alex : explicit why we found this pattern interesting and how we used it to manage our flow control with objects (maybe with an example)</p>
-
-<p>We developed and tested our own version of the deferred pattern based on the EventEmitter class. We took inspiration from the <a href="http://wiki.commonjs.org/wiki/Promises/A">CommonJS</a> recommendation and the <a href="https://github.com/cujojs/when">when.js</a> implementation of these recommendations. However, our implementation is not strictly compliant since we have chosen not to support chainability by default, even if this functionality can be used, for performance reasons.</p>
-
-<p>To help us manage parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :</p>
-
-<ul>
-<li><code>whenAll</code> resolves only when all given deferreds are resolved</li>
-<li><code>whenSome</code> resolves as soon as a specified amount of the given deferreds has resolved</li>
-<li><code>whenAtLeast</code> resolves when all given deferreds have completed, if at least one of them has resolved</li>
-</ul>
-</section>
-<section id="ubiquitous-structures">
-<h3>Ubiquitous structures</h3>
-
-<p>In Kademlia implementations, it is convenient to handle object representing peers of the network. That&#39;s why we wrote a dedicated object (<code>Peer</code>) representing a peer with helpful methods for manipulating it.</p>
-
-<p>We also implemented a dedicated object to handle array of peers (<code>PeerArray</code>), and an extended version to support XOR sorted arrays using an insertion sort algorithm. These objects implement numerous methods dealing with ensemble operation (union, intersection, equality, membership..). They are very helpful and used all over our implementation.</p>
-
-<p>These structures are in response to the weak typing of Javascript : they allow us to have consistent objects throughout our implementation. The definition, instantiation and the handling of these object is indeed defined once, that helps us to rapidly apply changes.</p>
-</section>
-</section>
+<p>In this chapter, we give details of our development principles to meet our requirements.</p>
 <section id="architecture">
 <h2>Architecture</h2>
 
@@ -556,6 +458,100 @@
 
 <p><code>Bootstrap</code> has a simple <code>PeerArray</code> instead of a complete <code>RoutingTable</code> and responses only to <em>ping</em> and to <em>find node</em> RPCs by picking random peers in this array.</p>
 </section>
+</section>
+</section>
+<section id="design-patterns">
+<h2>Design patterns</h2>
+
+<p>Here we describe the most common patterns that improve the quality of our code and helped us in our development.</p>
+<section id="code-reuse">
+<h3>Code reuse</h3>
+
+<p>Since our implementation contains around 6,000 lines, an important development behavior is to take care of writing reusable code. Moreover, we wanted our system to be extensible and modular. A strictly class based language like Java would have helped us to fulfill these requirements, since logic inheritance is the hearth of these languages. But the fact is, despite of being an object oriented language, Javascript is not class based. Javascript is instead <em>prototype based</em>, which makes inheritance not natural, but still possible.</p>
+
+<p>Somehow, some techniques are widely used to imitate classical inheritance syntax in Javascript. Some of them are described in the book <a href="http://shop.oreilly.com/product/9780596806767.do" title="Javascript Patterns, Stoyan Stefanov, O&#39;Reilly">Javascript Patterns</a>, chapter 6 (<em>Code Reuse Patterns</em>). Thus, most popular frameworks implement their own class inheritance system ( e.g. Prototype <a href="http://api.prototypejs.org/language/Class/">Class</a>) for internal use or as API.</p>
+
+<p>Because we wanted our code to depend as less as possible on external framework, we decided to integrate to it an inheritance system. Among many available implementations, we chosen to use the one proposed by <a href="http://dustindiaz.com/klass">Dustin Diaz</a> called <a href="https://github.com/ded/klass">klass</a> because of its simple interface and because it can run on any environment (browser, Node.js). </p>
+
+<p>This is a snippet of code showing how inheritance is used :</p>
+<div class="highlight"><pre><span class="c1">// KBucket class extends PeerArray class</span>
+<span class="nx">KadOH</span><span class="p">.</span><span class="nx">KBucket</span> <span class="o">=</span> <span class="nx">PeerArray</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+  <span class="c1">// constructor of KBucket</span>
+  <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rt</span><span class="p">,</span> <span class="nx">min</span><span class="p">,</span> <span class="nx">max</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">supr</span><span class="p">();</span> <span class="c1">// call the super constructor (PeerArray constructor)</span>
+  <span class="p">},</span>
+
+  <span class="c1">// override a method addPeer</span>
+  <span class="nx">addPeer</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">peer</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// findPeer is a method of PeerArray</span>
+    <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">findPeer</span><span class="p">()</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">supr</span><span class="p">(</span><span class="nx">peer</span><span class="p">);</span> <span class="c1">// call the super method</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre>
+</div>
+</section>
+<section id="event-driven-programming">
+<h3>Event-driven programming</h3>
+
+<p>Since Javascript was initially design to handle DOM manipulations and user interactions, the language has simple and efficient ways to deal with event calls. We took advantage of this event-driven facility to manage our flow control which consists in exchanging events between the main parts of our architecture.`</p>
+
+<p><em>Event-emitter</em> is a common pattern in Javascript to control events. Every objects extending the <code>EventEmitter</code> class can <em>emit</em> asynchronous events that can be <em>listened</em> and attached to <em>callback</em> functions. Basically, this pattern allows us to elegantly control our action flow whenever a resource changes.</p>
+
+<p>To implement our own version of the <em>event-emitter</em> pattern, we took inspiration from the <a href="http://api.jquery.com/category/callbacks-object/">jQuery callbacks</a> API and the <a href="http://nodejs.org/docs/latest/api/events.html#events.EventEmitter">EventEmitter object from node.js</a>. More, we added some handy functionalities :</p>
+
+<ul>
+<li>any event emission can be memorized to mimic a constantly emitting event (our starting point for deferred objects)</li>
+<li>it is possible to use one time event or listener</li>
+</ul>
+
+<p>Here is an simple example of the usage of <code>EventEmitter</code> methods to execute a <em>callback</em> function when receiving RPC queries :</p>
+<div class="highlight"><pre><span class="c1">// Reactor class extends the EventEmitter</span>
+<span class="kd">var</span> <span class="nx">reactor</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Reactor</span><span class="p">();</span>
+
+<span class="c1">// ...</span>
+
+<span class="nx">reactor</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;queried&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rpc</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// handle the query</span>
+<span class="p">});</span>
+
+<span class="c1">// somewhere else in the code</span>
+<span class="nx">reactor</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s1">&#39;queried&#39;</span><span class="p">,</span> <span class="nx">rpc</span><span class="p">);</span>
+</pre>
+</div>
+
+<p>As an extension to this pattern, we developed another architecture to represent <em>stateful</em> objects (<code>StateEventEmitter</code>). These objects are associated to a unique state at any time. A change of state induces the emission of an associated event. Our three main objects use this pattern. For instance, our Transport object is represented by its connection state, and any change of state provoke a chain of actions in the application.</p>
+</section>
+<section id="deferred-objects">
+<h3>Deferred objects</h3>
+
+<p>Manage several asynchronous and nested operations prompted us to use the deferred pattern to manage them accurately. With this pattern, a chain of actions (asynchronous or not) can be associated to the completion of an asynchronous computation.</p>
+
+<p>Here is the CommonJS definition of the pattern :</p>
+
+<blockquote>
+<p>Promises provide a well-defined interface for interacting with an object that represents the result of an action that is performed asynchronously, and may or may not be finished at any given point in time. <small>CommonJS</small></p>
+</blockquote>
+
+<p>We developed and tested our own version of the deferred pattern based on the EventEmitter class. We took inspiration from the <a href="http://wiki.commonjs.org/wiki/Promises/A">CommonJS</a> recommendation and the <a href="https://github.com/cujojs/when">when.js</a> implementation of these recommendations. However, our implementation is not strictly compliant since we have chosen not to support chainability by default, even if this functionality can be used, for performance reasons.</p>
+
+<p>To help us manage parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :</p>
+
+<ul>
+<li><code>whenAll</code> resolves only when all given deferreds are resolved</li>
+<li><code>whenSome</code> resolves as soon as a specified amount of the given deferreds has resolved</li>
+<li><code>whenAtLeast</code> resolves when all given deferreds have completed, if at least one of them has resolved</li>
+</ul>
+</section>
+<section id="ubiquitous-structures">
+<h3>Ubiquitous structures</h3>
+
+<p>In Kademlia implementations, it is convenient to handle object representing peers of the network. That&#39;s why we wrote a dedicated object (<code>Peer</code>) representing a peer with helpful methods for manipulating it.</p>
+
+<p>We also implemented a dedicated object to handle array of peers (<code>PeerArray</code>), and an extended version to support XOR sorted arrays using an insertion sort algorithm. These objects implement numerous methods dealing with ensemble operation (union, intersection, equality, membership..). They are very helpful and used all over our implementation.</p>
+
+<p>These structures are in response to the weak typing of Javascript : they allow us to have consistent objects throughout our implementation. The definition, instantiation and the handling of these object is indeed defined once, that helps us to rapidly apply changes.</p>
 </section>
 </section>
 </section>

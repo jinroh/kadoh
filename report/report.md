@@ -95,105 +95,7 @@ During our development process, we had to try many different technical options a
 
 The application is developed as a framework, organized in a collection of replaceable and extensible modules. As a simple example, our transport layers implement the same interface which allowed us to test different alternatives. This design principle required efforts of abstraction and anticipation, yet the final application gains legibility and extensibility.
 
-In this chapter, we give details of our development principles to meet our requirements. 
-
-## Patterns
-
-Description of the most common patterns that improve the quality of our code and helped us in our development.
-
-### Class inheritance
-
-Despite the fact that Javascript is an object oriented language, it's important to note that, unlike other OOP (Object Oriented Programming)  languages, it is not possible to define classes. Javascript is _prototype based_, which makes inheritance not natural, but still possible.
-
-Somehow, to facilitate code reuse by inheritance, some techniques are widely used to imitate classical inheritance syntax in Javascript. Some of them are described in the book [Javascript Patterns][JsPatterns], chapter 6 (_Code Reuse Patterns_). Thus, most popular frameworks implement their own class inheritance system ( e.g. Prototype [Class](http://api.prototypejs.org/language/Class/)) for internal use or as API.
-
-Because we wanted our code to depend as less as possible on external framework, we decided to integrate to it an inheritance system. Among many available implementations, we chosen to use the one proposed by [Dustin Diaz](http://dustindiaz.com/klass) called [klass](https://github.com/ded/klass) because of its simple interface and because it can run on any environment (browser, Node.js). 
-
-This is a snippet of code showing how inheritance is used :
-
-```js
-// KBucket class extends PeerArray class
-KadOH.KBucket = PeerArray.extend({
-
-  // constructor of KBucket
-  initialize: function(rt, min, max) {
-    this.supr(); // call the super constructor (PeerArray constructor)
-  },
-
-  // override a method addPeer
-  addPeer: function(peer) {
-    // findPeer is a method of PeerArray
-    if(this.findPeer() == -1)
-      this.supr(peer); // call the super method
-  }
-})
-```
- 
-The adapted inheritance system has deeply instigated us to write reusable code (see _Architecture_ section).
-
-[JsPatterns]: http://shop.oreilly.com/product/9780596806767.do (Javascript Patterns, Stoyan Stefanov, O'Reilly)
-
-### Event-driven programming
-
-Since Javascript was initially design to handle DOM manipulations and user interactions, the language has simple and efficient ways to deal with event calls. We took advantage of this event-driven facility to manage our flow control.
-
-*Event-emitter* is a common pattern in Javascript to control events. Every objects extending the `EventEmitter` class can *emit* asynchronous events that can be *listened* and attached to *callback* functions. Basically, this pattern allows us to elegantly control our action flow whenever a resource changes.
-
-To implement our own version of the *event-emitter* pattern, we took inspiration from the [jQuery callbacks][jquery-callbacks] API and the [EventEmitter object from node.js][node-eventemitter]. More, we added some handy functionalities :
-
-  - any event emission can be memorized to mimic a constantly emitting event (our starting point for deferred objects)
-  - it is possible to use one time event or listener
-
-Here is an simple example of the usage of `EventEmitter` methods to execute a *callback* function when receiving RPC queries :
-
-```js
-// Reactor class extends the EventEmitter
-var reactor = new Reactor();
-
-// ...
-
-reactor.on('queried', function(rpc) {
-  // handle the query
-});
-
-// somewhere else in the code
-reactor.emit('queried', rpc);
-```
-
-As an extension to this pattern, we developed another architecture to represent *stateful* objects (`StateEventEmitter`). These objects are associated to a unique state at any time. A change of state induces the emission of an associated event. Our three main objects use this pattern. For instance, our Transport object is represented by its connection state, and any change of state provoke a chain of actions in the application.
-
-[jquery-callbacks]:http://api.jquery.com/category/callbacks-object/
-[node-eventemitter]:http://nodejs.org/docs/latest/api/events.html#events.EventEmitter
-
-### Deferred objects
-
-Manage several asynchronous and nested operations prompted us to use the deferred pattern to manage them accurately. With this pattern, a chain of actions (asynchronous or not) can be associated to the completion of an asynchronous computation.
-
-The CommonJS definition of the pattern :
-
-> Promises provide a well-defined interface for interacting with an object that represents the result of an action that is performed asynchronously, and may or may not be finished at any given point in time. <small>CommonJS</small>
-
-@TODO for Alex : explicit why we found this pattern interesting and how we used it to manage our flow control with objects (maybe with an example)
-
-We developed and tested our own version of the deferred pattern based on the EventEmitter class. We took inspiration from the [CommonJS] [Promises/A] recommendation and the [when.js] implementation of these recommendations. However, our implementation is not strictly compliant since we have chosen not to support chainability by default, even if this functionality can be used, for performance reasons.
-
-To help us manage parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :
-
-  - `whenAll` resolves only when all given deferreds are resolved
-  - `whenSome` resolves as soon as a specified amount of the given deferreds has resolved
-  - `whenAtLeast` resolves when all given deferreds have completed, if at least one of them has resolved
-
-[CommonJS]: http://wiki.commonjs.org/wiki/CommonJS
-[Promises/A]: http://wiki.commonjs.org/wiki/Promises/A
-[when.js]: https://github.com/cujojs/when
-
-### Ubiquitous structures
-
-In Kademlia implementations, it is convenient to handle object representing peers of the network. That's why we wrote a dedicated object (`Peer`) representing a peer with helpful methods for manipulating it.
-
-We also implemented a dedicated object to handle array of peers (`PeerArray`), and an extended version to support XOR sorted arrays using an insertion sort algorithm. These objects implement numerous methods dealing with ensemble operation (union, intersection, equality, membership..). They are very helpful and used all over our implementation.
-
-These structures are in response to the weak typing of Javascript : they allow us to have consistent objects throughout our implementation. The definition, instantiation and the handling of these object is indeed defined once, that helps us to rapidly apply changes.
+In this chapter, we give details of our development principles to meet our requirements.
 
 ## Architecture
 
@@ -417,6 +319,100 @@ To join a DHT, a node shall know some peers that are already connected to the DH
 In the optic to [simulate](#dht-simulation) our DHT implementation, we needed the same kind of dedicated nodes. We also created a `Bootstrap` object which is a simplification of `Node` since it gets rid of the `Value Management` and the `Routing Table`. This simplification is a way of optimizing the system for this specific use and to be less susceptible to crashes due to bugs.
 
 `Bootstrap` has a simple `PeerArray` instead of a complete `RoutingTable` and responses only to *ping* and to *find node* RPCs by picking random peers in this array.
+
+## Design patterns
+
+Here we describe the most common patterns that improve the quality of our code and helped us in our development.
+
+### Code reuse
+
+Since our implementation contains around 6,000 lines, an important development behavior is to take care of writing reusable code. Moreover, we wanted our system to be extensible and modular. A strictly class based language like Java would have helped us to fulfill these requirements, since logic inheritance is the hearth of these languages. But the fact is, despite of being an object oriented language, Javascript is not class based. Javascript is instead _prototype based_, which makes inheritance not natural, but still possible.
+
+Somehow, some techniques are widely used to imitate classical inheritance syntax in Javascript. Some of them are described in the book [Javascript Patterns][JsPatterns], chapter 6 (_Code Reuse Patterns_). Thus, most popular frameworks implement their own class inheritance system ( e.g. Prototype [Class](http://api.prototypejs.org/language/Class/)) for internal use or as API.
+
+Because we wanted our code to depend as less as possible on external framework, we decided to integrate to it an inheritance system. Among many available implementations, we chosen to use the one proposed by [Dustin Diaz](http://dustindiaz.com/klass) called [klass](https://github.com/ded/klass) because of its simple interface and because it can run on any environment (browser, Node.js). 
+
+This is a snippet of code showing how inheritance is used :
+
+```js
+// KBucket class extends PeerArray class
+KadOH.KBucket = PeerArray.extend({
+
+  // constructor of KBucket
+  initialize: function(rt, min, max) {
+    this.supr(); // call the super constructor (PeerArray constructor)
+  },
+
+  // override a method addPeer
+  addPeer: function(peer) {
+    // findPeer is a method of PeerArray
+    if(this.findPeer() == -1)
+      this.supr(peer); // call the super method
+  }
+})
+```
+
+[JsPatterns]: http://shop.oreilly.com/product/9780596806767.do (Javascript Patterns, Stoyan Stefanov, O'Reilly)
+
+### Event-driven programming
+
+Since Javascript was initially design to handle DOM manipulations and user interactions, the language has simple and efficient ways to deal with event calls. We took advantage of this event-driven facility to manage our flow control which consists in exchanging events between the main parts of our architecture.`
+
+*Event-emitter* is a common pattern in Javascript to control events. Every objects extending the `EventEmitter` class can *emit* asynchronous events that can be *listened* and attached to *callback* functions. Basically, this pattern allows us to elegantly control our action flow whenever a resource changes.
+
+To implement our own version of the *event-emitter* pattern, we took inspiration from the [jQuery callbacks][jquery-callbacks] API and the [EventEmitter object from node.js][node-eventemitter]. More, we added some handy functionalities :
+
+  - any event emission can be memorized to mimic a constantly emitting event (our starting point for deferred objects)
+  - it is possible to use one time event or listener
+
+Here is an simple example of the usage of `EventEmitter` methods to execute a *callback* function when receiving RPC queries :
+
+```js
+// Reactor class extends the EventEmitter
+var reactor = new Reactor();
+
+// ...
+
+reactor.on('queried', function(rpc) {
+  // handle the query
+});
+
+// somewhere else in the code
+reactor.emit('queried', rpc);
+```
+
+As an extension to this pattern, we developed another architecture to represent *stateful* objects (`StateEventEmitter`). These objects are associated to a unique state at any time. A change of state induces the emission of an associated event. Our three main objects use this pattern. For instance, our Transport object is represented by its connection state, and any change of state provoke a chain of actions in the application.
+
+[jquery-callbacks]:http://api.jquery.com/category/callbacks-object/
+[node-eventemitter]:http://nodejs.org/docs/latest/api/events.html#events.EventEmitter
+
+### Deferred objects
+
+Manage several asynchronous and nested operations prompted us to use the deferred pattern to manage them accurately. With this pattern, a chain of actions (asynchronous or not) can be associated to the completion of an asynchronous computation.
+
+Here is the CommonJS definition of the pattern :
+
+> Promises provide a well-defined interface for interacting with an object that represents the result of an action that is performed asynchronously, and may or may not be finished at any given point in time. <small>CommonJS</small>
+
+We developed and tested our own version of the deferred pattern based on the EventEmitter class. We took inspiration from the [CommonJS] [Promises/A] recommendation and the [when.js] implementation of these recommendations. However, our implementation is not strictly compliant since we have chosen not to support chainability by default, even if this functionality can be used, for performance reasons.
+
+To help us manage parallels asynchronous requests, we implemented some helpers for the batch processing of deferreds. All these functions return a new promise object and take a batch of deferred objects as an argument :
+
+  - `whenAll` resolves only when all given deferreds are resolved
+  - `whenSome` resolves as soon as a specified amount of the given deferreds has resolved
+  - `whenAtLeast` resolves when all given deferreds have completed, if at least one of them has resolved
+
+[CommonJS]: http://wiki.commonjs.org/wiki/CommonJS
+[Promises/A]: http://wiki.commonjs.org/wiki/Promises/A
+[when.js]: https://github.com/cujojs/when
+
+### Ubiquitous structures
+
+In Kademlia implementations, it is convenient to handle object representing peers of the network. That's why we wrote a dedicated object (`Peer`) representing a peer with helpful methods for manipulating it.
+
+We also implemented a dedicated object to handle array of peers (`PeerArray`), and an extended version to support XOR sorted arrays using an insertion sort algorithm. These objects implement numerous methods dealing with ensemble operation (union, intersection, equality, membership..). They are very helpful and used all over our implementation.
+
+These structures are in response to the weak typing of Javascript : they allow us to have consistent objects throughout our implementation. The definition, instantiation and the handling of these object is indeed defined once, that helps us to rapidly apply changes.
 
 # Development Process
 
