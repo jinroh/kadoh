@@ -14,9 +14,10 @@
   <script type="text/javascript" src="UI/js/routing.js"></script>
   <script type="text/javascript" src="UI/js/reactor.js"></script>
   <script type="text/javascript" src="UI/js/valueM.js"></script>
+  <script type="text/javascript" src="UI/js/transport.js"></script>
   <script type="text/javascript" src="UI/js/node.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
-  <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
+<link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" >
 
   <script type="text/javascript">
   // SOME BULLSHIT JS TO BE REPLACED IN kadohui.js
@@ -64,6 +65,8 @@
   node.once('connected', function() {
     valueM = new KadOHui.ValueM(node._store, '#value-management');
   }, this);
+
+  new KadOHui.Transport(node._reactor._transport, '#transport>pre');
 
   node._reactor.on('connected', function(iam) {
     $('#info').empty().append('<h3>'+iam+' / <small><a href="#" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>')
@@ -250,8 +253,9 @@
 
 
         <div class="tab-pane" id="transport">
-          <h3>WIP</h3>
+        <pre class="console"></pre>
         </div>
+
       </div>
     </div>
 

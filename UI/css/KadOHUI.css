@@ -224,5 +224,23 @@
         display: table-header-group;
       }
 
+      /** Transpprt **/
 
+      #transport .console {
+        height: 530px;
+        overflow: auto;
+      }
+
+
+      .raw {
+        margin-bottom: 10px;
+      }
+
+      .in {
+        color: red;
+      }
+
+      .out {
+        color: green;
+      }
       

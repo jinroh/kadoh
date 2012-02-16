@@ -14,6 +14,7 @@
   <script type="text/javascript" src="UI/js/routing.js"></script>
   <script type="text/javascript" src="UI/js/reactor.js"></script>
   <script type="text/javascript" src="UI/js/node.js"></script>
+  <script type="text/javascript" src="UI/js/transport.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
@@ -60,6 +61,8 @@
   routing = new KadOHui.Routing(node._routingTable, '#routing-table');
   reactor = new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
   new KadOHui.Node(node, '#node')
+
+  new KadOHui.Transport(node._reactor._transport, '#transport>pre');
 
   node._reactor.on('connected', function(iam) {
     $('#info').empty().append('<h3>'+iam+' / <small><a href="#" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>')
@@ -223,7 +226,7 @@
 
 
         <div class="tab-pane" id="transport">
-          <h3>WIP</h3>
+        <pre class="console"></pre>
         </div>
       </div>
     </div>
