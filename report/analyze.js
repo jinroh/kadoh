@@ -38,10 +38,10 @@ print = function(type, value) {
   console.log();
 }
 
-print("iterFind", "time");
-print("iterFind", "reached");
-print("iterFind", "queries");
-print("iterFind", "closest");
+print("join", "time");
+print("join", "reached");
+print("join", "queries");
+print("join", "closest");
 
 print("iterFind", "time");
 print("iterFind", "reached");

@@ -495,7 +495,7 @@ In addition to common debugging tools for browser ([Chrome dev tools](http://www
 
 One of the main difficulty when implementing a distributed application like DHTs is to test the proper functioning of the system. We established two practical ways for analyzing the behavior of our application in *real* cases : connecting to an existing DHT (*Mainline*) and launching our own DHT using the power of cloud computing.
 
-## Testing process
+## Experiment process
 
 ### Mainline DHT
 
@@ -523,13 +523,45 @@ Bots connect and join the DHT by using spawning pools which are individual node.
 
 ![EC2](images/ec2.png)
 
-To have an efficient power of calculation, we have been able to use [Amazon EC2][ec2] instances. We ran up to 3 *huge* instances to run 4000 bots. Because we didn't want to spam community servers, we dedicated a medium instance attached to an elastic IP to run our own XMPP Server using [ejabberd].
+To have an efficient power of calculation, we have been able to use [Amazon EC2][ec2] instances. We ran up to 2 *huge* instances (20 EC2 Compute Units and 7 GB of memory each) to run 4000 bots. Because we didn't want to spam community servers, we dedicated a medium instance (2 ECU and 1.7GB of memory) attached to an elastic IP to run our own XMPP Server using [ejabberd].
 
 [poisson]: http://en.wikipedia.org/wiki/Poisson_process
 [ec2]: http://aws.amazon.com/
 [ejabberd]: http://www.ejabberd.im/
 
+## Benchmarking
+
+To gather testing data on the DHT simulation, we applied a benchmark process that run a sequence of determined actions on different devices desktop browsers (Chrome and Firefox) and mobile devices (iPhone since this is the main device we have at our disposal) on different type of networks (3G and WiFi).
+
+The benchmark process consists in a `join` procedure followed by iterative find processes :
+
+  - 5 `iterativeFindValue` on values that are not published on the DHT, these processes won't succeed and correspond to a deep search on the network
+  - 5 `iterativeFindValue` on values we know are already published on the DHT, here we intent to see how many steps (hops) does it takes we reach to searched value
+
+For each procedure, we record these metrics :
+
+  - full time that has taken the process
+  - total number of hops
+  - total number of queries
+  - logarithm to base 2 of the `XOR` distance between the closest reached peer and the target value
+
+We ran these benchmarks on different sized DHT since our main goal is to compare the behavior of the application as the DHT grows. In fact, we increased step by step the size of the DHT by launching by hand new bot pools and EC2 instances. Like this we hope to analyze the scalability of the system.
+
 ## Results
+
+<p class="warning">The results shown in the present report are **very** arguable and shall be updated as they doesn't reflect our goals. We present them for the reader to better understand our testing protocol and discuss the difficulty of testing such applications</div>
+
+The main difficulty to analyze our DHTs was to have a constant environment parameters at each step of the grows. However this proved difficult because we sometimes reached the limit of capacity on some instances without realizing it immediately, or seeing where the problem came from, which has had serious impacts on the metrics.
+
+We want to discuss here what we plan to mitigate these side effects :
+
+  - we rely on a single XMPP server on a medium sized instance which doesn't scale up to 4000 nodes simultaneously, we still have to deploy one or more other servers on a bigger instances
+  - we also reached the limits of DHT Spawner's extra large instances, as a consequence we shall rely on more instances and limit the number of bots spawned on each to around 2000
+
+![time](images/results_01.png)
+![hops](images/results_02.png)
+![queries](images/results_03.png)
+![closest](images/results_04.png)
 
 # Conclusions
 
@@ -576,6 +608,8 @@ The [WebRTC] initiative aims at enabling Real Time Communication to browsers thr
 This technology is still in [early stages of its development][webrtc-draft], it is only available in the development build of Chrome. The draft paper from the W3C group specify a *[data stream]* object to support raw data exchange between peers, using a reliable or non-reliable channels. This new technology may be a huge advantage for KadOH to either connect to XMPP servers directly through TCP or even make direct connections between peers using both TCP and UDP sockets.
 
 <hr />
+
+
 
 [WebRTC]: http://www.webrtc.org/
 [webrtc-draft]: http://dev.w3.org/2011/webrtc/editor/webrtc.html

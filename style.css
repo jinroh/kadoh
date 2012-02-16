@@ -38,6 +38,16 @@ p{
 margin:1em 0;
 }
 
+.warning{
+color: #B94A48;
+padding: 1em;
+background-color: #F2DEDE;
+border-color: #EED3D7;
+border-radius: 5px;
+-moz-border-radius: 5px;
+-wekit-border-radius: 5px;
+}
+
 img{
 max-width:100%;
 }

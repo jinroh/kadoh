@@ -117,13 +117,15 @@
 <li>
 <a href="#evaluation">Evaluation</a><ul>
 <li>
-<a href="#testing-process">Testing process</a><ul>
+<a href="#experiment-process">Experiment process</a><ul>
 <li>
 <a href="#mainline-dht">Mainline DHT</a></li>
 <li>
 <a href="#dht-simulation">DHT Simulation</a></li>
 </ul>
 </li>
+<li>
+<a href="#benchmarking">Benchmarking</a></li>
 <li>
 <a href="#results">Results</a></li>
 </ul>
@@ -643,8 +645,8 @@
 <h1>Evaluation</h1>
 
 <p>One of the main difficulty when implementing a distributed application like DHTs is to test the proper functioning of the system. We established two practical ways for analyzing the behavior of our application in <em>real</em> cases : connecting to an existing DHT (<em>Mainline</em>) and launching our own DHT using the power of cloud computing.</p>
-<section id="testing-process">
-<h2>Testing process</h2>
+<section id="experiment-process">
+<h2>Experiment process</h2>
 <section id="mainline-dht">
 <h3>Mainline DHT</h3>
 
@@ -669,11 +671,50 @@
 
 <p><img src="images/ec2.png" alt="EC2"/></p>
 
-<p>To have an efficient power of calculation, we have been able to use <a href="http://aws.amazon.com/">Amazon EC2</a> instances. We ran up to 3 <em>huge</em> instances to run 4000 bots. Because we didn&#39;t want to spam community servers, we dedicated a medium instance attached to an elastic IP to run our own XMPP Server using <a href="http://www.ejabberd.im/">ejabberd</a>.</p>
+<p>To have an efficient power of calculation, we have been able to use <a href="http://aws.amazon.com/">Amazon EC2</a> instances. We ran up to 2 <em>huge</em> instances (20 EC2 Compute Units and 7 GB of memory each) to run 4000 bots. Because we didn&#39;t want to spam community servers, we dedicated a medium instance (2 ECU and 1.7GB of memory) attached to an elastic IP to run our own XMPP Server using <a href="http://www.ejabberd.im/">ejabberd</a>.</p>
 </section>
+</section>
+<section id="benchmarking">
+<h2>Benchmarking</h2>
+
+<p>To gather testing data on the DHT simulation, we applied a benchmark process that run a sequence of determined actions on different devices desktop browsers (Chrome and Firefox) and mobile devices (iPhone since this is the main device we have at our disposal) on different type of networks (3G and WiFi).</p>
+
+<p>The benchmark process consists in a <code>join</code> procedure followed by iterative find processes :</p>
+
+<ul>
+<li>5 <code>iterativeFindValue</code> on values that are not published on the DHT, these processes won&#39;t succeed and correspond to a deep search on the network</li>
+<li>5 <code>iterativeFindValue</code> on values we know are already published on the DHT, here we intent to see how many steps (hops) does it takes we reach to searched value</li>
+</ul>
+
+<p>For each procedure, we record these metrics :</p>
+
+<ul>
+<li>full time that has taken the process</li>
+<li>total number of hops</li>
+<li>total number of queries</li>
+<li>logarithm to base 2 of the <code>XOR</code> distance between the closest reached peer and the target value</li>
+</ul>
+
+<p>We ran these benchmarks on different sized DHT since our main goal is to compare the behavior of the application as the DHT grows. In fact, we increased step by step the size of the DHT by launching by hand new bot pools and EC2 instances. Like this we hope to analyze the scalability of the system.</p>
 </section>
 <section id="results">
 <h2>Results</h2>
+
+<p><p class="warning">The results shown in the present report are <strong>very</strong> arguable and shall be updated as they doesn&#39;t reflect our goals. We present them for the reader to better understand our testing protocol and discuss the difficulty of testing such applications</div></p>
+
+<p>The main difficulty to analyze our DHTs was to have a constant environment parameters at each step of the grows. However this proved difficult because we sometimes reached the limit of capacity on some instances without realizing it immediately, or seeing where the problem came from, which has had serious impacts on the metrics.</p>
+
+<p>We want to discuss here what we plan to mitigate these side effects :</p>
+
+<ul>
+<li>we rely on a single XMPP server on a medium sized instance which doesn&#39;t scale up to 4000 nodes simultaneously, we still have to deploy one or more other servers on a bigger instances</li>
+<li>we also reached the limits of DHT Spawner&#39;s extra large instances, as a consequence we shall rely on more instances and limit the number of bots spawned on each to around 2000</li>
+</ul>
+
+<p><img src="images/results_01.png" alt="time"/><br/>
+<img src="images/results_02.png" alt="hops"/><br/>
+<img src="images/results_03.png" alt="queries"/><br/>
+<img src="images/results_04.png" alt="closest"/></p>
 </section>
 </section>
 <section id="conclusions">
