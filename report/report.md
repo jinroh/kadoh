@@ -45,7 +45,7 @@ Our conclusions took time to mature as they were elaborated throughout the devel
 
 ## Javascript
 
-At first stages of our development, we had to choose between developing our application in native programming, or using web technologies. Native applications have the advantage to perform very well and to have access to all features of the device. However, they are not standardized and rarely supported by all devices in the same time.
+At first stages of our development, we had to choose between developing our application in native programming, or using web technologies. Native applications have the advantage to perform very well and to have access to all features of the device, like persistent storing of good amount of data. However, they are not standardized and rarely supported by all devices in the same time.
 
 We decided to use Javascript because it has many advantages to develop network oriented mobile applications. In fact, thanks to the youth and freshness of most smartphone browsers, mobiles are even more attractive than desktops to write platform-independent web-applications that work out-of-the-box. Besides, the application becomes usable in *all* modern desktop browsers and in *any* frameworks embedding a Javascript Virtual Machine.
 
@@ -376,27 +376,26 @@ The `iterativeLookup` object is then used in different iterative research proces
 
 #### Public API
 
-Since *Node* is the central parts of our implementation, it exposes the public API.
+Since *Node* is the central parts of our implementation, it exposes the public API. This interface is the starting point to build an application based on KadOH.
 
 ```js
 node = new KadOH.Node(id, options)
 ```
 
-This is how instantiate a Node where `id` is the desired node ID and `options` a set of initialization options such as JabberID and password to connect to XMPP service or the addresses of the bootstraps.
+This is how instantiate a Node where `id` is the desired node ID (not necessary) and `options` a set of initialization options such as JabberID and password to connect to XMPP service, the addresses of the bootstraps or even the transport to use.
 
 ```js
-node.connect();
-node.once('connected', function() {
+node.connect(function() {
   node.join();
 });
 ```
 
-When the `connect` method is called, the [transport](#transport) connects. Once connected the `join` method shall be called to start a join process with the bootstraps as first contacts.
+When the `connect` method is called, the [transport](#transport) connects, the node is able to join the DHT. Once connected the callback function given in parameter is called. In general, this is where the `join` method shall be called to start a joining process using the bootstraps as starting points. This method also takes a callback function as an argument called when the joining process is completed.
 
-Two methods are available to interact with values on the network :
+After having join the DHT, the `node` object basically works like a hash table with two simple methods to store and retrieve data from the DHT. Here is how these two methods are implemented :
 
   - the `put` method allows to publish a value on the network associated to the given key :
-  
+
 ```js
 node.put('0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33', 'Hello world !');
 ```
@@ -408,6 +407,8 @@ node.get('62cdb7020ff920e5aa642c3d4066950dd1f01f4d', function(value) {
   alert(value);
 });
 ```
+
+This is the basic API of the Node object, however it contains many more *low-level* functions, detailed in the documentation, to access the bare techniques to interact with the DHT.
 
 #### Bootstrap
 
@@ -424,7 +425,6 @@ Many tools and techniques have helped us to improve our productivity and efficie
 All these tools come from the *Open Source* community. Also, we think it is important to express how did we use them and sometimes help their development.
 
 ## Node.js
-
 
 We quickly realized the necessity of developing both client-side and server-side programs to test our implementation. We also chose to use Javascript in all our technology stack to simplify the development. [Node.js](http://nodejs.org/) is a server-side Javascript execution environment that perfectly fitted our need, and even anticipated the future ones.
 
@@ -507,10 +507,14 @@ To have an efficient power of calculation, we have been able to use [Amazon EC2]
 
 ## Results
 
-# Future work
+# Conclusion
+
+- Applications
+
+## Future work
 
 - Pending features : session recovery, ...
+- WebRTC
 - Issues
-- Applications
 
 [kad_paper]: http://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf "Kademlia: A Peer-to-Peer Information System Based on the XOR Metric, Petar Maymounkov and David Mazières, 2002"

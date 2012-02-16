@@ -44,7 +44,7 @@ class SyntaxRenderer < Redcarpet::Render::HTML
     else
       if (@rlevel - level >= 0)
         header << "</section>\n" * (@rlevel - level + 1)
-        @toc << "</li>\n" + "</ul>\n</li>\n" * (@rlevel - level)
+        @toc << "</li>\n" + "</ul>\n</li>\n" * (@rlevel - level) unless @toc.empty?
       else
         @toc << "<ul>\n" + "<li>\n<ul>\n" * (level - @rlevel - 1)
       end
@@ -78,7 +78,7 @@ class SyntaxRenderer < Redcarpet::Render::HTML
   end
 
   def toc
-    '<nav id="toc"><ul>' + @toc + '</ul></nav>'
+    "<nav id=\"toc\"><ul>\n#{@toc}\n</ul></nav>"
   end
 end
 

@@ -7,7 +7,7 @@
 </head>
 <body>
 <header>
-<nav id="toc"><ul></li>
+<nav id="toc"><ul>
 <li>
 <a href="#introduction">Introduction</a></li>
 <li>
@@ -125,7 +125,10 @@
 </ul>
 </li>
 <li>
-<a href="#future-work">Future work</a></ul></nav>
+<a href="#conclusion">Conclusion</a><ul>
+<li>
+<a href="#future-work">Future work</a>
+</ul></nav>
 </header>
 <section id="title">
 <h1>Design and testing of a mobile DHT</h1>
@@ -181,7 +184,7 @@
 <section id="javascript">
 <h2>Javascript</h2>
 
-<p>At first stages of our development, we had to choose between developing our application in native programming, or using web technologies. Native applications have the advantage to perform very well and to have access to all features of the device. However, they are not standardized and rarely supported by all devices in the same time.</p>
+<p>At first stages of our development, we had to choose between developing our application in native programming, or using web technologies. Native applications have the advantage to perform very well and to have access to all features of the device, like persistent storing of good amount of data. However, they are not standardized and rarely supported by all devices in the same time.</p>
 
 <p>We decided to use Javascript because it has many advantages to develop network oriented mobile applications. In fact, thanks to the youth and freshness of most smartphone browsers, mobiles are even more attractive than desktops to write platform-independent web-applications that work out-of-the-box. Besides, the application becomes usable in <em>all</em> modern desktop browsers and in <em>any</em> frameworks embedding a Javascript Virtual Machine.</p>
 
@@ -510,22 +513,21 @@
 <section id="public-api">
 <h4>Public API</h4>
 
-<p>Since <em>Node</em> is the central parts of our implementation, it exposes the public API.</p>
+<p>Since <em>Node</em> is the central parts of our implementation, it exposes the public API. This interface is the starting point to build an application based on KadOH.</p>
 <div class="highlight"><pre><span class="nx">node</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">KadOH</span><span class="p">.</span><span class="nx">Node</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
 </pre>
 </div>
 
-<p>This is how instantiate a Node where <code>id</code> is the desired node ID and <code>options</code> a set of initialization options such as JabberID and password to connect to XMPP service or the addresses of the bootstraps.</p>
-<div class="highlight"><pre><span class="nx">node</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
-<span class="nx">node</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="s1">&#39;connected&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<p>This is how instantiate a Node where <code>id</code> is the desired node ID (not necessary) and <code>options</code> a set of initialization options such as JabberID and password to connect to XMPP service, the addresses of the bootstraps or even the transport to use.</p>
+<div class="highlight"><pre><span class="nx">node</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
   <span class="nx">node</span><span class="p">.</span><span class="nx">join</span><span class="p">();</span>
 <span class="p">});</span>
 </pre>
 </div>
 
-<p>When the <code>connect</code> method is called, the <a href="#transport">transport</a> connects. Once connected the <code>join</code> method shall be called to start a join process with the bootstraps as first contacts.</p>
+<p>When the <code>connect</code> method is called, the <a href="#transport">transport</a> connects, the node is able to join the DHT. Once connected the callback function given in parameter is called. In general, this is where the <code>join</code> method shall be called to start a joining process using the bootstraps as starting points. This method also takes a callback function as an argument called when the joining process is completed.</p>
 
-<p>Two methods are available to interact with values on the network :</p>
+<p>After having join the DHT, the <code>node</code> object basically works like a hash table with two simple methods to store and retrieve data from the DHT. Here is how these two methods are implemented :</p>
 
 <ul>
 <li>the <code>put</code> method allows to publish a value on the network associated to the given key :</li>
@@ -542,6 +544,8 @@
 <span class="p">});</span>
 </pre>
 </div>
+
+<p>This is the basic API of the Node object, however it contains many more <em>low-level</em> functions, detailed in the documentation, to access the bare techniques to interact with the DHT.</p>
 </section>
 <section id="bootstrap">
 <h4>Bootstrap</h4>
@@ -648,13 +652,19 @@
 <h2>Results</h2>
 </section>
 </section>
+<section id="conclusion">
+<h1>Conclusion</h1>
+
+<ul>
+<li>Applications</li>
+</ul>
 <section id="future-work">
-<h1>Future work</h1>
+<h2>Future work</h2>
 
 <ul>
 <li>Pending features : session recovery, ...</li>
+<li>WebRTC</li>
 <li>Issues</li>
-<li>Applications</li>
 </ul>
 </body>
 </html>
