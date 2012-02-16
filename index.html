@@ -11,17 +11,11 @@
 <li>
 <a href="#introduction">Introduction</a></li>
 <li>
-<a href="#kademlia-principles">Kademlia principles</a><ul>
-<li>
-<ul>
+<a href="#kademlia-particularities">Kademlia particularities</a><ul>
 <li>
 <a href="#routing">Routing</a></li>
 <li>
-<a href="#remote-procedure-calls">Remote Procedure Calls</a></li>
-<li>
-<a href="#iterative-lookup">Iterative Lookup</a></li>
-</ul>
-</li>
+<a href="#parallel-iterative-lookup">Parallel iterative lookup</a></li>
 </ul>
 </li>
 <li>
@@ -158,14 +152,16 @@
 
 <p>Also, only depending on web based technologies allows <em>KadOH</em> to be the building block of new decentralized and easily deployed web applications. As it is also very experimental, we made <em>KadOH</em> highly extensible and modular to easily anticipate <a href="#future-work">new coming web technologies</a>.</p>
 </section>
-<section id="kademlia-principles">
-<h1>Kademlia principles</h1>
+<section id="kademlia-particularities">
+<h1>Kademlia particularities</h1>
 
 <p>Kademlia is a Distributed Hash Table (DHT) algorithm described in <em><a href="http://pdos.csail.mit.edu/%7Epetar/papers/maymounkov-kademlia-lncs.pdf" title="Kademlia: A Peer-to-Peer Information System Based on the XOR Metric, Petar Maymounkov and David Mazières, 2002">Kademlia: A Peer-to-peer information system based on the XOR Metric</a></em> and designed by Petar Maymounkov and David Mazières in 2002. Nowadays, Kademlia is used in particular for file sharing by most eMule and BitTorrent clients as part of the Mainline protocol.</p>
 
-<p>The algorithm stores <em>(key, value)</em> tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.</p>
+<p>Like for other DHT (<a href="http://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord</a>), the algorithm stores <em>(key, value)</em> tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.</p>
+
+<p>Kademlia algorithm is different from other DHTs in by two particularities : the knowledge of the network of each node and the iterative look up process.</p>
 <section id="routing">
-<h3>Routing</h3>
+<h2>Routing</h2>
 
 <p>Each peer has a partial knowledge of the other peers connected to the DHT, that allows it to route the requests of others. However this knowledge is more accurate in the close space.</p>
 
@@ -174,15 +170,11 @@
 <p><img src="images/kbuckets.png" alt="KBuckets"/></p>
 
 <p>Each time a peer is successfully contacted or contacts us, it is added in the routing table and sorted in the right K-bucket.</p>
+</section>
+<section id="parallel-iterative-lookup">
+<h2>Parallel iterative lookup</h2>
 
-<p><a href="http://www.daimi.au.dk/%7Ebouvin/dP2P/2006/lectures/03/">http://www.daimi.au.dk/~bouvin/dP2P/2006/lectures/03/</a></p>
-</section>
-<section id="remote-procedure-calls">
-<h3>Remote Procedure Calls</h3>
-</section>
-<section id="iterative-lookup">
-<h3>Iterative Lookup</h3>
-</section>
+<p>A particularity of Kademlia is to parallelize multiple requests at each iteration of the iterative lookup process. This makes the algorithm tolerant to stale peers by overcoming them and therefore accelerates the look up.</p>
 </section>
 </section>
 <section id="approaches-and-choices">
