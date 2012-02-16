@@ -14,30 +14,6 @@ Accordingly, we had to come up with new ideas to get round these issues, and fin
 
 Also, only depending on web based technologies allows *KadOH* to be the building block of new decentralized and easily deployed web applications. As it is also very experimental, we made *KadOH* highly extensible and modular to easily anticipate [new coming web technologies](#future-work).
 
-# Kademlia particularities
-
-Kademlia is a Distributed Hash Table (DHT) algorithm described in _[Kademlia: A Peer-to-peer information system based on the XOR Metric][kad_paper]_ and designed by Petar Maymounkov and David Mazières in 2002. Nowadays, Kademlia is used in particular for file sharing by most eMule and BitTorrent clients as part of the Mainline protocol.
-
-Like for other DHT ([chord]), the algorithm stores _(key, value)_ tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.
-
-Kademlia algorithm is different from other DHTs in by two particularities : the knowledge of the network of each node and the iterative look up process.
-
-[chord]: http://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf
-
-## Routing
-
-Each peer has a partial knowledge of the other peers connected to the DHT, that allows it to route the requests of others. However this knowledge is more accurate in the close space.
-
-The knowledge of the network is provided by the routing table, where peers are grouped in K-buckets. Each K-bucket contains maximum K peers which distance with the actual peer is in a specific range. For instance, the first K-bucket, which contains the farther peers, have peers which distance is in ]2<sup>159</sup>, 2<sup>160</sup>]. The second one has range ]2<sup>159</sup>, 2<sup>158</sup>], and so on. Thus, the actual peer has more accurate knowledge of peers that are closer to him.
-
-![KBuckets](images/kbuckets.png)
-
-Each time a peer is successfully contacted or contacts us, it is added in the routing table and sorted in the right K-bucket.
-
-## Parallel iterative lookup
-
-A particularity of Kademlia is to parallelize multiple requests at each iteration of the iterative lookup process. This makes the algorithm tolerant to stale peers by overcoming them and therefore accelerates the look up.
-
 # Approaches and choices
 
 This section is intended to justify our main choices of development. These decisions are the result of our investigations and considerations on the sensitive issues of the project.
@@ -89,6 +65,30 @@ Even if we opted for this particular solution of XMPP, we implemented several ot
 [Strophe.js]: http://strophe.im/strophejs/ "An XMPP library for JavaScript"
 [prof_xmpp]: http://professionalxmpp.com/ "Professional XMPP Programming with JavaScript and jQuery, Jack Moffitt, 2010"
 [socket.io]: http://socket.io/
+
+# Kademlia particularities
+
+Kademlia is a Distributed Hash Table (DHT) algorithm described in _[Kademlia: A Peer-to-peer information system based on the XOR Metric][kad_paper]_ and designed by Petar Maymounkov and David Mazières in 2002. Nowadays, Kademlia is used in particular for file sharing by most eMule and BitTorrent clients as part of the Mainline protocol.
+
+Like for other DHT ([chord]), the algorithm stores _(key, value)_ tuples among a large number of peers and provide a process to retrieve a value given the associated key. It also provide a mean to keep the DHT consistent despite peers arrivals, departures, and failures. It is based on the XOR-metric distance on an ID space (mostly 160 bits long). Keys of values belongs to this ID space as well as the IDs of peers that are uniquely attributed to each one.
+
+Kademlia algorithm is different from other DHTs in by two particularities : the knowledge of the network of each node and the iterative look up process.
+
+[chord]: http://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf
+
+## Routing
+
+Each peer has a partial knowledge of the other peers connected to the DHT, that allows it to route the requests of others. However this knowledge is more accurate in the close space.
+
+The knowledge of the network is provided by the routing table, where peers are grouped in K-buckets. Each K-bucket contains maximum K peers which distance with the actual peer is in a specific range. For instance, the first K-bucket, which contains the farther peers, have peers which distance is in ]2<sup>159</sup>, 2<sup>160</sup>]. The second one has range ]2<sup>159</sup>, 2<sup>158</sup>], and so on. Thus, the actual peer has more accurate knowledge of peers that are closer to him.
+
+![KBuckets](images/kbuckets.png)
+
+Each time a peer is successfully contacted or contacts us, it is added in the routing table and sorted in the right K-bucket.
+
+## Parallel iterative lookup
+
+A particularity of Kademlia is to parallelize multiple requests at each iteration of the iterative lookup process. This makes the algorithm tolerant to stale peers by overcoming them and therefore accelerates the look up.
 
 # Application Design
 
