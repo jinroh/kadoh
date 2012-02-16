@@ -1,8 +1,12 @@
-# Design and testing of a mobile DHT
+# *Kademlia over HTTP*, a Javascript framework bringing DHT to mobile applications
 
 *Abstract* — Peer to Peer protocols are widely used in desktop applications where they have been deployed and improved over the years. Particularly, the *Kademlia* protocol is used by most eMule and BitTorrent clients. However, mobile devices have never been supported by such softwares because of the difficulty to start peer to peer connections on cellular networks. As smartphones carry more and more personal informations, they should take advantage of decentralized DHTs with no central point of control. Therefore, new mobile applications could go beyond file sharing while protecting these critical data. In this report, we will introduce how we designed a full *Javascript* implementation of the Kademlia DHT protocol named *KadOH* – for *Kademlia over HTTP* – working on both desktop and mobile browsers. Firstly, we justify our technology choices and development architecture, and secondly, we evaluate the system on medium scale deployments.
 
+*Acknowledgments* – We would like to thank **[Dr. Tudor Dumitraş][tudor]**, who gave us the honor to work with him and always made available his support.
+
 **Alexandre Lachèze** and **Pierre Guilleminot**
+
+[tudor]: http://www.ece.cmu.edu/~tdumitra/
 
 # Introduction
 
@@ -52,7 +56,7 @@ Even so, this infrastructure was really interesting because we used those proxie
 
 The main goal was to depend on an existing, distributed and scalable infrastructure. This is why we chose the XMPP protocol to establish peer to peer connections. XMPP is a widely used open standard to exchange XML based messages between peers. Even though XMPP has a client-server architecture, it meets many of our constraints since it is decentralized thanks to its open protocol and server to server communications. Moreover, many XMPP servers are freely available over the Internet, and this protocol is used by large instant messaging servers, like *Google Talk* or *Jabber.org*.
 
-The XMPP protocol uses a stateful TCP channel to connect server with clients, which is not feasible from a browser. But the [BOSH] — *Bidirectional-streams Over Synchronous HTTP* — extension makes it possible to connect any browser to any XMPP server through synchronous HTTP requests.
+The XMPP protocol uses a stateful TCP channel to connect server with clients, which is not feasible from a browser. But the [BOSH] — *Bidirectional-streams Over Synchronous HTTP* — extension makes it possible to connect any browser to any XMPP server through synchronous HTTP requests. In consequence, all connections started from the browser using BOSH are sent through the HTTP port 80 which ease the NAT traversing unlike the standard XMPP port 5222.
 
 ![Decentralized XMPP](images/bosh.png)
 
@@ -529,12 +533,53 @@ To have an efficient power of calculation, we have been able to use [Amazon EC2]
 
 # Conclusions
 
-- Applications
+This project is still in an experimental stage but introduces new promising concepts to work with DHTs. We have been able to test a full-stack application running over XMPP and Javascript on mobile devices. We also provide *KadOH* as a complete open-source framework to implement web applications based on Kademlia for mobile and desktops browsers, but also node.js clients.
+
+With DHT technologies, it becomes possible to deploy complete applications that scale at a very low cost. Also, bringing this technology to the web may interest some developers.
+
+## Discussion
+
+As we believe to the power of DHTs in a mobile environment, we also think it may be difficult to reach a stable DHT, with a reliable persistence of contents, by depending only on mobile users whose behaviors are prone to a lot of instability.
+
+We are also convinced that our tests need further improvements to really show the good functioning of KadOH in a 100% mobile environment. An idea could be to think of a "*real-life testing*" by making lots of people connecting to a DHT using their mobile phones. This experiment could take advantage of the viral effect of social networks by encouraging people to connect as part of P2P game we could set up.
+
+Finally, we think using DHT on mobile networks may introduce new usages and applications which wouldn't need to provide a persistent and reliable storage. As an example, it is possible to think applications where clients would connect to centralized servers for some critical operations but still would benefit from a DHT for scalability reasons.
 
 ## Future work
 
-- Pending features : session recovery, ...
-- WebRTC
-- Issues
+In this final section, we want to introduce some future work we have in mind relating to what is still missing in KadOH and what new coming technologies could be interesting to look after.
+
+### Missing components
+
+KadOH still doesn't implement properly a session recovery system. This part is really important to allow users to reconnect to the DHT by reusing the same ID and recovering their previously saved routing table. This part shall be easy to finalize since we already have utility functions to export the routing table.
+
+The connectivity management of transports also needs further improvements. They need to be more robust, to support automated re-connection and error handling. This might be a critical point on mobile devices where we experimented issues to maintain a good connectivity.
+
+Finally, security might be a critical point of our system. Indeed, it is still vulnerable to common attacks against DHTs, like the sybil attacks where attackers take control of a part of the ID space. The application itself also needs a security review. Even if all requests are sanitized and the application is pretty stable, since our application affect key components of the browser like the local storage, it is important to focus on these issues in a near future.
+
+### Promising technologies
+
+During our development, we noticed two technologies that could be very interesting for the future of KadOH.
+
+#### WebWorkers
+
+*[WebWorkers]* allows web developers to run specific parts of their applications in a separate threads. This techniques could be really interesting for optimizing the global application. In particular the [Reactor](#reactor-and-rpcs) and the [RoutingTable](#routing-table) objects would benefit from a separate thread. Indeed these objects handle most of the I/O and computations of the whole program.
+
+Since the communication between threads is event-driven, like all the main parts of KadOH, it wouldn't difficult to turn these objects into webworkers.
+
+[WebWorkers]: https://developer.mozilla.org/En/Using_web_workers
+
+#### WebRTC
+
+The [WebRTC] initiative aims at enabling Real Time Communication to browsers through a Javascript API. As part of this project, it is possible to initialize [peer connections] where all NAT and firewall traversal techniques are abstracted.
+
+This technology is still in [early stages of its development][webrtc-draft], it is only available in the development build of Chrome. The draft paper from the W3C group specify a *[data stream]* object to support raw data exchange between peers, using a reliable or non-reliable channels. This new technology may be a huge advantage for KadOH to either connect to XMPP servers directly through TCP or even make direct connections between peers using both TCP and UDP sockets.
+
+<hr />
+
+[WebRTC]: http://www.webrtc.org/
+[webrtc-draft]: http://dev.w3.org/2011/webrtc/editor/webrtc.html
+[peer connections]: http://dev.w3.org/2011/webrtc/editor/webrtc.html#peer-to-peer-connections
+[data stream]: http://dev.w3.org/2011/webrtc/editor/webrtc.html#the-data-stream
 
 [kad_paper]: http://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf "Kademlia: A Peer-to-Peer Information System Based on the XOR Metric, Petar Maymounkov and David Mazières, 2002"

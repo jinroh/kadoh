@@ -1,0 +1,2359 @@
+{
+"250" : {
+"chrome": {
+    "join": [
+        {
+            "time": 3167,
+            "reached": 11,
+            "queries": 20,
+            "closest": 152
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2004,
+            "reached": 9,
+            "queries": 22,
+            "closest": 157
+        },
+        {
+            "time": 1295,
+            "reached": 2,
+            "queries": 6,
+            "closest": 152
+        },
+        {
+            "time": 601,
+            "reached": 1,
+            "queries": 3,
+            "closest": 159
+        },
+        {
+            "time": 1299,
+            "reached": 2,
+            "queries": 10,
+            "closest": 157
+        },
+        {
+            "time": 502,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 3219,
+            "reached": 11,
+            "queries": 21,
+            "closest": 150
+        },
+        {
+            "time": 2253,
+            "reached": 10,
+            "queries": 12,
+            "closest": 153
+        },
+        {
+            "time": 2855,
+            "reached": 9,
+            "queries": 11,
+            "closest": 153
+        },
+        {
+            "time": 3572,
+            "reached": 10,
+            "queries": 12,
+            "closest": 153
+        },
+        {
+            "time": 2897,
+            "reached": 13,
+            "queries": 13,
+            "closest": 153
+        }
+    ]
+},
+
+"firefox": {
+    "join": [
+        {
+            "time": 2990,
+            "reached": 10,
+            "queries": 14,
+            "closest": 152
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 488,
+            "reached": 1,
+            "queries": 3,
+            "closest": 153
+        },
+        {
+            "time": 1162,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 1009,
+            "reached": 3,
+            "queries": 13,
+            "closest": 157
+        },
+        {
+            "time": 468,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 9428,
+            "reached": 23,
+            "queries": 28,
+            "closest": 152
+        },
+        {
+            "time": 2106,
+            "reached": 10,
+            "queries": 12,
+            "closest": 150
+        },
+        {
+            "time": 1693,
+            "reached": 8,
+            "queries": 8,
+            "closest": 154
+        },
+        {
+            "time": 2641,
+            "reached": 11,
+            "queries": 13,
+            "closest": 152
+        },
+        {
+            "time": 1852,
+            "reached": 9,
+            "queries": 9,
+            "closest": 154
+        }
+    ]
+},
+
+"iphone-3g": {
+    "join": [
+        {
+            "time": 3581,
+            "reached": 9,
+            "queries": 11,
+            "closest": 152
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1939,
+            "reached": 2,
+            "queries": 8,
+            "closest": 159
+        },
+        {
+            "time": 1816,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 741,
+            "reached": 1,
+            "queries": 3,
+            "closest": 158
+        },
+        {
+            "time": 2084,
+            "reached": 2,
+            "queries": 6,
+            "closest": 156
+        },
+        {
+            "time": 1179,
+            "reached": 1,
+            "queries": 3,
+            "closest": 153
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 3298,
+            "reached": 10,
+            "queries": 12,
+            "closest": 154
+        },
+        {
+            "time": 2761,
+            "reached": 11,
+            "queries": 11,
+            "closest": 148
+        },
+        {
+            "time": 4567,
+            "reached": 21,
+            "queries": 21,
+            "closest": 154
+        },
+        {
+            "time": 4212,
+            "reached": 11,
+            "queries": 13,
+            "closest": 150
+        },
+        {
+            "time": 3675,
+            "reached": 9,
+            "queries": 13,
+            "closest": 152
+        }
+    ]
+},
+
+"iphone-wifi": {
+    "join": [
+        {
+            "time": 5409,
+            "reached": 20,
+            "queries": 26,
+            "closest": 152
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1600,
+            "reached": 2,
+            "queries": 6,
+            "closest": 157
+        },
+        {
+            "time": 1362,
+            "reached": 3,
+            "queries": 10,
+            "closest": 153
+        },
+        {
+            "time": 1481,
+            "reached": 4,
+            "queries": 16,
+            "closest": 155
+        },
+        {
+            "time": 1541,
+            "reached": 2,
+            "queries": 6,
+            "closest": 145
+        },
+        {
+            "time": 582,
+            "reached": 1,
+            "queries": 3,
+            "closest": 150
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 2998,
+            "reached": 10,
+            "queries": 12,
+            "closest": 152
+        },
+        {
+            "time": 2443,
+            "reached": 9,
+            "queries": 9,
+            "closest": 149
+        },
+        {
+            "time": 2065,
+            "reached": 9,
+            "queries": 9,
+            "closest": 151
+        },
+        {
+            "time": 3031,
+            "reached": 16,
+            "queries": 18,
+            "closest": 150
+        },
+        {
+            "time": 3967,
+            "reached": 24,
+            "queries": 26,
+            "closest": 152
+        }
+    ]
+}
+
+},
+
+"500":{
+"chrome": {
+    "join": [
+        {
+            "time": 2976,
+            "reached": 16,
+            "queries": 19,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 936,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 376,
+            "reached": 1,
+            "queries": 3,
+            "closest": 149
+        },
+        {
+            "time": 982,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 782,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 795,
+            "reached": 0,
+            "queries": 3,
+            "closest": null
+        },
+        {
+            "time": 2235,
+            "reached": 9,
+            "queries": 11,
+            "closest": 153
+        },
+        {
+            "time": 3292,
+            "reached": 13,
+            "queries": 17,
+            "closest": 152
+        },
+        {
+            "time": 2541,
+            "reached": 14,
+            "queries": 16,
+            "closest": 151
+        },
+        {
+            "time": 1510,
+            "reached": 8,
+            "queries": 8,
+            "closest": 150
+        }
+    ]
+},
+
+"firefox": {
+    "join": [
+        {
+            "time": 2568,
+            "reached": 13,
+            "queries": 15,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2075,
+            "reached": 4,
+            "queries": 12,
+            "closest": 152
+        },
+        {
+            "time": 1199,
+            "reached": 2,
+            "queries": 8,
+            "closest": 158
+        },
+        {
+            "time": 1602,
+            "reached": 3,
+            "queries": 9,
+            "closest": 153
+        },
+        {
+            "time": 1120,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 648,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 3320,
+            "reached": 19,
+            "queries": 19,
+            "closest": 151
+        },
+        {
+            "time": 3364,
+            "reached": 10,
+            "queries": 14,
+            "closest": 149
+        },
+        {
+            "time": 2430,
+            "reached": 9,
+            "queries": 11,
+            "closest": 148
+        },
+        {
+            "time": 9056,
+            "reached": 21,
+            "queries": 21,
+            "closest": 151
+        },
+        {
+            "time": 2523,
+            "reached": 15,
+            "queries": 15,
+            "closest": 150
+        }
+    ]
+},
+
+"iphone-3g": {
+    "join": [
+        {
+            "time": 5038,
+            "reached": 24,
+            "queries": 25,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1852,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 1886,
+            "reached": 2,
+            "queries": 6,
+            "closest": 156
+        },
+        {
+            "time": 2020,
+            "reached": 2,
+            "queries": 6,
+            "closest": 145
+        },
+        {
+            "time": 1144,
+            "reached": 1,
+            "queries": 3,
+            "closest": 152
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 3779,
+            "reached": 10,
+            "queries": 12,
+            "closest": 150
+        },
+        {
+            "time": 6150,
+            "reached": 12,
+            "queries": 24,
+            "closest": 152
+        },
+        {
+            "time": 1276,
+            "reached": 0,
+            "queries": 3,
+            "closest": null
+        },
+        {
+            "time": 4928,
+            "reached": 11,
+            "queries": 15,
+            "closest": 153
+        },
+        {
+            "time": 4227,
+            "reached": 11,
+            "queries": 13,
+            "closest": 146
+        }
+    ]
+},
+
+"iphone-wifi": {
+    "join": [
+        {
+            "time": 5773,
+            "reached": 19,
+            "queries": 30,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1974,
+            "reached": 3,
+            "queries": 11,
+            "closest": 155
+        },
+        {
+            "time": 1405,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 2395,
+            "reached": 9,
+            "queries": 21,
+            "closest": 156
+        },
+        {
+            "time": 1390,
+            "reached": 2,
+            "queries": 6,
+            "closest": 157
+        },
+        {
+            "time": 1451,
+            "reached": 2,
+            "queries": 6,
+            "closest": 150
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 2393,
+            "reached": 14,
+            "queries": 14,
+            "closest": 153
+        },
+        {
+            "time": 3515,
+            "reached": 9,
+            "queries": 13,
+            "closest": 147
+        },
+        {
+            "time": 8430,
+            "reached": 9,
+            "queries": 14,
+            "closest": 153
+        },
+        {
+            "time": 3128,
+            "reached": 9,
+            "queries": 11,
+            "closest": 151
+        },
+        {
+            "time": 2898,
+            "reached": 9,
+            "queries": 11,
+            "closest": 151
+        }
+    ]
+}
+},
+
+"750":
+{
+"chrome": {
+    "join": [
+        {
+            "time": 10269,
+            "reached": 14,
+            "queries": 25,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2352,
+            "reached": 2,
+            "queries": 10,
+            "closest": 158
+        },
+        {
+            "time": 2619,
+            "reached": 2,
+            "queries": 6,
+            "closest": 151
+        },
+        {
+            "time": 4600,
+            "reached": 3,
+            "queries": 11,
+            "closest": 145
+        },
+        {
+            "time": 1249,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 1287,
+            "reached": 0,
+            "queries": 3,
+            "closest": null
+        },
+        {
+            "time": 10220,
+            "reached": 20,
+            "queries": 24,
+            "closest": 152
+        },
+        {
+            "time": 17493,
+            "reached": 10,
+            "queries": 17,
+            "closest": 150
+        },
+        {
+            "time": 11016,
+            "reached": 11,
+            "queries": 19,
+            "closest": 147
+        },
+        {
+            "time": 15998,
+            "reached": 11,
+            "queries": 17,
+            "closest": 149
+        }
+    ]
+},
+
+"firefox": {
+    "join": [
+        {
+            "time": 6542,
+            "reached": 11,
+            "queries": 17,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 4252,
+            "reached": 5,
+            "queries": 16,
+            "closest": 153
+        },
+        {
+            "time": 2568,
+            "reached": 3,
+            "queries": 11,
+            "closest": 156
+        },
+        {
+            "time": 4318,
+            "reached": 4,
+            "queries": 18,
+            "closest": 146
+        },
+        {
+            "time": 2068,
+            "reached": 2,
+            "queries": 6,
+            "closest": 157
+        },
+        {
+            "time": 8527,
+            "reached": 2,
+            "queries": 6,
+            "closest": 153
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 9440,
+            "reached": 12,
+            "queries": 16,
+            "closest": 150
+        },
+        {
+            "time": 904,
+            "reached": 0,
+            "queries": 3,
+            "closest": null
+        },
+        {
+            "time": 10774,
+            "reached": 11,
+            "queries": 16,
+            "closest": 151
+        },
+        {
+            "time": 1165,
+            "reached": 0,
+            "queries": 3,
+            "closest": null
+        },
+        {
+            "time": 8320,
+            "reached": 17,
+            "queries": 19,
+            "closest": 148
+        }
+    ]
+},
+
+"iphone-3g": {
+    "join": [
+        {
+            "time": 22058,
+            "reached": 11,
+            "queries": 24,
+            "closest": 151
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2804,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        },
+        {
+            "time": 3184,
+            "reached": 1,
+            "queries": 3,
+            "closest": 158
+        },
+        {
+            "time": 4274,
+            "reached": 2,
+            "queries": 6,
+            "closest": 152
+        },
+        {
+            "time": 2436,
+            "reached": 1,
+            "queries": 3,
+            "closest": 158
+        },
+        {
+            "time": 1158,
+            "reached": 1,
+            "queries": 3,
+            "closest": 155
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 16596,
+            "reached": 16,
+            "queries": 20,
+            "closest": 152
+        },
+        {
+            "time": 15324,
+            "reached": 6,
+            "queries": 11,
+            "closest": 150
+        },
+        {
+            "time": 10820,
+            "reached": 10,
+            "queries": 12,
+            "closest": 152
+        },
+        {
+            "time": 11143,
+            "reached": 9,
+            "queries": 11,
+            "closest": 152
+        },
+        {
+            "time": 11620,
+            "reached": 14,
+            "queries": 18,
+            "closest": 150
+        }
+    ]
+},
+
+"iphone-wifi": {
+    "join": [
+        {
+            "time": 15701,
+            "reached": 10,
+            "queries": 19,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2346,
+            "reached": 1,
+            "queries": 3,
+            "closest": 158
+        },
+        {
+            "time": 4516,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 1101,
+            "reached": 1,
+            "queries": 3,
+            "closest": 158
+        },
+        {
+            "time": 1715,
+            "reached": 2,
+            "queries": 10,
+            "closest": 157
+        },
+        {
+            "time": 1500,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 11338,
+            "reached": 7,
+            "queries": 10,
+            "closest": 150
+        },
+        {
+            "time": 12792,
+            "reached": 14,
+            "queries": 22,
+            "closest": 151
+        },
+        {
+            "time": 15105,
+            "reached": 15,
+            "queries": 22,
+            "closest": 148
+        },
+        {
+            "time": 11376,
+            "reached": 6,
+            "queries": 11,
+            "closest": 151
+        },
+        {
+            "time": 10678,
+            "reached": 7,
+            "queries": 8,
+            "closest": 151
+        }
+    ]
+}
+},
+
+"1000":
+{
+"chrome": {
+    "join": [
+        {
+            "time": 12722,
+            "reached": 15,
+            "queries": 27,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1234,
+            "reached": 1,
+            "queries": 3,
+            "closest": 152
+        },
+        {
+            "time": 1397,
+            "reached": 1,
+            "queries": 3,
+            "closest": 155
+        },
+        {
+            "time": 2151,
+            "reached": 1,
+            "queries": 3,
+            "closest": 153
+        },
+        {
+            "time": 1628,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 11273,
+            "reached": 2,
+            "queries": 11,
+            "closest": 154
+        },
+        {
+            "time": 14123,
+            "reached": 24,
+            "queries": 39,
+            "closest": 153
+        },
+        {
+            "time": 14960,
+            "reached": 4,
+            "queries": 12,
+            "closest": 151
+        },
+        {
+            "time": 7003,
+            "reached": 0,
+            "queries": 3,
+            "closest": null
+        },
+        {
+            "time": 11161,
+            "reached": 4,
+            "queries": 10,
+            "closest": 152
+        }
+    ]
+},
+
+"firefox": {
+    "join": [
+        {
+            "time": 17931,
+            "reached": 12,
+            "queries": 26,
+            "closest": 151
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 3764,
+            "reached": 2,
+            "queries": 6,
+            "closest": 156
+        },
+        {
+            "time": 3779,
+            "reached": 2,
+            "queries": 9,
+            "closest": 155
+        },
+        {
+            "time": 5106,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 3922,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 4580,
+            "reached": 2,
+            "queries": 6,
+            "closest": 152
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 27139,
+            "reached": 12,
+            "queries": 27,
+            "closest": 150
+        },
+        {
+            "time": 15091,
+            "reached": 8,
+            "queries": 13,
+            "closest": 152
+        },
+        {
+            "time": 14172,
+            "reached": 10,
+            "queries": 16,
+            "closest": 145
+        },
+        {
+            "time": 16149,
+            "reached": 9,
+            "queries": 12,
+            "closest": 152
+        },
+        {
+            "time": 21141,
+            "reached": 18,
+            "queries": 31,
+            "closest": 151
+        }
+    ]
+},
+
+"iphone-3g": {
+    "join": [
+        {
+            "time": 18130,
+            "reached": 12,
+            "queries": 24,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 6192,
+            "reached": 2,
+            "queries": 6,
+            "closest": 156
+        },
+        {
+            "time": 7532,
+            "reached": 3,
+            "queries": 9,
+            "closest": 153
+        },
+        {
+            "time": 6501,
+            "reached": 3,
+            "queries": 11,
+            "closest": 153
+        },
+        {
+            "time": 2050,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        },
+        {
+            "time": 2592,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 18661,
+            "reached": 3,
+            "queries": 12,
+            "closest": 154
+        },
+        {
+            "time": 7012,
+            "reached": 0,
+            "queries": 3,
+            "closest": null
+        },
+        {
+            "time": 13466,
+            "reached": 11,
+            "queries": 18,
+            "closest": 152
+        },
+        {
+            "time": 15949,
+            "reached": 8,
+            "queries": 13,
+            "closest": 149
+        },
+        {
+            "time": 11352,
+            "reached": 6,
+            "queries": 12,
+            "closest": 147
+        }
+    ]
+},
+
+"iphone-wifi":{
+    "join": [
+        {
+            "time": 11050,
+            "reached": 9,
+            "queries": 15,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 957,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        },
+        {
+            "time": 9136,
+            "reached": 2,
+            "queries": 6,
+            "closest": 153
+        },
+        {
+            "time": 3258,
+            "reached": 2,
+            "queries": 6,
+            "closest": 153
+        },
+        {
+            "time": 1182,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 15377,
+            "reached": 9,
+            "queries": 15,
+            "closest": 151
+        },
+        {
+            "time": 15899,
+            "reached": 9,
+            "queries": 22,
+            "closest": 151
+        },
+        {
+            "time": 11207,
+            "reached": 11,
+            "queries": 15,
+            "closest": 152
+        },
+        {
+            "time": 12820,
+            "reached": 6,
+            "queries": 12,
+            "closest": 152
+        },
+        {
+            "time": 13221,
+            "reached": 15,
+            "queries": 26,
+            "closest": 149
+        }
+    ]
+}
+},
+
+"1500":
+{
+"chrome": {
+    "join": [
+        {
+            "time": 3571,
+            "reached": 10,
+            "queries": 14,
+            "closest": 152
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1037,
+            "reached": 2,
+            "queries": 6,
+            "closest": 152
+        },
+        {
+            "time": 519,
+            "reached": 1,
+            "queries": 3,
+            "closest": 157
+        },
+        {
+            "time": 1016,
+            "reached": 2,
+            "queries": 6,
+            "closest": 152
+        },
+        {
+            "time": 391,
+            "reached": 1,
+            "queries": 3,
+            "closest": 155
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 365,
+            "reached": 0,
+            "queries": 1,
+            "closest": null
+        },
+        {
+            "time": 2836,
+            "reached": 9,
+            "queries": 13,
+            "closest": 151
+        },
+        {
+            "time": 2404,
+            "reached": 12,
+            "queries": 14,
+            "closest": 151
+        },
+        {
+            "time": 388,
+            "reached": 0,
+            "queries": 1,
+            "closest": null
+        },
+        {
+            "time": 3025,
+            "reached": 12,
+            "queries": 16,
+            "closest": 148
+        }
+    ]
+},
+"firefox": {
+    "join": [
+        {
+            "time": 4818,
+            "reached": 13,
+            "queries": 31,
+            "closest": 152
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 489,
+            "reached": 1,
+            "queries": 3,
+            "closest": 157
+        },
+        {
+            "time": 380,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        },
+        {
+            "time": 2190,
+            "reached": 5,
+            "queries": 14,
+            "closest": 151
+        },
+        {
+            "time": 996,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 497,
+            "reached": 1,
+            "queries": 3,
+            "closest": 150
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 2968,
+            "reached": 8,
+            "queries": 14,
+            "closest": 153
+        },
+        {
+            "time": 2560,
+            "reached": 13,
+            "queries": 15,
+            "closest": 153
+        },
+        {
+            "time": 2491,
+            "reached": 10,
+            "queries": 14,
+            "closest": 151
+        },
+        {
+            "time": 4112,
+            "reached": 20,
+            "queries": 22,
+            "closest": 150
+        },
+        {
+            "time": 3659,
+            "reached": 20,
+            "queries": 24,
+            "closest": 151
+        }
+    ]
+},
+"iphone-3g": {
+    "join": [
+        {
+            "time": 3633,
+            "reached": 11,
+            "queries": 13,
+            "closest": 152
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2631,
+            "reached": 3,
+            "queries": 9,
+            "closest": 154
+        },
+        {
+            "time": 1835,
+            "reached": 2,
+            "queries": 5,
+            "closest": 153
+        },
+        {
+            "time": 1699,
+            "reached": 2,
+            "queries": 6,
+            "closest": 152
+        },
+        {
+            "time": 2600,
+            "reached": 2,
+            "queries": 6,
+            "closest": 153
+        },
+        {
+            "time": 2097,
+            "reached": 2,
+            "queries": 6,
+            "closest": 151
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 5681,
+            "reached": 13,
+            "queries": 20,
+            "closest": 154
+        },
+        {
+            "time": 3408,
+            "reached": 9,
+            "queries": 11,
+            "closest": 152
+        },
+        {
+            "time": 671,
+            "reached": 0,
+            "queries": 1,
+            "closest": null
+        },
+        {
+            "time": 3555,
+            "reached": 9,
+            "queries": 11,
+            "closest": 152
+        },
+        {
+            "time": 4693,
+            "reached": 22,
+            "queries": 24,
+            "closest": 152
+        }
+    ]
+},
+"iphone-wifi": {
+    "join": [
+        {
+            "time": 9340,
+            "reached": 5,
+            "queries": 13,
+            "closest": 152
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1923,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 655,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        },
+        {
+            "time": 533,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        },
+        {
+            "time": 2206,
+            "reached": 8,
+            "queries": 20,
+            "closest": 156
+        },
+        {
+            "time": 585,
+            "reached": 1,
+            "queries": 3,
+            "closest": 153
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 8709,
+            "reached": 10,
+            "queries": 18,
+            "closest": 152
+        },
+        {
+            "time": 2933,
+            "reached": 10,
+            "queries": 10,
+            "closest": 152
+        },
+        {
+            "time": 5003,
+            "reached": 17,
+            "queries": 19,
+            "closest": 152
+        },
+        {
+            "time": 3953,
+            "reached": 11,
+            "queries": 15,
+            "closest": 152
+        },
+        {
+            "time": 4452,
+            "reached": 10,
+            "queries": 18,
+            "closest": 151
+        }
+    ]
+}
+},
+
+"2000":
+{
+"chrome": {
+    "join": [
+        {
+            "time": 4582,
+            "reached": 13,
+            "queries": 26,
+            "closest": 153
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1675,
+            "reached": 4,
+            "queries": 13,
+            "closest": 155
+        },
+        {
+            "time": 1381,
+            "reached": 2,
+            "queries": 8,
+            "closest": 155
+        },
+        {
+            "time": 1059,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 1265,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 979,
+            "reached": 2,
+            "queries": 6,
+            "closest": 151
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 5968,
+            "reached": 16,
+            "queries": 18,
+            "closest": 151
+        },
+        {
+            "time": 3906,
+            "reached": 9,
+            "queries": 11,
+            "closest": 151
+        },
+        {
+            "time": 3130,
+            "reached": 19,
+            "queries": 21,
+            "closest": 152
+        },
+        {
+            "time": 3512,
+            "reached": 21,
+            "queries": 23,
+            "closest": 152
+        },
+        {
+            "time": 3749,
+            "reached": 19,
+            "queries": 21,
+            "closest": 151
+        }
+    ]
+},
+"firefox": {
+    "join": [
+        {
+            "time": 5371,
+            "reached": 13,
+            "queries": 25,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1166,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 1262,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 1772,
+            "reached": 5,
+            "queries": 19,
+            "closest": 153
+        },
+        {
+            "time": 1704,
+            "reached": 3,
+            "queries": 9,
+            "closest": 154
+        },
+        {
+            "time": 482,
+            "reached": 1,
+            "queries": 3,
+            "closest": 151
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 2187,
+            "reached": 8,
+            "queries": 10,
+            "closest": 153
+        },
+        {
+            "time": 3891,
+            "reached": 11,
+            "queries": 15,
+            "closest": 151
+        },
+        {
+            "time": 3582,
+            "reached": 21,
+            "queries": 23,
+            "closest": 148
+        },
+        {
+            "time": 2637,
+            "reached": 9,
+            "queries": 13,
+            "closest": 150
+        },
+        {
+            "time": 3320,
+            "reached": 10,
+            "queries": 16,
+            "closest": 151
+        }
+    ]
+},
+"iphone-3g": {
+    "join": [
+        {
+            "time": 6096,
+            "reached": 16,
+            "queries": 24,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2074,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 2286,
+            "reached": 2,
+            "queries": 6,
+            "closest": 150
+        },
+        {
+            "time": 849,
+            "reached": 1,
+            "queries": 3,
+            "closest": 154
+        },
+        {
+            "time": 1967,
+            "reached": 3,
+            "queries": 13,
+            "closest": 155
+        },
+        {
+            "time": 3502,
+            "reached": 4,
+            "queries": 14,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 5205,
+            "reached": 11,
+            "queries": 15,
+            "closest": 149
+        },
+        {
+            "time": 3751,
+            "reached": 11,
+            "queries": 11,
+            "closest": 151
+        },
+        {
+            "time": 5058,
+            "reached": 9,
+            "queries": 13,
+            "closest": 149
+        },
+        {
+            "time": 5961,
+            "reached": 18,
+            "queries": 24,
+            "closest": 151
+        },
+        {
+            "time": 4732,
+            "reached": 12,
+            "queries": 14,
+            "closest": 149
+        }
+    ]
+},
+"iphone-wifi" : {
+    "join": [
+        {
+            "time": 8663,
+            "reached": 14,
+            "queries": 23,
+            "closest": 151
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1582,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 2571,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 1934,
+            "reached": 3,
+            "queries": 17,
+            "closest": 154
+        },
+        {
+            "time": 3039,
+            "reached": 3,
+            "queries": 9,
+            "closest": 152
+        },
+        {
+            "time": 1251,
+            "reached": 2,
+            "queries": 5,
+            "closest": 151
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 3005,
+            "reached": 16,
+            "queries": 17,
+            "closest": 151
+        },
+        {
+            "time": 3088,
+            "reached": 9,
+            "queries": 11,
+            "closest": 149
+        },
+        {
+            "time": 4773,
+            "reached": 18,
+            "queries": 18,
+            "closest": 151
+        },
+        {
+            "time": 5260,
+            "reached": 13,
+            "queries": 21,
+            "closest": 151
+        },
+        {
+            "time": 4268,
+            "reached": 14,
+            "queries": 17,
+            "closest": 151
+        }
+    ]
+}
+},
+
+"3000":
+{
+"chrome": {
+    "join": [
+        {
+            "time": 9832,
+            "reached": 11,
+            "queries": 21,
+            "closest": 151
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2499,
+            "reached": 3,
+            "queries": 8,
+            "closest": 156
+        },
+        {
+            "time": 1003,
+            "reached": 2,
+            "queries": 9,
+            "closest": 154
+        },
+        {
+            "time": 2628,
+            "reached": 3,
+            "queries": 10,
+            "closest": 155
+        },
+        {
+            "time": 734,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 9418,
+            "reached": 11,
+            "queries": 17,
+            "closest": 152
+        },
+        {
+            "time": 8003,
+            "reached": 12,
+            "queries": 17,
+            "closest": 153
+        },
+        {
+            "time": 9158,
+            "reached": 17,
+            "queries": 21,
+            "closest": 149
+        },
+        {
+            "time": 1384,
+            "reached": 0,
+            "queries": 1,
+            "closest": null
+        },
+        {
+            "time": 8501,
+            "reached": 7,
+            "queries": 11,
+            "closest": 152
+        }
+    ]
+},
+"firefox": {
+    "join": [
+        {
+            "time": 9383,
+            "reached": 14,
+            "queries": 25,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1438,
+            "reached": 3,
+            "queries": 8,
+            "closest": 155
+        },
+        {
+            "time": 1229,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 1273,
+            "reached": 2,
+            "queries": 5,
+            "closest": 155
+        },
+        {
+            "time": 2461,
+            "reached": 5,
+            "queries": 18,
+            "closest": 152
+        },
+        {
+            "time": 1005,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 8312,
+            "reached": 14,
+            "queries": 17,
+            "closest": 147
+        },
+        {
+            "time": 9035,
+            "reached": 8,
+            "queries": 11,
+            "closest": 150
+        },
+        {
+            "time": 11503,
+            "reached": 10,
+            "queries": 15,
+            "closest": 150
+        },
+        {
+            "time": 11217,
+            "reached": 15,
+            "queries": 20,
+            "closest": 150
+        },
+        {
+            "time": 9797,
+            "reached": 17,
+            "queries": 19,
+            "closest": 151
+        }
+    ]
+},
+"iphone-3g": {
+    "join": [
+        {
+            "time": 17729,
+            "reached": 13,
+            "queries": 22,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1662,
+            "reached": 2,
+            "queries": 6,
+            "closest": 151
+        },
+        {
+            "time": 1832,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        },
+        {
+            "time": 2862,
+            "reached": 3,
+            "queries": 9,
+            "closest": 151
+        },
+        {
+            "time": 1811,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 2018,
+            "reached": 2,
+            "queries": 6,
+            "closest": 154
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 13897,
+            "reached": 8,
+            "queries": 12,
+            "closest": 151
+        },
+        {
+            "time": 3429,
+            "reached": 10,
+            "queries": 12,
+            "closest": 146
+        },
+        {
+            "time": 5006,
+            "reached": 14,
+            "queries": 18,
+            "closest": 150
+        },
+        {
+            "time": 5714,
+            "reached": 9,
+            "queries": 11,
+            "closest": 149
+        },
+        {
+            "time": 10215,
+            "reached": 8,
+            "queries": 13,
+            "closest": 149
+        }
+    ]
+},
+"iphone-wifi": {
+    "join": [
+        {
+            "time": 16329,
+            "reached": 14,
+            "queries": 19,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 2278,
+            "reached": 4,
+            "queries": 10,
+            "closest": 155
+        },
+        {
+            "time": 1916,
+            "reached": 3,
+            "queries": 11,
+            "closest": 155
+        },
+        {
+            "time": 1767,
+            "reached": 2,
+            "queries": 8,
+            "closest": 158
+        },
+        {
+            "time": 904,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 13334,
+            "reached": 10,
+            "queries": 15,
+            "closest": 149
+        },
+        {
+            "time": 6667,
+            "reached": 11,
+            "queries": 13,
+            "closest": 147
+        },
+        {
+            "time": 5669,
+            "reached": 10,
+            "queries": 14,
+            "closest": 151
+        },
+        {
+            "time": 3692,
+            "reached": 14,
+            "queries": 15,
+            "closest": 149
+        },
+        {
+            "time": 9947,
+            "reached": 9,
+            "queries": 14,
+            "closest": 151
+        }
+    ]
+}
+},
+
+"3500":
+{
+"chrome": {
+    "join": [
+        {
+            "time": 11337,
+            "reached": 12,
+            "queries": 30,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 4183,
+            "reached": 2,
+            "queries": 6,
+            "closest": 152
+        },
+        {
+            "time": 3463,
+            "reached": 2,
+            "queries": 6,
+            "closest": 151
+        },
+        {
+            "time": 6608,
+            "reached": 3,
+            "queries": 9,
+            "closest": 150
+        },
+        {
+            "time": 6140,
+            "reached": 2,
+            "queries": 6,
+            "closest": 156
+        },
+        {
+            "time": 3556,
+            "reached": 2,
+            "queries": 6,
+            "closest": 152
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 8202,
+            "reached": 18,
+            "queries": 21,
+            "closest": 149
+        },
+        {
+            "time": 6441,
+            "reached": 11,
+            "queries": 15,
+            "closest": 148
+        },
+        {
+            "time": 4106,
+            "reached": 10,
+            "queries": 14,
+            "closest": 152
+        },
+        {
+            "time": 13595,
+            "reached": 11,
+            "queries": 25,
+            "closest": 150
+        },
+        {
+            "time": 8309,
+            "reached": 6,
+            "queries": 8,
+            "closest": 150
+        }
+    ]
+},
+"firefox": {
+    "join": [
+        {
+            "time": 18303,
+            "reached": 25,
+            "queries": 35,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 6728,
+            "reached": 3,
+            "queries": 8,
+            "closest": 152
+        },
+        {
+            "time": 5145,
+            "reached": 2,
+            "queries": 6,
+            "closest": 153
+        },
+        {
+            "time": 9629,
+            "reached": 5,
+            "queries": 21,
+            "closest": 154
+        },
+        {
+            "time": 6035,
+            "reached": 4,
+            "queries": 12,
+            "closest": 152
+        },
+        {
+            "time": 1106,
+            "reached": 1,
+            "queries": 3,
+            "closest": 153
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 17621,
+            "reached": 10,
+            "queries": 15,
+            "closest": 149
+        },
+        {
+            "time": 8703,
+            "reached": 10,
+            "queries": 12,
+            "closest": 151
+        },
+        {
+            "time": 17065,
+            "reached": 15,
+            "queries": 19,
+            "closest": 150
+        },
+        {
+            "time": 16300,
+            "reached": 10,
+            "queries": 17,
+            "closest": 147
+        },
+        {
+            "time": 12316,
+            "reached": 7,
+            "queries": 12,
+            "closest": 150
+        }
+    ]
+},
+"iphone-3g": {
+    "join": [
+        {
+            "time": 29628,
+            "reached": 16,
+            "queries": 35,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1558,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        },
+        {
+            "time": 3104,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        },
+        {
+            "time": 6969,
+            "reached": 2,
+            "queries": 6,
+            "closest": 155
+        },
+        {
+            "time": 6694,
+            "reached": 5,
+            "queries": 21,
+            "closest": 156
+        },
+        {
+            "time": 7129,
+            "reached": 4,
+            "queries": 15,
+            "closest": 155
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 11993,
+            "reached": 7,
+            "queries": 11,
+            "closest": 147
+        },
+        {
+            "time": 15871,
+            "reached": 13,
+            "queries": 22,
+            "closest": 151
+        },
+        {
+            "time": 23017,
+            "reached": 14,
+            "queries": 21,
+            "closest": 149
+        },
+        {
+            "time": 20545,
+            "reached": 9,
+            "queries": 18,
+            "closest": 152
+        },
+        {
+            "time": 28433,
+            "reached": 6,
+            "queries": 11,
+            "closest": 151
+        }
+    ]
+},
+"iphone-wifi": {
+    "join": [
+        {
+            "time": 17986,
+            "reached": 23,
+            "queries": 44,
+            "closest": 149
+        }
+    ],
+    "iterFind_reached": [
+        {
+            "time": 1119,
+            "reached": 1,
+            "queries": 3,
+            "closest": 155
+        },
+        {
+            "time": 773,
+            "reached": 1,
+            "queries": 3,
+            "closest": 153
+        },
+        {
+            "time": 1440,
+            "reached": 1,
+            "queries": 3,
+            "closest": 156
+        },
+        {
+            "time": 3945,
+            "reached": 2,
+            "queries": 6,
+            "closest": 156
+        },
+        {
+            "time": 3664,
+            "reached": 2,
+            "queries": 8,
+            "closest": 156
+        }
+    ],
+    "iterFind": [
+        {
+            "time": 18706,
+            "reached": 7,
+            "queries": 20,
+            "closest": 141
+        },
+        {
+            "time": 19579,
+            "reached": 7,
+            "queries": 13,
+            "closest": 150
+        },
+        {
+            "time": 15552,
+            "reached": 9,
+            "queries": 19,
+            "closest": 149
+        },
+        {
+            "time": 12226,
+            "reached": 8,
+            "queries": 13,
+            "closest": 148
+        },
+        {
+            "time": 16743,
+            "reached": 9,
+            "queries": 14,
+            "closest": 150
+        }
+    ]
+}
+}
+
+}
