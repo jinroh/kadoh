@@ -1,18 +1,24 @@
 html { font-size: 100%; overflow-y: scroll; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
 
+section, header {
+  display: block;
+  position: relative;
+  padding: 0;
+  margin: 0;
+}
+
 body{
 color:#444;
 font-family:Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
 font-size:12px;
-line-height:1.5em;
+line-height:1.4em;
 padding:1em;
 background:#fefefe;
 }
 
 body > section {
-	left: 350px;
-	width: 40em;
-	position: relative;
+left: 350px;
+width: 55%;
 }
 
 a{ color: #0645ad; text-decoration:none;}
@@ -238,11 +244,11 @@ nav a:hover, nav ul.active a:hover, nav a, nav li {
 .hll { background-color: #ffffcc }.c { color: #aaaaaa; font-style: italic }.err { color: #F00000; background-color: #F0A0A0 }.k { color: #0645ad }.cm { color: #aaaaaa; font-style: italic }.cp { color: #4c8317 }.c1 { color: #aaaaaa; font-style: italic }.cs { color: #0645ad; font-style: italic }.gd { color: #aa0000 }.ge { font-style: italic }.gr { color: #aa0000 }.gh { color: #000080; font-weight: bold }.gi { color: #00aa00 }.go { color: #888888 }.gp { color: #555555 }.gs { font-weight: bold }.gu { color: #800080; font-weight: bold }.gt { color: #aa0000 }.kc { color: #0645ad }.kd { color: #0645ad }.kn { color: #0645ad }.kp { color: #0645ad }.kr { color: #0645ad }.kt { color: #00aaaa }.m { color: #009999 }.s { color: #aa5500 }.na { color: #1e90ff }.nb { color: #00aaaa }.nc { color: #00aa00; text-decoration: underline }.no { color: #aa0000 }.nd { color: #888888 }.ni { color: #800000; font-weight: bold }.nf { color: #00aa00 }.nn { color: #00aaaa; text-decoration: underline }.nt { color: #1e90ff; font-weight: bold }.nv { color: #aa0000 }.ow { color: #0645ad }.w { color: #bbbbbb }.mf { color: #009999 }.mh { color: #009999 }.mi { color: #009999 }.mo { color: #009999 }.sb { color: #aa5500 }.sc { color: #aa5500 }.sd { color: #aa5500 }.s2 { color: #aa5500 }.se { color: #aa5500 }.sh { color: #aa5500 }.si { color: #aa5500 }.sx { color: #aa5500 }.sr { color: #009999 }.s1 { color: #aa5500 }.ss { color: #0645ad }.bp { color: #00aaaa }.vc { color: #aa0000 }.vg { color: #aa0000 }.vi { color: #aa0000 }.il { color: #009999 }
 
 @media only screen and (min-width: 480px) {
-body{font-size:14px;}
+body{font-size:13px;}
 }
 
 @media only screen and (min-width: 768px) {
-body{font-size:16px;}
+body{font-size:15px;}
 }
 
 @media print {
