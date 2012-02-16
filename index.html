@@ -518,7 +518,7 @@
 </pre>
 </div>
 
-<p>This is how instantiate a Node where <code>id</code> is the desired node ID (not necessary) and <code>options</code> a set of initialization options such as JabberID and password to connect to XMPP service, the addresses of the bootstraps or even the transport to use.</p>
+<p>This is how instantiate a Node where <code>id</code> is the desired node ID (not necessary) and <code>options</code> a set of initialization options such as JabberID and password to connect to XMPP service. Since KadOH is based on a decentralized network, the application need to know addresses of already connected peers to use as bootstraps in joining the network. These addresses shall be indicated in <code>options</code>.</p>
 <div class="highlight"><pre><span class="nx">node</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
   <span class="nx">node</span><span class="p">.</span><span class="nx">join</span><span class="p">();</span>
 <span class="p">});</span>

@@ -382,7 +382,7 @@ Since *Node* is the central parts of our implementation, it exposes the public A
 node = new KadOH.Node(id, options)
 ```
 
-This is how instantiate a Node where `id` is the desired node ID (not necessary) and `options` a set of initialization options such as JabberID and password to connect to XMPP service, the addresses of the bootstraps or even the transport to use.
+This is how instantiate a Node where `id` is the desired node ID (not necessary) and `options` a set of initialization options such as JabberID and password to connect to XMPP service. Since KadOH is based on a decentralized network, the application need to know addresses of already connected peers to use as bootstraps in joining the network. These addresses shall be indicated in `options`.
 
 ```js
 node.connect(function() {
