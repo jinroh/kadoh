@@ -19,6 +19,7 @@ background:#fefefe;
 body > section {
 left: 350px;
 width: 55%;
+max-width: 600px;
 }
 
 a{ color: #0645ad; text-decoration:none;}

@@ -1,6 +1,6 @@
 # Design and testing of a mobile DHT
 
-*Abstract* — Peer to Peer protocols are widely used in desktop applications where they have been deployed and improved over the years. Particularly, the *Kademlia* protocol is used by most eMule and BitTorrent clients. However, mobile devices have never been supported by such softwares because of the difficulty to start peer to peer connections on cellular networks. As smartphones carry more and more personal informations, they should take advantage of decentralized DHTs with no central point of control. Therefore, new mobile applications could go beyond file sharing while protecting these critical data. In this report, we will introduce how we designed a full *Javascript* implementation of the Kademlia DHT protocol, named *<abbr title="Kademlia over HTTP">KadOH</abbr>*, working on both desktop and mobile platforms. Firstly, we justify our technology choices and development architecture, and secondly, we evaluate the system on medium scale deployments.
+*Abstract* — Peer to Peer protocols are widely used in desktop applications where they have been deployed and improved over the years. Particularly, the *Kademlia* protocol is used by most eMule and BitTorrent clients. However, mobile devices have never been supported by such softwares because of the difficulty to start peer to peer connections on cellular networks. As smartphones carry more and more personal informations, they should take advantage of decentralized DHTs with no central point of control. Therefore, new mobile applications could go beyond file sharing while protecting these critical data. In this report, we will introduce how we designed a full *Javascript* implementation of the Kademlia DHT protocol named *KadOH* – for *Kademlia over HTTP* – working on both desktop and mobile browsers. Firstly, we justify our technology choices and development architecture, and secondly, we evaluate the system on medium scale deployments.
 
 **Alexandre Lachèze** and **Pierre Guilleminot**
 
@@ -8,11 +8,11 @@
 
 The main application Peer to Peer softwares are known for is file sharing without relying on a central server. However, the main idea of Distributed Hash Tables (DHT) is simply to lay on end systems intelligence for routing, transmitting, searching or storing flows of data. This model has many advantages, and can be the basis for numerous applications. By delegating logical decisions to nodes, it becomes possible to build scalable networks, with no single point of failure where the sharing of content between users does not require any centralized storage unit.
 
-However, taking mobile users into account is a real challenge. From a network perspective, the reachability of peers is limited, and the increasing number of stale peers greatly affects the routing precision and reliability of the system. From an development point of view, the variety of mobile frameworks makes a cross platform implementation hazardous.
+However, taking mobile users into account is a real challenge. From a network perspective, the reachability of peers is limited, and the increasing number of stale peers greatly affects the routing precision and reliability of the system. From a development point of view, the variety of mobile frameworks makes a cross platform implementation hazardous.
 
 Accordingly, we had to come up with new ideas to get round these issues, and finally chose technologies that are rarely used in the P2P landscape. For instance, the [choice of the XMPP protocol](#transpot-layer) as our main communication layer has turned out to be a really good compromise between a *fully decentralized* network hardly feasible on mobile devices, and *client-router* architecture. Also, the [Javascript language](#javascript) proved to be a relevant framework to build decentralized systems for mobiles as it is standardized on most platforms and well oriented toward network application development.
 
-Also, only depending on web based technologies allows *KadOH* to be the building block of new decentralized and easily deployed web applications. As it is also very experimental, we made *KadOH* highly extensible and modular to more easily anticipate [new coming web technologies](#future-work).
+Also, only depending on web based technologies allows *KadOH* to be the building block of new decentralized and easily deployed web applications. As it is also very experimental, we made *KadOH* highly extensible and modular to easily anticipate [new coming web technologies](#future-work).
 
 # Kademlia principles
 
@@ -507,7 +507,7 @@ To have an efficient power of calculation, we have been able to use [Amazon EC2]
 
 ## Results
 
-# Conclusion
+# Conclusions
 
 - Applications
 
