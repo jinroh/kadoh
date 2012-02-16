@@ -605,21 +605,21 @@
 <section id="code-quality-tool">
 <h3>Code quality tool</h3>
 
-<p>Since Javascript implementations diverge from one browser to an other or from one browser version to the older, the language has some dubiousnesses that should be avoided to increase portability. Static code analysis is a good way to avoid these mistakes upstream to portability testing.</p>
+<p>Since Javascript implementations diverge from one browser to an other or from one browser version to an other, the language has some dubiousnesses that should be avoided to increase portability. Static code analysis is a good way to avoid these mistakes upstream to portability testing.</p>
 
 <p>We both used <a href="http://www.jshint.com/about/">JSHint</a> as plugin of our text editor to test automatically the quality of our code before saving.</p>
 </section>
 <section id="build-automation">
 <h3>Build automation</h3>
 
-<p>We developed our implementation as a <a href="#application-design">framework</a> by strictly separating each part. To go even deeper in this strategy, we decided to dedicate a file per class. These files need this to be gathered in one before being used. This is quite useful, since depending on the configuration we want to test, we can decide to include or exclude some files. The gathering shall moreover be done in the right order, since Javascript is sensible to declaration order.</p>
+<p>We developed our implementation as a <a href="#application-design">framework</a> by strictly separating each parts. To go even deeper in this strategy, we decided to dedicate a file per class. These files need to be gathered in one before being used. This is quite useful, since depending on the configuration we want to test, we can decide to include or exclude some files. Moreover the gathering shall be done in the right order, since Javascript is sensible to declaration order.</p>
 
-<p>We tried to find an adapted tool to do this build but we didn&#39;t manage. That&#39;s why we decided to develop our own build tool as <a href="#node.js">node.js</a> module based on dependencies declarations in comments. It&#39;s called <a href="https://github.com/alexstrat/jsCicada">jsCicada</a> and allow us to build different configurations in one command line.</p>
+<p>We didn&#39;t manage to find an adapted tool to do this. That&#39;s why we decided to develop our own build tool as <a href="#node.js">node.js</a> module based on dependencies declarations in comments. It&#39;s called <a href="https://github.com/alexstrat/jsCicada">jsCicada</a> and allows us to build different configurations in one command line.</p>
 </section>
 <section id="unit-testing">
 <h3>Unit testing</h3>
 
-<p>Since we managed to separate our implementation in independent parts, it was easy to apply unit-testing techniques on them. Because our implementation targets both browser and server-side environments, it was important that our test suite was able to be executed on both. That&#39;s why we chose to use <a href="http://pivotal.github.com/jasmine/">Jasmine</a> test framework. Thanks to CI tool <a href="https://github.com/jamescarr/jasmine-tool">jasmine-runner</a> – which development we contribute to – we were able to test our code automatically as soon as file were saved and get immediately feedbacks.</p>
+<p>Since we managed to separate our implementation in independent parts, it was easy to apply unit-testing techniques on them. Because our implementation targets both browser and server-side environments, it was important that our test suite was able to be executed on both. That&#39;s why we chose to use <a href="http://pivotal.github.com/jasmine/">Jasmine</a> test framework. Thanks to CI tool <a href="https://github.com/jamescarr/jasmine-tool">jasmine-runner</a> – which development we contributed to – we were able to test our code automatically as soon as file were saved and get immediately feedbacks.</p>
 </section>
 <section id="continuous-documentation">
 <h3>Continuous documentation</h3>
@@ -630,12 +630,7 @@
 <section id="debugging">
 <h2>Debugging</h2>
 
-<ul>
-<li>code quality tool : JsLint</li>
-<li>embedded documentation</li>
-<li>build tools to assembles (mignify also)</li>
-<li>debugging tools : Chrome inspector, designed UI</li>
-</ul>
+<p>In addition to common debugging tools for browser (<a href="http://www.chromium.org/devtools">Chrome dev tools</a>), we developed a monitoring UI to help us debug our application. This tool provides an adapted monitor view for each part of our implementation. Since it provides an overview of our control flow, we were able to easily detect bugs that would have been difficult to handle with a simple log.</p>
 
 <p><img src="images/UI.png" alt="UI screenshot"/></p>
 </section>
