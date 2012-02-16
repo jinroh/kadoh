@@ -29,7 +29,13 @@
 <li>
 <a href="#javascript">Javascript</a></li>
 <li>
-<a href="#transport-layer">Transport layer</a></li>
+<a href="#transport-layer">Transport layer</a><ul>
+<li>
+<a href="#proxies">Proxies</a></li>
+<li>
+<a href="#xmpp">XMPP</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li>
@@ -156,7 +162,7 @@
 
 <p>Each time a peer is successfully contacted or contacts us, it is added in the routing table and sorted in the right K-bucket.</p>
 
-<p><a href="http://www.daimi.au.dk/%7Ebouvin/dP2P/2006/lectures/03/">http:&#47;&#47;www.daimi.au.dk&#47;~bouvin&#47;dP2P&#47;2006&#47;lectures&#47;03&#47;</a></p>
+<p><a href="http://www.daimi.au.dk/%7Ebouvin/dP2P/2006/lectures/03/">http://www.daimi.au.dk/~bouvin/dP2P/2006/lectures/03/</a></p>
 </section>
 <section id="remote-procedure-calls">
 <h3>Remote Procedure Calls</h3>
@@ -175,32 +181,46 @@
 <section id="javascript">
 <h2>Javascript</h2>
 
-<p>We decided to use Javascript because it has many advantages to develop network oriented mobile applications. In fact, thanks to the youth and freshness of most smartphone browsers, mobiles are the best systems to write platform-independent applications that work out-of-the-box. Besides, the application becomes usable in <em>all</em> modern desktop browsers and in <em>any</em> frameworks embedding a Javascript Virtual Machine.</p>
+<p>At first stages of our development, we had to choose between developing our application in native programming, or using web technologies. Native applications have the advantage to perform very well and to have access to all features of the device. However, they are not standardized and rarely supported by all devices in the same time.</p>
+
+<p>We decided to use Javascript because it has many advantages to develop network oriented mobile applications. In fact, thanks to the youth and freshness of most smartphone browsers, mobiles are even more attractive than desktops to write platform-independent web-applications that work out-of-the-box. Besides, the application becomes usable in <em>all</em> modern desktop browsers and in <em>any</em> frameworks embedding a Javascript Virtual Machine.</p>
 
 <p>As a language, Javascript has also significant advantages regarding network logics. It is event-driven and benefits from the simplicity of closures. As a result, there is no need for event loops or any additional event oriented framework. The language is also entirely single-threaded from the programmer point of view, which considerably simplify the development.</p>
 
-<p>Performances of Javascript have been greatly improved over the past years. Indeed, newer and faster VMs have been actively researched and developed (V8, JägerMonkey, Nitro, ...), making the language 10 to 100 times faster than it was ten years ago.</p>
+<p>Performances of Javascript have been greatly improved over the past years. Indeed, newer and faster VMs have been actively researched and developed (V8, JägerMonkey, Nitro, ...), making the language 10 to 100 times faster than it was ten years ago. Performances are still not comparable to native frameworks for real-time applications, or heavy processing programs but for a DHT which does not require heavy computations and benefit more form asynchronous I/O, performances of these virtual machines are more than enough.</p>
 
-<p>The distribution process of the application was also in favor of Javascript. WebApps can be easily distributed both as native applications or as simple web pages. This discharges us from the costs of installations, upgrades and SDKs. But also, it relieves us from the controls of third parties which are very common in mobile <em>app-stores</em>.</p>
+<p>The distribution process of the application was also in favor of Javascript. Web-apps can be easily distributed both as native applications or as simple web pages. This discharges us from the costs of installations, upgrades and SDKs. But also, it relieves us from the controls of third parties which are very common in mobile <em>app-stores</em>.</p>
+
+<p>Finally, since web-apps are mainly delivered through HTTP servers, updating process are simplified and easily deployed. There is no need to maintain backward compatibility which may be tricky to deal with in distributed systems.</p>
 </section>
 <section id="transport-layer">
 <h2>Transport layer</h2>
 
-<p>The main difficulty with an in-browser Javascript is the impossibility to open a socket to listen to incoming connections. In fact, nowadays, browsers can only send HTTP requests to a given server. We had to find solutions to keep our DHT decentralized and still relying on a server to proxy our requests.</p>
+<p>In cellular networks, receiving incoming packets in the P2P fashion may be a critical point. This has been a <a href="http://people.kth.se/%7Erauljc/p2p09/jimenez2009connectivity.pdf" title="Connectivity Properties of Mainline BitTorrent DHT Nodes">problem too for desktop softwares</a> when they have to go around NATs. Solutions always involve critical points which go against the end-to-end principle of DHTs.</p>
 
-<p>Note that other DHT implementations have the same kind of issue when <a href="http://people.kth.se/%7Erauljc/p2p09/jimenez2009connectivity.pdf" title="Connectivity Properties of Mainline BitTorrent DHT Nodes">receiving incoming packets behind a NAT</a>. For the particular case of mobile-phone application, this is even true since radio-mobile networks are strongly restricted towards incoming connections. Softwares have to use different kind of techniques that also involve critical points in the DHT to get around the NAT, like <em>supernodes</em>.</p>
+<p>In an in-browser environment, it becomes even technically impossible to open a socket to listen to incoming connections. In fact, nowadays, browsers can only send HTTP requests to a given server. So, by design, we had to find solutions to keep our DHT decentralized and still relying on a server to proxy our requests.</p>
+<section id="proxies">
+<h3>Proxies</h3>
 
-<p>First, we developed a little proxy to route requests between peers. We thought about semi-decentralized systems where proxies could route messages between each other through UDP or TCP channels. The main drawback is that we wanted the application to depend on an existing, distributed and scalable infrastructure.</p>
+<p>One solution has been to develop proxies to route requests between peers. We thought about semi-decentralized systems where proxies could route messages between each other through UDP or TCP channels, and clients could connect to any proxy using full-duplex HTTP communication channels (like WebSocket or XHR Long Polling).</p>
 
-<p>This is why we chose the XMPP protocol which meets most of our constraints. XMPP is a widely used open standard to exchange XML based messages between peers. Even though XMPP has a client-server architecture, it is decentralized thanks to its open protocol and server to server communications. Moreover, many XMPP servers are freely available over the Internet, and this protocol is used by large instant messaging servers, like <em>Google Talk</em> or <em>Jabber.org</em>.</p>
+<p>Those proxy were thought as <em>super-nodes</em> which would route requests and be accessible to anyone. By design, they may represent a point of failure in our decentralized system.</p>
 
-<p>The XMPP protocol uses a stateful TCP channel to connect server with clients. But, thanks to the <a href="http://xmpp.org/extensions/xep-0124.html" title="XEP-0124: Bidirectional-streams Over Synchronous HTTP (BOSH)">BOSH</a> — <em>Bidirectional-streams Over Synchronous HTTP</em> — extension, it becomes possible to connect any browser to an XMPP server through synchronous HTTP requests.</p>
+<p>Even so, this infrastructure was really interesting because we used those proxies to connect our clients to existing DHT — like <a href="#mainline-dht">Mainline</a> or Kad — using other socket transports non accessible from Javascript. This has proved to be very convenient to test the efficiency of the DHT, and solved many technical issues. As a result, we kept these tools to help us along the development process.</p>
+</section>
+<section id="xmpp">
+<h3>XMPP</h3>
+
+<p>The main goal was to depend on an existing, distributed and scalable infrastructure. This is why we chose the XMPP protocol to establish peer to peer connections. XMPP is a widely used open standard to exchange XML based messages between peers. Even though XMPP has a client-server architecture, it meets many of our constraints since it is decentralized thanks to its open protocol and server to server communications. Moreover, many XMPP servers are freely available over the Internet, and this protocol is used by large instant messaging servers, like <em>Google Talk</em> or <em>Jabber.org</em>.</p>
+
+<p>The XMPP protocol uses a stateful TCP channel to connect server with clients, which is not feasible from a browser. But the <a href="http://xmpp.org/extensions/xep-0124.html" title="XEP-0124: Bidirectional-streams Over Synchronous HTTP (BOSH)">BOSH</a> — <em>Bidirectional-streams Over Synchronous HTTP</em> — extension makes it possible to connect any browser to any XMPP server through synchronous HTTP requests.</p>
 
 <p><img src="images/bosh.png" alt="Decentralized XMPP"/></p>
 
 <p>We based our XMPP transport on <a href="http://strophe.im/strophejs/" title="An XMPP library for JavaScript">Strophe.js</a>. This library is the main reference to perform real-time XMPP applications over BOSH in browsers. It is well documented – a <a href="http://professionalxmpp.com/" title="Professional XMPP Programming with JavaScript and jQuery, Jack Moffitt, 2010">book</a> is devoted to it – and has a good support from the community.</p>
 
-<p>Nevertheless, thanks to the <a href="#architecture">modular architecture</a> of the application, we implemented several other transports, such as UDP – only with <a href="#node.js">Node.js</a> – and WebSocket (thanks to <a href="http://socket.io/">socket.io</a>). This has been convenient to test the efficiency of the DHT on different networks. For instance we have been able to <a href="#mainline-dht">join the Mainline DHT</a> through a WebSocket to UDP proxy.</p>
+<p>Even if we opted for this particular solution of XMPP, we implemented several other transports, such as UDP – only with <a href="#node.js">Node.js</a> – and WebSocket (thanks to the <a href="http://socket.io/">socket.io</a> library) which may be more interesting end-to-end solutions in some particular applications.</p>
+</section>
 </section>
 </section>
 <section id="application-design">
@@ -445,26 +465,26 @@
 <section id="value-management">
 <h3>Value Management</h3>
 
-<p>The value management is responsible for managing key&#47;values that the node has to store. It provides methods to <em>save</em>, <em>retrieve</em> and <em>remove</em> them, but it is also responsible for managing the associated timers. Indeed, in our implementation, two timers for each key&#47;value are used:</p>
+<p>The value management is responsible for managing key/values that the node has to store. It provides methods to <em>save</em>, <em>retrieve</em> and <em>remove</em> them, but it is also responsible for managing the associated timers. Indeed, in our implementation, two timers for each key/value are used:</p>
 
 <ul>
-<li><p><em>republish</em>: to ensure the persistent of a key&#47;value, the <a href="http://pdos.csail.mit.edu/%7Epetar/papers/maymounkov-kademlia-lncs.pdf" title="Kademlia: A Peer-to-Peer Information System Based on the XOR Metric, Petar Maymounkov and David Mazières, 2002">original paper</a> requires that key&#47;values are periodically republished. To apply to this, a republish timer is set for each saved key&#47;value (and reset if re-saved). When one of this timer timeouts, a <em>republish</em> event is emitted and caught by <a href="#node">Node</a> that is in charge to republish the concerned value. </p></li>
-<li><p><em>expiration</em>: when a key&#47;value is published, an expiration date is associated to it before spread on the network. This ensure that it will not neither present nor republished on the network after this date. Thus, when saving, an expiration timer should be set according to the expiration date to plan the deletion of the key&#47;value.</p></li>
+<li><p><em>republish</em>: to ensure the persistent of a key/value, the <a href="http://pdos.csail.mit.edu/%7Epetar/papers/maymounkov-kademlia-lncs.pdf" title="Kademlia: A Peer-to-Peer Information System Based on the XOR Metric, Petar Maymounkov and David Mazières, 2002">original paper</a> requires that key/values are periodically republished. To apply to this, a republish timer is set for each saved key/value (and reset if re-saved). When one of this timer timeouts, a <em>republish</em> event is emitted and caught by <a href="#node">Node</a> that is in charge to republish the concerned value. </p></li>
+<li><p><em>expiration</em>: when a key/value is published, an expiration date is associated to it before spread on the network. This ensure that it will not neither present nor republished on the network after this date. Thus, when saving, an expiration timer should be set according to the expiration date to plan the deletion of the key/value.</p></li>
 </ul>
 
-<p>Since during an <em><a href="#iterative-store">iterativeStore</a></em> process a key&#47;value is stored on several nodes roughly at the same time, the republish timers might be synchronized across the network. This can lead to periodic bursts of activity. To avoid this <em><a href="http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html#convoys">convoy effect</a></em>, each timeout value is randomly chosen in a window around a configuration value. Thus, the first triggered republish cancels most of the other ones on the network, minimizing the number of republish processes.</p>
+<p>Since during an <em><a href="#iterative-store">iterativeStore</a></em> process a key/value is stored on several nodes roughly at the same time, the republish timers might be synchronized across the network. This can lead to periodic bursts of activity. To avoid this <em><a href="http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html#convoys">convoy effect</a></em>, each timeout value is randomly chosen in a window around a configuration value. Thus, the first triggered republish cancels most of the other ones on the network, minimizing the number of republish processes.</p>
 <section id="persistent-storage">
 <h4>Persistent storage</h4>
 
-<p>To improve DHT consistency, it would be convenient to retain the keys&#47;values collection when session stops and to recover it when the session restarts. This would limit the loss of data redundancy due to node departures. </p>
+<p>To improve DHT consistency, it would be convenient to retain the keys/values collection when session stops and to recover it when the session restarts. This would limit the loss of data redundancy due to node departures. </p>
 
 <p>Since our implementation targets browser environments, writing in a file on the hard drive is not an option. However the DOM (Document Object Model) implementations provide two kinds of persistent <a href="https://developer.mozilla.org/en/DOM/Storage">offline storage</a>. Among them <em><a href="http://www.ietf.org/rfc/rfc2965">cookies</a></em> are the oldest one. But we focused on the recent <em><a href="http://dev.w3.org/html5/webstorage/#the-localstorage-attribute">localstorage</a></em> html5 feature, which bring along greater capacity and simplicity.</p>
 
 <p>To leverage <em>localstorage</em> we use the <a href="http://westcoastlogic.com/lawnchair/">lawnchair</a> library which optimizes its use and provides a simplified API. Besides, whenever <em>localstorage</em> is not supported by a device, it will attempt to switch to a more common storage technique.</p>
 
-<p>In the <em>localstorage</em>, the key&#47;value collection is associated to a session identified by the couple node address &#47; node ID. During the initialization, it checks if a previous session has been retained in the <em>localstorage</em>. The session recovery process consists in resetting the timers for each key&#47;value and remove those which have expired during the session inactivity.</p>
+<p>In the <em>localstorage</em>, the key/value collection is associated to a session identified by the couple node address / node ID. During the initialization, it checks if a previous session has been retained in the <em>localstorage</em>. The session recovery process consists in resetting the timers for each key/value and remove those which have expired during the session inactivity.</p>
 
-<p>However, since our implementations aims at running in DOM independent environments such as <a href="#node.js">node.js</a>, we implemented a <code>BasicStorage</code> that replaces <a href="http://westcoastlogic.com/lawnchair/">lawnchair</a> behind the same interface. This storage is, for the time being, non persistent since it is little more than a Javascript key&#47;value object. But we could easily work out a persistent one, relying on a key-value database such as <a href="http://redis.io/">redis</a>.</p>
+<p>However, since our implementations aims at running in DOM independent environments such as <a href="#node.js">node.js</a>, we implemented a <code>BasicStorage</code> that replaces <a href="http://westcoastlogic.com/lawnchair/">lawnchair</a> behind the same interface. This storage is, for the time being, non persistent since it is little more than a Javascript key/value object. But we could easily work out a persistent one, relying on a key-value database such as <a href="http://redis.io/">redis</a>.</p>
 </section>
 </section>
 <section id="node">
@@ -484,7 +504,7 @@
 <li><code>iterativeFindNode</code>: aims at finding a peer on the network knowing its ID. It uses the <em>find node</em> RPCs.</li>
 <li><code>iterativeFindValue</code>: aims at finding a value on the network knowing the associated key. It uses the <em>find value</em> RPCs.</li>
 <li><code>join</code>: uses the <code>iterativeFindNode</code> on its own node ID to populate the routing table at the beginning of a session</li>
-<li><code>iterativeStore</code>: aims at publishing a value on the network. It finds the peers responsible for storing a key&#47;value thanks to <code>iterativeFindValue</code> and send them <em>store</em> RPCs</li>
+<li><code>iterativeStore</code>: aims at publishing a value on the network. It finds the peers responsible for storing a key/value thanks to <code>iterativeFindValue</code> and send them <em>store</em> RPCs</li>
 </ul>
 </section>
 <section id="public-api">
@@ -547,7 +567,7 @@
 <p>We quickly realized the necessity of developing both client-side and server-side programs to test our implementation. We also chose to use Javascript in all our technology stack to simplify the development. <a href="http://nodejs.org/">Node.js</a> is a server-side Javascript execution environment that perfectly fitted our need, and even anticipated the future ones.</p>
 
 <blockquote>
-<p>Node.js is a platform built on Chrome&#39;s JavaScript runtime for easily building fast, scalable network applications. Node.js uses an event-driven, non-blocking I&#47;O model that makes it lightweight and efficient, perfect for data-intensive real-time applications that run across distributed devices. <small>nodejs.org</small></p>
+<p>Node.js is a platform built on Chrome&#39;s JavaScript runtime for easily building fast, scalable network applications. Node.js uses an event-driven, non-blocking I/O model that makes it lightweight and efficient, perfect for data-intensive real-time applications that run across distributed devices. <small>nodejs.org</small></p>
 </blockquote>
 
 <p>Node.js is an open-source project, heavily supported by the community. It is especially rich of the great number of <a href="https://github.com/joyent/node/wiki/modules">modules</a> that are built on top of each others according to the Unix philosophy : <em>make each program do one thing well</em>. We have used and combined plenty of them and our implementation is also built as a reusable node.js module.</p>

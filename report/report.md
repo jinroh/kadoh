@@ -45,31 +45,43 @@ Our conclusions took time to mature as they were elaborated throughout the devel
 
 ## Javascript
 
-We decided to use Javascript because it has many advantages to develop network oriented mobile applications. In fact, thanks to the youth and freshness of most smartphone browsers, mobiles are the best systems to write platform-independent applications that work out-of-the-box. Besides, the application becomes usable in *all* modern desktop browsers and in *any* frameworks embedding a Javascript Virtual Machine.
+At first stages of our development, we had to choose between developing our application in native programming, or using web technologies. Native applications have the advantage to perform very well and to have access to all features of the device. However, they are not standardized and rarely supported by all devices in the same time.
+
+We decided to use Javascript because it has many advantages to develop network oriented mobile applications. In fact, thanks to the youth and freshness of most smartphone browsers, mobiles are even more attractive than desktops to write platform-independent web-applications that work out-of-the-box. Besides, the application becomes usable in *all* modern desktop browsers and in *any* frameworks embedding a Javascript Virtual Machine.
 
 As a language, Javascript has also significant advantages regarding network logics. It is event-driven and benefits from the simplicity of closures. As a result, there is no need for event loops or any additional event oriented framework. The language is also entirely single-threaded from the programmer point of view, which considerably simplify the development.
 
-Performances of Javascript have been greatly improved over the past years. Indeed, newer and faster VMs have been actively researched and developed (V8, JägerMonkey, Nitro, ...), making the language 10 to 100 times faster than it was ten years ago.
+Performances of Javascript have been greatly improved over the past years. Indeed, newer and faster VMs have been actively researched and developed (V8, JägerMonkey, Nitro, ...), making the language 10 to 100 times faster than it was ten years ago. Performances are still not comparable to native frameworks for real-time applications, or heavy processing programs but for a DHT which does not require heavy computations and benefit more form asynchronous I/O, performances of these virtual machines are more than enough.
 
-The distribution process of the application was also in favor of Javascript. WebApps can be easily distributed both as native applications or as simple web pages. This discharges us from the costs of installations, upgrades and SDKs. But also, it relieves us from the controls of third parties which are very common in mobile *app-stores*.
+The distribution process of the application was also in favor of Javascript. Web-apps can be easily distributed both as native applications or as simple web pages. This discharges us from the costs of installations, upgrades and SDKs. But also, it relieves us from the controls of third parties which are very common in mobile *app-stores*.
+
+Finally, since web-apps are mainly delivered through HTTP servers, updating process are simplified and easily deployed. There is no need to maintain backward compatibility which may be tricky to deal with in distributed systems.
 
 ## Transport layer
 
-The main difficulty with an in-browser Javascript is the impossibility to open a socket to listen to incoming connections. In fact, nowadays, browsers can only send HTTP requests to a given server. We had to find solutions to keep our DHT decentralized and still relying on a server to proxy our requests.
+In cellular networks, receiving incoming packets in the P2P fashion may be a critical point. This has been a [problem too for desktop softwares][connectivity] when they have to go around NATs. Solutions always involve critical points which go against the end-to-end principle of DHTs.
 
-Note that other DHT implementations have the same kind of issue when [receiving incoming packets behind a NAT][connectivity]. For the particular case of mobile-phone application, this is even true since radio-mobile networks are strongly restricted towards incoming connections. Softwares have to use different kind of techniques that also involve critical points in the DHT to get around the NAT, like *supernodes*.
+In an in-browser environment, it becomes even technically impossible to open a socket to listen to incoming connections. In fact, nowadays, browsers can only send HTTP requests to a given server. So, by design, we had to find solutions to keep our DHT decentralized and still relying on a server to proxy our requests.
 
-First, we developed a little proxy to route requests between peers. We thought about semi-decentralized systems where proxies could route messages between each other through UDP or TCP channels. The main drawback is that we wanted the application to depend on an existing, distributed and scalable infrastructure.
+### Proxies
 
-This is why we chose the XMPP protocol which meets most of our constraints. XMPP is a widely used open standard to exchange XML based messages between peers. Even though XMPP has a client-server architecture, it is decentralized thanks to its open protocol and server to server communications. Moreover, many XMPP servers are freely available over the Internet, and this protocol is used by large instant messaging servers, like *Google Talk* or *Jabber.org*.
+One solution has been to develop proxies to route requests between peers. We thought about semi-decentralized systems where proxies could route messages between each other through UDP or TCP channels, and clients could connect to any proxy using full-duplex HTTP communication channels (like WebSocket or XHR Long Polling).
 
-The XMPP protocol uses a stateful TCP channel to connect server with clients. But, thanks to the [BOSH] — *Bidirectional-streams Over Synchronous HTTP* — extension, it becomes possible to connect any browser to an XMPP server through synchronous HTTP requests.
+Those proxy were thought as *super-nodes* which would route requests and be accessible to anyone. By design, they may represent a point of failure in our decentralized system.
+
+Even so, this infrastructure was really interesting because we used those proxies to connect our clients to existing DHT — like [Mainline](#mainline-dht) or Kad — using other socket transports non accessible from Javascript. This has proved to be very convenient to test the efficiency of the DHT, and solved many technical issues. As a result, we kept these tools to help us along the development process.
+
+### XMPP
+
+The main goal was to depend on an existing, distributed and scalable infrastructure. This is why we chose the XMPP protocol to establish peer to peer connections. XMPP is a widely used open standard to exchange XML based messages between peers. Even though XMPP has a client-server architecture, it meets many of our constraints since it is decentralized thanks to its open protocol and server to server communications. Moreover, many XMPP servers are freely available over the Internet, and this protocol is used by large instant messaging servers, like *Google Talk* or *Jabber.org*.
+
+The XMPP protocol uses a stateful TCP channel to connect server with clients, which is not feasible from a browser. But the [BOSH] — *Bidirectional-streams Over Synchronous HTTP* — extension makes it possible to connect any browser to any XMPP server through synchronous HTTP requests.
 
 ![Decentralized XMPP](images/bosh.png)
 
 We based our XMPP transport on [Strophe.js]. This library is the main reference to perform real-time XMPP applications over BOSH in browsers. It is well documented – a [book][prof_xmpp] is devoted to it – and has a good support from the community.
 
-Nevertheless, thanks to the [modular architecture](#architecture) of the application, we implemented several other transports, such as UDP – only with [Node.js](#node.js) – and WebSocket (thanks to [socket.io][]). This has been convenient to test the efficiency of the DHT on different networks. For instance we have been able to [join the Mainline DHT](#mainline-dht) through a WebSocket to UDP proxy.
+Even if we opted for this particular solution of XMPP, we implemented several other transports, such as UDP – only with [Node.js](#node.js) – and WebSocket (thanks to the [socket.io] library) which may be more interesting end-to-end solutions in some particular applications.
 
 [connectivity]:http://people.kth.se/~rauljc/p2p09/jimenez2009connectivity.pdf "Connectivity Properties of Mainline BitTorrent DHT Nodes"
 [BOSH]:http://xmpp.org/extensions/xep-0124.html "XEP-0124: Bidirectional-streams Over Synchronous HTTP (BOSH)"
