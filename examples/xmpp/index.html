@@ -15,6 +15,7 @@
   <script type="text/javascript" src="UI/js/reactor.js"></script>
   <script type="text/javascript" src="UI/js/valueM.js"></script>
   <script type="text/javascript" src="UI/js/node.js"></script>
+  <script type="text/javascript" src="UI/js/transport.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
@@ -110,6 +111,7 @@
       KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
       KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
       new KadOHui.Routing(node._routingTable, '#routing-table');
+      new KadOHui.Transport(node._reactor._transport, '#transport>pre');
       new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
       node.once('connected', function() {
         valueM = new KadOHui.ValueM(node._store, '#value-management');
@@ -334,7 +336,7 @@
 
 
         <div class="tab-pane" id="transport">
-          <h3>WIP</h3>
+        <pre class="console"></pre>
         </div>
         
       </div>
