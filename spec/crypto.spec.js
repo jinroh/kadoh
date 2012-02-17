@@ -48,34 +48,6 @@ describe('Crypto', function() {
 
   });
   
-  describe('XOR', function() {
-    
-    beforeEach(function() {
-      xor = Crypto.XOR;
-    });
-    
-    it('should be a function', function() {
-      expect(xor).toBeFunction();
-    });
-    
-    it('should return an array', function() {
-      expect(xor('012', 'DEF')).toBeObject();
-    });
-    
-    it('should return 20 bytes (=160/8) long `Array` for SHA1 HEX strings', function() {
-      var foo = Crypto.digest.SHA1('foo');
-      var bar = Crypto.digest.SHA1('bar');
-      var test = xor(foo, bar);
-      
-      expect(test.length).toEqual(20);
-      for (var i=0; i < test.length; i++) {
-        expect(typeof test[i]).toBe('number');
-        expect(test[i]).toBeLessThan(256);
-        expect(test[i]).not.toBeLessThan(0);
-      }
-    });
-  });
-  
   describe('Distance', function() {
     
     beforeEach(function() {
