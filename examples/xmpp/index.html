@@ -56,6 +56,12 @@
     var connection = $("#connection");
     var connectBtn = $("#connection input[name=connect]");
     var joinBtn    = $("#connection input[name=join]");
+    var putBtn     = $("#put_btn");
+    var putValue   = $("#put_value");
+    var putResult  = $("#put_result");
+    var getBtn     = $("#get_btn");
+    var getValue   = $("#get_value");
+    var getResult  = $("#get_result");
     
     // Transport configs
     var changeTransport = function() {
@@ -136,13 +142,28 @@
       });
     }
     connectBtn.click(connect);
-
     joinBtn.click(function() {
       node.join([
         'bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh',
         'bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh',
         'bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh'
       ]);
+    });
+    putBtn.click(function() {
+      node.put(null, putValue.val(), null, function(key) {
+        putResult.text("value stored with key " + key);
+      });
+    });
+    getBtn.click(function() {
+      node.get(getValue.val(), function(value) {
+        var text;
+        if (value === null) {
+          text = "value not found..."
+        } else {
+          text = value;
+        }
+        getResult.text(text);
+      });
     });
   });
   </script>
@@ -190,6 +211,22 @@
 
         <div class="active tab-pane" id="control">
           <h3>Control panel</h3>
+
+          <div class="row">
+            <input class="xlarge span4" id="put_value" placeholder="value" name="put_value" size="30" type="text">
+            <div class="span3">
+              <button style="margin-right : 15px;" id="put_btn" class="btn success">Put !</button> 
+            </div>
+            <div id="put_result"></div>
+          </div>
+
+          <div class="row">
+            <input class="xlarge span4" id="get_value" placeholder="sha1" name="put_value" size="30" type="text">
+            <div class="span3">
+              <button style="margin-right : 15px;" id="get_btn" class="btn success">Get !</button> 
+            </div>
+            <div id="get_result"></div>
+          </div>
         </div>
 
 

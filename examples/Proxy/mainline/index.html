@@ -27,7 +27,6 @@
     var jidInput   = $("#jid");
     var pswdInput  = $("#password");
     var connection = $("#connection");
-    var connectBtn = $("#connection input[name=connect]");
     var joinBtn    = $("#connection input[name=join]");
 
     var options = {
@@ -116,8 +115,7 @@
               <h3>Click on join</h3>
             </div>
             <div id="connection" class="span3">
-              <input type="submit" class="btn primary"  name="connect" value="Connect" />
-              <input type="submit" class="btn" name="join"    value="Join" />
+              <input type="submit" class="btn" name="join" value="Join" />
             </div>
           </div>
         </div>
@@ -142,7 +140,6 @@
             </div>
           </div>
         </div>
-
 
         <div class="tab-pane" id="node">
           <div class="row">
@@ -209,7 +206,7 @@
                 </label>
                 <label>
                   <img src="UI/css/images/debug-icon16.png" alt="debug">
-                  <input type="checkbox" name="debugLevel" value="debug" checked>
+                  <input type="checkbox" name="debugLevel" value="debug" unchecked>
                   <span>debug</span>
                 </label>
             </div>
