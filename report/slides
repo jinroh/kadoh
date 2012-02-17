@@ -25,3 +25,80 @@
   -> beyond file-sharing ?
 
 # What have we done ?
+
+  A **Javascript** **framework** implementing **Kademlia** in the **browsers** that use **XMPP over HTTP** 
+  ... KadOH (Kademlia over HTTP)
+
+# Why ?
+
+## Why Javascript ?
+
+  -> native vs JS ---> portability
+  -> performances
+  -> event-driven asynchronous I/O
+  -> simplified distribution process
+  -> backward compatibilities
+
+## Why XMPP ?
+
+  BREAK
+  -> how to handle incoming requests ?
+    -> a common problem on cellular networks, practically infeasible
+    -> in browsers, technically impossible
+    -> we need to rely on a proxy to route requests
+  
+  Develop our own proxies ?
+
+    > Drawing
+    > Distributed drawing
+    
+    > Drawbacks -> heavy infrastructure to develop and doesn't scale
+
+  Using the power of XMPP !
+  
+    > solves our problems
+    > XMPP 
+    > BOSH
+
+## Good news ! That works !
+
+# How ?
+
+  -> modular, extensible, hackable
+  -> each part independent
+  -> node object as a glue
+
+# How to use it ?
+
+  -> simple public API
+  -> ...
+  -> that's it but ... (if you want to access to some low-level functions of the DHT...)
+
+# Some sugar ?
+
+  -> works in node.js !
+  -> support various transports :
+    -> UDP (node.js)
+    -> raw XMPP (node.js)
+    -> WebSocket (for homemade proxies)
+  -> connect to Mainline
+
+# **Demo** mainline
+
+# DHT Simulation
+
+  -> how to spawn a DHT from scratch ?
+  -> Amazon EC2
+  -> drawing of the spawning process 
+
+## **Demo** XMPP
+
+## Benchmarking
+
+  -> gathering data
+  -> launched on multiple devices
+
+## Results
+
+  
+
