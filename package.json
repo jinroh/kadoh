@@ -33,6 +33,7 @@
       , "jasmine-runner" : "https://github.com/alexstrat/jasmine-tool/tarball/master"
       , "optimist"       : "~0.3"
       , "nconf"          : "~0.5"
+      , "multimeter"     : "~0.1"
     }
   , "engines": { "node": ">= 0.4.0" }
 }

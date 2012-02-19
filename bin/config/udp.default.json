@@ -1,5 +1,7 @@
 {
   "botType"  : "udp",
+  "poolSize" : 50,
+  "speed"    : 3,
   "size"     : 100,
   "activity" : 50,
   "values"   : 100,

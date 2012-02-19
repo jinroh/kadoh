@@ -2,18 +2,17 @@
  * Pool which *instanciates* a given number of nodes and 
  * spawn a new pool when full
  */
-var DEFAULT_SIZE = 50;
-var LAMBDA       = 3;
-
 var spawn = require('child_process').spawn;
 var Bot   = require(__dirname + '/bot').Bot;
 
 var Pool = module.exports = function(config) {
+  this._id         = config.id;
   this._options    = config.bot;
   this._jid        = config.bot.reactor.transport.jid;
   this._port       = config.bot.reactor.transport.port;
   this._bootstraps = config.bot.bootstraps;
-  this._sizeLeft   = config.size     || DEFAULT_SIZE;
+  this._lambda     = config.lambda;
+  this._size       = config.size;
   this._activity   = config.activity || false;
   this._values     = config.values   || 10;
 
@@ -23,7 +22,7 @@ var Pool = module.exports = function(config) {
 
 Pool.prototype._botConfig = function(number, delay) {
   var config = getCloneOfObject(this._options);
-  config.reactor.transport.port = this._port + number;
+  config.reactor.transport.port = this._port + this._id * this._size + number;
   config.reactor.transport.resource = Math.random().toString().split('.')[1];
   config.bootstraps = [this._bootstraps[Math.floor(Math.random()*this._bootstraps.length)]];
   var regex = /\%d/;
@@ -32,7 +31,7 @@ Pool.prototype._botConfig = function(number, delay) {
   }
   return {
     node     : config,
-    name     : 'bot-' + number,
+    name     : 'bot-' + this._id + '-' + number,
     delay    : delay,
     activity : this._activity,
     values   : this._values
@@ -41,59 +40,17 @@ Pool.prototype._botConfig = function(number, delay) {
 
 Pool.prototype.start = function() {
   if (!this._launched) {
-    console.log('');
-    console.log('-- New pool (~' + this._sizeLeft + ' bots left)');
-    console.log('');
-
-    var n = Math.min(DEFAULT_SIZE, this._sizeLeft) - 1,
-        s = 0;
-    for (; n >= 0; n--) {
-      s += Math.floor((-Math.log(Math.random()) / LAMBDA * 1000));
-      this._nodes.push(new Bot(this._botConfig(this._sizeLeft, s)));
-      this._sizeLeft--;
+    console.log('new pool ' + this._id);
+    var s = 0;
+    for (n = 0; n < this._size; n++) {
+      s += Math.floor((-Math.log(Math.random()) / this._lambda * 1000));
+      this._nodes.push(new Bot(this._botConfig(n, s)));
     }
-
     this._nodes.map(function(bot) {
       bot.start();
     });
-
-    if (this._sizeLeft > 0) {
-      setTimeout(function(self) {
-        self._duplicate();
-      }, (DEFAULT_SIZE / LAMBDA * 1000) * 1.1, this);
-    }
     this._launched = true;
   }
-};
-
-Pool.prototype._duplicate = function() {
-  var opts = this._options;
-  var args = [
-    __dirname + '/../bin/pool',
-    '--size='       + this._sizeLeft,
-    '--bootstraps=' + this._bootstraps.join(','),
-    '--activity='   + this._activity,
-    '--values='     + this._values
-  ];
-
-  if (opts.reactor.type === 'UDP') {
-    args.push('--udp',
-              '--port=' + opts.reactor.transport.port);
-  } else {
-    args.push('--jid='  + opts.reactor.transport.jid,
-              '--password=' + opts.reactor.transport.password);
-  }
-
-  var dup = spawn('node', args);
-  dup.stdout.on('data', function(data) {
-    process.stdout.write(String(data));
-  });
-  dup.stderr.on('data', function(data) {
-    process.stderr.write(String(data));
-  });
-  dup.on('exit', function(error) {
-    process.stderr.write(String(error));
-  });
 };
 
 function getCloneOfObject(oldObject) {

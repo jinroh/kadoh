@@ -1,82 +1,161 @@
 #!/usr/bin/env node
 
-var nconf = require('nconf');
-var argv  = require('optimist').argv;
-var path  = require('path');
-var spawn = require("child_process").spawn;
+var nconf  = require('nconf');
+var argv   = require('optimist').argv;
+var colors = require('colors');
+var multi  = require('multimeter')(process);
+var charm  = multi.charm;
+var path   = require('path');
+var spawn  = require('child_process').spawn;
+var fork   = require('child_process').fork;
 
 var BBIN = __dirname + "/bootstrap";
 var PBIN = __dirname + "/pool";
 
+charm.reset();
+charm.on('^C', process.exit);
+
 var defaults = {
   botType  : 'xmpp',
+  speed    : 1,
+  poolSize : 30,
   size     : 10,
   activity : 50,
   values   : 100,
   jids     : ["kadoh%d@jabber.org", "azerty"],
   starter  : true,
   bootstraps : [
-    ["bootstrap0@.com", "kadoh", "azerty"],
-    ["bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"],
-    ["bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"]
+    ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
+    ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],
+    ["kadohbootstrap2@jabber.org", "kadoh", "azerty"]
   ]
 };
 
-var configFile;
-if (argv.config) {
-  configFile = path.resolve(argv.config);
+var config = configuration();
+var procs = [];
+(config.starter === false) ? launchPools() : launchBootstraps();
+
+function configuration() {
+  var configFile;
+  if (process.argv.length === 0) {
+
+  } else {
+    // load arguments
+    nconf.argv();
+    // load file
+    if (argv.config) {
+      configFile = path.resolve(argv.config);
+      if (!path.existsSync(configFile)) {
+        configFile = path.resolve(__dirname + "/config/" + argv.config);
+        if (!path.existsSync(configFile)) {
+          console.error("config file doesn't exist");
+          process.exit(1);
+        }
+      }
+      nconf.file({ file : configFile });
+    }
+    // apply default
+    nconf.defaults(defaults);
+  }
+
+  var config = nconf.load();
+  config.activity /= config.size;
+  return config;
 }
 
-var config = nconf.argv()
-             .file({ file : configFile || './config/default.json' })
-             .defaults(defaults)
-             .load();
-
-var activity = config.activity / config.size;
-
-var poolsParams;
-var bootstrapsParams;
-if (config.botType === 'udp') {
-  poolsParams = [
-    PBIN,
-    "--udp",
-    "--port="       + config.port,
-    "--size="       + config.size,
-    "--bootstraps=" + config.bootstraps.join(','),
-    "--activity="   + activity,
-    "--values="     + config.values
-  ];
-} else {
-  var jid = config.jids[0];
-  var psw = config.jids[1];
-  var btp = config.bootstraps.map(function(bootstrap) {
-    return bootstrap[0] + "/" + bootstrap[1];
-  }).join(',');
-  poolsParams = [
-    PBIN,
-    "--jid="        + jid,
-    "--password="   + psw,
-    "--size="       + config.size,
-    "--bootstraps=" + btp,
-    "--activity="   + activity,
-    "--values="     + config.values
-  ];
+function poolParams(id) {
+  var protocol   = config.botType === 'udp' ? 'jsonrpc2' : 'node_xmlrpc';
+  var type       = config.botType === 'udp' ? 'UDP'      : 'NodeXMPP';
+  var bootstraps = config.botType === 'udp' ? 
+                   config.bootstraps :
+                   config.bootstraps.map(function(bootstrap) {
+                     return bootstrap[0] + "/" + bootstrap[1];
+                   });
+  return {
+    id       : id,
+    size     : config.poolSize,
+    activity : config.activity,
+    lambda   : config.speed,
+    values   : config.values,
+    bot : {
+      bootstraps : bootstraps,
+      reactor : {
+        protocol  : protocol, 
+        type      : type,
+        transport : {
+          jid       : config.jids[0],
+          password  : config.jids[1],
+          port      : config.port,
+          reconnect : true
+        }
+      }
+    }
+  };
 }
 
 function launchPools() {
-  var pproc = spawn("node", poolsParams);
-  pproc.stdout.on('data', function(data) {
-    process.stdout.write(String(data));
-  });
-  pproc.stderr.on('data', function(data) {
-    process.stderr.write(String(data));
-  });
+  var bars    = [];
+  var started = [];
+  var means   = [];
+
+  var progress = function(data) {
+    var match = /bot\-(\d+)\-(\d+)\ joined (\d+)/.exec(String(data));
+    if (match) {
+      var size = config.poolSize;
+      var i = parseInt(match[1], 10);
+      if (i == bars.length - 1) {
+        size = config.size - config.poolSize * i;
+      }
+      var bar = bars[i];
+      var sta = ++started[i];
+      means[i] = Math.ceil((means[i] * (sta - 1) + parseInt(match[3], 10)) / sta);
+      var percent = Math.ceil(sta / size * 100);
+      bar.percent(percent, percent + '% (average join ' + means[i] + ')');
+    }
+  };
+
+  var pipe = function(data) {
+    data = String(data);
+    if (!/StringPrep/.test(data)) {
+      process.stdout.write(String(data));
+    }
+  };
+
+  var l = Math.ceil(config.size / config.poolSize);
+  multi.write('Starting a ' + config.botType.green + ' DHT of ' + (config.size + ' bots').red + ' in ' + (l + ' pools').red);
+  for (var i = 0; i < l; i++) {
+    var params = poolParams(i);
+    if (i === l - 1) {
+      params.size = config.size - config.poolSize * i;
+    }
+    var pproc  = spawn('node', [PBIN, JSON.stringify(params)]);
+    procs.push(pproc);
+    var bar = multi(1, i + 5, {
+        width : 40,
+        solid : {
+            text : '-',
+            foreground : 'white',
+            background : 'red'
+        }});
+    bar.percent(0);
+    bars.push(bar);
+    started.push(0);
+    means.push(0);
+    pproc.stdout.on('data', progress);
+    pproc.stderr.on('data', pipe);
+  }
 }
 
-if (config.starter === false) {
-  launchPools();
-} else {
+function launchBootstraps() {
   var connected = 0;
+  var bar = multi(1, 3, {
+    width : 40,
+    solid : {
+        text : '-',
+        foreground : 'white',
+        background : 'green'
+    }
+  });
 
   var bootstrapOptions = config.botType === 'udp' ?
     function(bootstrap) {
@@ -97,15 +176,26 @@ if (config.starter === false) {
 
   config.bootstraps.forEach(function(bootstrap) {
     var bproc = spawn("node", bootstrapOptions(bootstrap));
+    procs.push(bproc);
     bproc.stdout.on('data', function(data) {
       if (/connected/.test(data)) {
-        if (++connected === config.bootstraps.length) {
+        bar.ratio(++connected, config.bootstraps.length, connected + '/' + config.bootstraps.length + ' bootstraps');
+        if (connected === config.bootstraps.length) {
           launchPools();
         }
       }
     });
     bproc.stderr.on('data', function(data) {
-      process.stderr.write(String(data));
+      data = String(data);
+      if (!/StringPrep/.test(data)) {
+        process.stderr.write(String(data));
+      }
     });
   });
 }
+
+process.on('exit', function() {
+  for (var i = 0; i < procs.length; i++) {
+    procs[i].kill();
+  }
+})

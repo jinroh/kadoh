@@ -1,47 +1,9 @@
 #!/usr/bin/env node
 
-//
-// Pool CLI
-//
-
 var Pool = require(__dirname + '/../bots/pool');
 
-var argv = require('optimist')
-          .usage('Usage: $0 -s [num] -j foo@bar -p azerty')
-          .alias('s', 'size')
-          .alias('b', 'bootstraps')
-          .alias('a', 'activity')
-          .alias('v', 'values')
-          .alias('j', 'jid')
-          .alias('p', 'password')
-          .argv;
-
-var protocol   = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
-    type       = argv.udp ? 'UDP'      : 'NodeXMPP',
-    size       = parseInt(argv.size, 10) || 10,
-    values     = parseInt(argv.values, 10) || 10,
-    activity   = argv.activity || false,
-    bootstraps = argv.bootstraps.split(','),
-    transport  = {
-      jid       : argv.jid,
-      password  : argv.password,
-      port      : parseInt(argv.port, 10) || 10000,
-      reconnect : true
-    };
-
-var config = {
-  size     : size,
-  activity : activity,
-  values   : values,
-  bot : {
-    bootstraps : bootstraps,
-    reactor : {
-      protocol  : protocol,
-      type      : type,
-      transport : transport
-    }
-  }
-};
-
-var pool = new Pool(config);
-pool.start();
+var conf = JSON.parse(process.argv[2]);
+var pool = new Pool(conf);
+setTimeout(function() {
+  pool.start();
+}, conf.id * (conf.size / conf.lambda) * 1.1 * 1000);
