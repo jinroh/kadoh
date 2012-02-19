@@ -1,0 +1,111 @@
+#!/usr/bin/env node
+
+var nconf = require('nconf');
+var argv  = require('optimist').argv;
+var path  = require('path');
+var spawn = require("child_process").spawn;
+
+var BBIN = __dirname + "/bootstrap";
+var PBIN = __dirname + "/pool";
+
+var defaults = {
+  botType  : 'xmpp',
+  size     : 10,
+  activity : 50,
+  values   : 100,
+  jids     : ["kadoh%d@jabber.org", "azerty"],
+  starter  : true,
+  bootstraps : [
+    ["bootstrap0@.com", "kadoh", "azerty"],
+    ["bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"],
+    ["bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"]
+  ]
+};
+
+var configFile;
+if (argv.config) {
+  configFile = path.resolve(argv.config);
+}
+
+var config = nconf.argv()
+             .file({ file : configFile || './config/default.json' })
+             .defaults(defaults)
+             .load();
+
+var activity = config.activity / config.size;
+
+var poolsParams;
+var bootstrapsParams;
+if (config.botType === 'udp') {
+  poolsParams = [
+    PBIN,
+    "--udp",
+    "--port="       + config.port,
+    "--size="       + config.size,
+    "--bootstraps=" + config.bootstraps.join(','),
+    "--activity="   + activity,
+    "--values="     + config.values
+  ];
+} else {
+  var jid = config.jids[0];
+  var psw = config.jids[1];
+  var btp = config.bootstraps.map(function(bootstrap) {
+    return bootstrap[0] + "/" + bootstrap[1];
+  }).join(',');
+  poolsParams = [
+    PBIN,
+    "--jid="        + jid,
+    "--password="   + psw,
+    "--size="       + config.size,
+    "--bootstraps=" + btp,
+    "--activity="   + activity,
+    "--values="     + config.values
+  ];
+}
+
+function launchPools() {
+  var pproc = spawn("node", poolsParams);
+  pproc.stdout.on('data', function(data) {
+    process.stdout.write(String(data));
+  });
+  pproc.stderr.on('data', function(data) {
+    process.stderr.write(String(data));
+  });
+}
+
+if (config.starter === false) {
+  launchPools();
+} else {
+  var connected = 0;
+
+  var bootstrapOptions = config.botType === 'udp' ?
+    function(bootstrap) {
+      return [
+        BBIN,
+        "--udp",
+        "--port=" + bootstrap.split(":")[1]
+      ];
+    } :
+    function(bootstrap) {
+      return [
+        BBIN,
+        "--jid="      + bootstrap[0],
+        "--resource=" + bootstrap[1],
+        "--password=" + bootstrap[2]
+      ];
+    };
+
+  config.bootstraps.forEach(function(bootstrap) {
+    var bproc = spawn("node", bootstrapOptions(bootstrap));
+    bproc.stdout.on('data', function(data) {
+      if (/connected/.test(data)) {
+        if (++connected === config.bootstraps.length) {
+          launchPools();
+        }
+      }
+    });
+    bproc.stderr.on('data', function(data) {
+      process.stderr.write(String(data));
+    });
+  });
+}

@@ -16,6 +16,11 @@ var from = 'kadoh@jabber.org';
 var to   = ['alexstrat@jabber.org', 'jinroh@jabber.org'];
 var id   = 'b21108ffbbff076647a0ac0662acf4e4a5244b66';
 var node = new KadOH.Node(id, {
+  bootstraps : [
+    "bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh",
+    "bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh",
+    "bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh"
+  ],
   reactor : {
     transport : {
       jid      : from,
@@ -27,12 +32,7 @@ var node = new KadOH.Node(id, {
 
 var bench = new KadOHBench(node, {
   hopes : 2,
-  idle  : 1000,
-  bootstraps : [
-    "bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh",
-    "bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh",
-    "bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh"
-  ]
+  idle  : 1000
 });
 bench.on('results', function(results) {
   results = JSON.stringify(results, null, "\t");

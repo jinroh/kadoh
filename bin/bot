@@ -32,6 +32,7 @@ var name      = argv.udp ? 'udpbot'   : 'xmppbot',
 var config = {
   name : name,
   node : {
+    bootstraps : bootstraps,
     reactor : {
       protocol  : protocol,
       type      : type,
@@ -39,7 +40,6 @@ var config = {
     }
   },
   delay      : delay,
-  bootstraps : bootstraps,
   activity   : false
 };
 

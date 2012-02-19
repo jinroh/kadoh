@@ -41,6 +41,11 @@
     KadOH.log.addLogger('UILogger', logger);
 
     var config = {
+      bootstraps : [
+        'bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh',
+        'bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh',
+        'bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh'
+      ],
       reactor : {
         transport : {
           jid      : 'kadoh@jabber.org',
@@ -145,11 +150,7 @@
     }
     connectBtn.click(connect);
     joinBtn.click(function() {
-      node.join([
-        'bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh',
-        'bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh',
-        'bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com/kadoh'
-      ]);
+      node.join();
     });
     putBtn.click(function() {
       node.put(null, putValue.val(), null, function(key) {

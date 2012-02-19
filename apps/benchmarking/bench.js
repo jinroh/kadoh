@@ -330,7 +330,7 @@ KadOHBench.prototype = {
         this.emit('join end', res);
       }, this);
     }, this);
-    this.node.join(this.options.bootstraps, cb, this);
+    this.node.join(cb, this);
     this.emit('join start');
     return this;
   },

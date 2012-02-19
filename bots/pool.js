@@ -12,10 +12,10 @@ var Pool = module.exports = function(config) {
   this._options    = config.bot;
   this._jid        = config.bot.reactor.transport.jid;
   this._port       = config.bot.reactor.transport.port;
-  this._sizeLeft   = config.size       || DEFAULT_SIZE;
-  this._bootstraps = config.bootstraps || [];
-  this._activity   = config.activity   || false;
-  this._values     = config.values     || 10;
+  this._bootstraps = config.bot.bootstraps;
+  this._sizeLeft   = config.size     || DEFAULT_SIZE;
+  this._activity   = config.activity || false;
+  this._values     = config.values   || 10;
 
   this._nodes      = [];
   this._launched   = false;
@@ -25,17 +25,17 @@ Pool.prototype._botConfig = function(number, delay) {
   var config = getCloneOfObject(this._options);
   config.reactor.transport.port = this._port + number;
   config.reactor.transport.resource = Math.random().toString().split('.')[1];
+  config.bootstraps = [this._bootstraps[Math.floor(Math.random()*this._bootstraps.length)]];
   var regex = /\%d/;
   if (this._jid && regex.test(this._jid)) {
     config.reactor.transport.jid = this._jid.replace(regex, number);
   }
   return {
-    node  : config,
-    name  : 'bot-' + number,
-    delay : delay,
-    bootstraps : [this._bootstraps[Math.floor(Math.random()*this._bootstraps.length)]],
-    activity   : this._activity,
-    values     : this._values
+    node     : config,
+    name     : 'bot-' + number,
+    delay    : delay,
+    activity : this._activity,
+    values   : this._values
   };
 };
 

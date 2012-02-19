@@ -45,9 +45,8 @@ $(function() {
   // Join the network using other clients as bootstraps
   function onClickJoin(event) {
     try {
-      var bootstraps = ['67.215.242.139:6881', '67.215.242.138:6881'];
       node.connect().once('connected', function() {
-        node.join(bootstraps);
+        node.join();
       });
     } catch(e) {
       console.error(e.stack);
@@ -247,6 +246,7 @@ iterFindRecorder.prototype =  {
   $('#find').click(onClickFind);
 
   var options = {
+    bootstraps : ['67.215.242.139:6881', '67.215.242.138:6881'],
     reactor : {
       protocol  : 'jsonrpc2',
       host      : 'localhost',

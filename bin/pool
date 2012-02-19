@@ -30,12 +30,12 @@ var protocol   = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
     };
 
 var config = {
-  size       : size,
-  bootstraps : bootstraps,
-  activity   : activity,
-  values     : values,
+  size     : size,
+  activity : activity,
+  values   : values,
   bot : {
-      reactor : {
+    bootstraps : bootstraps,
+    reactor : {
       protocol  : protocol,
       type      : type,
       transport : transport

@@ -9,7 +9,6 @@ var Bot = exports.Bot = function(options) {
     node       : {},
     delay      : undefined,
     name       : 'bot',
-    bootstraps : [],
     activity   : false,
     values     : 10
   };
@@ -36,7 +35,7 @@ Bot.prototype.connect = function() {
 Bot.prototype.join = function() {
   var self = this;
   console.log(self._options.name + ' joining');
-  this.kadoh.join(this._options.bootstraps, function(error) {
+  this.kadoh.join(function(error) {
     console.log(self._options.name + ' joined', self.kadoh._routingTable.howManyPeers());
     if (self._options.activity) {
       self.randomActivity();

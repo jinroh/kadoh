@@ -27,7 +27,7 @@ $(function() {
     bootstraps.splice(0, bootstraps.length - number_of_bootstraps);
     
     try {
-      node.join(bootstraps).then(
+      node.join().then(
         function(new_nodes) {
           console.log(new_nodes);
         }

@@ -13,10 +13,11 @@
   <script type="text/javascript" src="UI/js/Log.js"></script>
   <script type="text/javascript" src="UI/js/routing.js"></script>
   <script type="text/javascript" src="UI/js/reactor.js"></script>
-  <script type="text/javascript" src="UI/js/node.js"></script>
+  <script type="text/javascript" src="UI/js/valueM.js"></script>
   <script type="text/javascript" src="UI/js/transport.js"></script>
+  <script type="text/javascript" src="UI/js/node.js"></script>
   <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.css">
-  <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
+<link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" >
 
   <script type="text/javascript">
   // SOME BULLSHIT JS TO BE REPLACED IN kadohui.js
@@ -27,9 +28,11 @@
     var jidInput   = $("#jid");
     var pswdInput  = $("#password");
     var connection = $("#connection");
+    var connectBtn = $("#connection input[name=connect]");
     var joinBtn    = $("#connection input[name=join]");
 
     var options = {
+    bootstraps : ["127.0.0.1:3000", "127.0.0.1:3001", "127.0.0.1:3002"],
     reactor : {
       protocol  : 'jsonrpc2',
       //host      : 'localhost',
@@ -60,6 +63,9 @@
   routing = new KadOHui.Routing(node._routingTable, '#routing-table');
   reactor = new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
   new KadOHui.Node(node, '#node')
+  node.once('connected', function() {
+    valueM = new KadOHui.ValueM(node._store, '#value-management');
+  }, this);
 
   new KadOHui.Transport(node._reactor._transport, '#transport>pre');
 
@@ -79,13 +85,12 @@
 
   function onClickJoin(event) {
     try {
-      var bootstraps = ['67.215.242.139:6881', '67.215.242.138:6881'];
       if(node.stateIsNot('connected')){ 
         node.connect().once('connected', function() {
-          node.join(bootstraps);
+          node.join();
         });
         } else {
-          node.join(bootstraps);
+          node.join();
         }
     } catch(e) {
       console.error(e.stack);
@@ -115,7 +120,8 @@
               <h3>Click on join</h3>
             </div>
             <div id="connection" class="span3">
-              <input type="submit" class="btn" name="join" value="Join" />
+              <input type="submit" class="btn primary"  name="connect" value="Connect" />
+              <input type="submit" class="btn" name="join"    value="Join" />
             </div>
           </div>
         </div>
@@ -125,6 +131,7 @@
           <li><a href="#reactor">Reactor</a></li>
           <li><a href="#transport">Transport</a></li>
           <li><a href="#routing-table">Routing Table</a></li>
+          <li><a href="#value-management">Value Management</a></li>
           <li><a href="#log">Log</a></li>
         </ul>
       </div>
@@ -140,6 +147,7 @@
             </div>
           </div>
         </div>
+
 
         <div class="tab-pane" id="node">
           <div class="row">
@@ -206,13 +214,35 @@
                 </label>
                 <label>
                   <img src="UI/css/images/debug-icon16.png" alt="debug">
-                  <input type="checkbox" name="debugLevel" value="debug" unchecked>
+                  <input type="checkbox" name="debugLevel" value="debug" checked>
                   <span>debug</span>
                 </label>
             </div>
             <div class="console">
             </div>
         </div>
+        <div class="tab-pane" id="value-management">
+          <div class="well">
+          <div style="line-height:1em">Value Management not initialized.</div>
+          </div>
+          <div class="row">
+            <div class="span16">
+              <table class='condensed-table zebra-striped'>
+                <thead>
+                  <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                    <th>Republish</th>
+                    <th>Expiration</th>
+                  </tr>
+                </thead>
+                <tbody class="values">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
 
         <div class="tab-pane" id="routing-table">
           <div class="well">
@@ -225,6 +255,7 @@
         <div class="tab-pane" id="transport">
         <pre class="console"></pre>
         </div>
+
       </div>
     </div>
 
