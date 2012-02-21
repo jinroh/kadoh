@@ -89,6 +89,7 @@ Here is an explanation of such configurations (be aware that comments are normal
   // number of values published by the bots on the DHT
   "values"   : 100,
   // here for instance the jids "kadoh0@jabber.org" .. "kadoh99@jabber.org" with the password "azerty" will be used to connect the bots
+  // if you remove the %d, all bots will have the same address but will connect with different resources to the server
   // when of type xmpp, you have to give the jid and passwords to launch multiple bots
   "jids"     : ["kadoh%d@jabber.org", "azerty"],
   // set to true if you want that this DHT launch the bootstraps or not
