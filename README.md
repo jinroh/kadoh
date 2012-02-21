@@ -39,8 +39,11 @@ To run KadOH you need __[node.js]__ (v0.4.12) and __[npm]__ \(node's packet mana
 
 ## Clone the repository
 
+You may want to checkout our experimental branch
+
 ```bash
 $ git clone https://github.com/jinroh/kadoh.git
+$ git checkout experimental
 ```
 
 ## Install dependencies
