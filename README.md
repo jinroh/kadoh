@@ -38,20 +38,29 @@ _Hints_ : bots, proxy to existing DHTs..
 To run KadOH you need __[node.js]__ (v0.4.12) and __[npm]__ \(node's packet manager\) to be installed.
 
 ## Clone the repository
+
 ```bash
 $ git clone https://github.com/jinroh/kadoh.git
 ```
-    
+
 ## Install dependencies
+
+You will need to install `libexpat-dev` on Linux environments (should not be necessary on Mac OSX with XCode). For instance, on a Ubuntu machine, you'd have to run the folowing `apt-get` :
+
+```bash
+$ sudo apt-get install libexpat-dev
+```
+
+Then enter the `git` repository and install the package dependencies using `npm`.
+
 ```bash
 $ cd kadoh
-$ npm install .
+$ npm install
 ```
     
 ## Build the source tree
 
 To build the source you can use either `jake build` or `jake build:normal`. This will build the main program in `/dist/KadOH.js`.
-
 
 ## Testing
 
@@ -59,15 +68,67 @@ We use [jasmine-node] and [jasmine-runner] for our testing on `node` and directl
 
 You can launch the test using the jake task `jake test:node` or `jake test:browser` which launch a HTTP server on `localhost:8124`.
 
+## Launching you own DHT for testing
 
-## Working example : proxy to Mainline DHT
+To launch you own DHT, you can use our built in scripts. The `dht` executable from the `bin/` directory is made for you. You can start different kind of DHT by writing a little configuration file in `json`. Examples can be found from the `lib/config` directory.
+
+Here is an explanation of such configurations (be aware that comments are normally not allowed in JSON files) :
+
+```json
+{
+  // transport type (xmpp or udp)
+  "botType"  : "xmpp",
+  // total size of the DHT
+  "size"     : 100,
+  // size of each pool
+  "poolSize" : 30,
+  // how many peers per seconds are launched
+  "speed"    : 1,
+  // activity per minutes per bots
+  "activity" : 50,
+  // number of values published by the bots on the DHT
+  "values"   : 100,
+  // here for instance the jids "kadoh0@jabber.org" .. "kadoh99@jabber.org" with the password "azerty" will be used to connect the bots
+  // when of type xmpp, you have to give the jid and passwords to launch multiple bots
+  "jids"     : ["kadoh%d@jabber.org", "azerty"],
+  // set to true if you want that this DHT launch the bootstraps or not
+  "starter"  : true,
+  // specify the bootstraps that will be launched (if starter) and used
+  "bootstraps" : [
+    ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
+    ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],
+    ["kadohbootstrap2@jabber.org", "kadoh", "azerty"]
+  ]
+}
+
+```
+
+Any parameters added through the CLI will overwrite the one from the config files.
+
+```bash
+$ ./bin/dht --config udp.default.json --size=1000 --speed=4
+```
+
+After running this script, you should see each pool running after the other until all bots are launched.
+
+To connect from the browser to the launched DHT, you can start a little HTTP server from our `apps` directory. For instance, if you have launched a UDP DHT, start the server as follow :
+
+```bash
+$ node apps/proxy/udp/app.js
+```
+
+You can connect then the DHT from you browser by going to `localhost:8080` and clicking on join.
+
+If you have started a XMPP DHT, you should start the `apps/xmpp/app.js` HTTP server. Be aware that you might need to change the bootstraps from the `apps/xmpp/index.html` file to match your xmpp bootstraps.
+
+## Mainline Proxy
 
 You can test our implementation of the iterativeFindNode algorithm by launching a proxy server to the Mainline DHT.
 
-In directory `examples/Proxy` run with Node :
+Run with Node :
 
 ```bash
-$ node app.js
+$ node apps/proxy/mainline/app.js
 ```
 
 Then, in your browser go to `localhost:8080` and click on the `join` button. You can explore the iterativeFindNode algorithm steps with the buttons `prev`and `next`.
