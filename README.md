@@ -43,12 +43,13 @@ You may want to checkout our experimental branch
 
 ```bash
 $ git clone https://github.com/jinroh/kadoh.git
+$ cd kadoh
 $ git checkout experimental
 ```
 
 ## Install dependencies
 
-You will need to install `libexpat-dev` on Linux environments (should not be necessary on Mac OSX with XCode). For instance, on a Ubuntu machine, you'd have to run the folowing `apt-get` :
+You will need to install `libexpat` development package on Linux environments (should not be necessary on Mac OSX with XCode). For instance, on a Ubuntu machine, you'd have to run the folowing `apt-get` :
 
 ```bash
 $ sudo apt-get install libexpat-dev
@@ -57,7 +58,6 @@ $ sudo apt-get install libexpat-dev
 Then enter the `git` repository and install the package dependencies using `npm`.
 
 ```bash
-$ cd kadoh
 $ npm install
 ```
     
@@ -75,7 +75,7 @@ You can launch the test using the jake task `jake test:node` or `jake test:brows
 
 To launch you own DHT, you can use our built in scripts. The `dht` executable from the `bin/` directory is made for you. You can start different kind of DHT by writing a little configuration file in `json`. Examples can be found from the `lib/config` directory.
 
-Here is an explanation of such configurations (be aware that comments are normally not allowed in JSON files) :
+Here is an explanation of such configurations (be aware that comments are not allowed in JSON files) :
 
 ```json
 {
@@ -88,14 +88,16 @@ Here is an explanation of such configurations (be aware that comments are normal
   // how many peers per seconds are launched
   "speed"    : 1,
   // activity per minutes per bots
+  // no activity when set to false
   "activity" : 50,
   // number of values published by the bots on the DHT
   "values"   : 100,
-  // here for instance the jids "kadoh0@jabber.org" .. "kadoh99@jabber.org" with the password "azerty" will be used to connect the bots
-  // if you remove the %d, all bots will have the same address but will connect with different resources to the server
   // when of type xmpp, you have to give the jid and passwords to launch multiple bots
+  // here for instance the jids "kadoh0@jabber.org" .. "kadoh99@jabber.org"
+  // with the password "azerty" will be used to connect the bots
+  // if you remove the `%d', all bots will have the same address but will connect with different resources
   "jids"     : ["kadoh%d@jabber.org", "azerty"],
-  // set to true if you want that this DHT launch the bootstraps or not
+  // set to true if you want that this DHT launch the bootstraps processes
   "starter"  : true,
   // specify the bootstraps that will be launched (if starter) and used
   "bootstraps" : [
