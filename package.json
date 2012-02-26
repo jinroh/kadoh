@@ -1,21 +1,39 @@
 {
     "name": "KadOH"
-  , "version": "0.1"
+  , "version": "0.1.0"
   , "description": "Kademlia over HTTP in Javascript"
-  , "keywords":["p2p", "kad", "kademlia", "http", "node.js", "node", "javascript"]
-  , "author": "Alexandre Lachèze <alexandre.lacheze@gmail.com> and Pierre Guilleminot <pierre.guilleminot@gmail.com>"
+  , "keywords":["p2p", "kad", "kademlia", "dht", "mainline", "bittorrent", "http", "xmpp", "bosh", "udp", "socket.io"]
+  , "contributors": [
+        "Alexandre Lachèze <alexandre.lacheze@gmail.com>"
+      , "Pierre Guilleminot <pierre.guilleminot@gmail.com>"
+    ]
   , "repository":{
         "type": "git"
       , "url": "https://github.com/jinroh/kadoh.git"
     }
   , "dependencies": {
-        "socket.io": "0.8.4"
-      , "jake": "0.1.19"
-      , "uglify-js": "1.1.1"
-    }
-  , "devDependencies": {
-        "jasmine-runner": "0.2.9"
-      , "jasmine-node": "1.0.12"
+        "colors"           : "~0.6"
+      , "connect"          : "~1.8"
+      , "express"          : "~2.5"
+      , "ifconfig.me"      : "https://github.com/alexstrat/ifconfig.me-node/tarball/master"
+      , "jake"             : "~0.1"
+      , "jsCicada"         : "~0.1"
+      , "klass"            : "~1.2"
+      , "ltx"              : "~0.1.2"
+      , "node-xmpp"        : "~0.3.1"
+      , "restler"          : "~0.2.1"
+      , "socket.io"        : "~0.8"
+      , "socket.io-client" : "~0.8"
+    },
+    "scripts": {
+      "test": "jake build:node && jasmine-node spec"
+    },
+   "devDependencies": {
+        "jasmine-node"   : "~1.0"
+      , "jasmine-runner" : "https://github.com/alexstrat/jasmine-tool/tarball/master"
+      , "optimist"       : "~0.3"
+      , "nconf"          : "~0.5"
+      , "multimeter"     : "~0.1"
     }
   , "engines": { "node": ">= 0.4.0" }
 }
