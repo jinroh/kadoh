@@ -25,9 +25,7 @@ _Hints_ : AJAX long-polling, WebSocket, Socket.io and XMPP over BOSH..
 
 ### Large scale-testing
 
-The aim of our project is not to join an existing DHT, because, since the majority of them works uppon raw UDP or TCP, we can not connect to them with a browser.So, we should create our own protocol and own network. 
-
-However, to test our implementation we need some instance nodes of it - actually, quite a lot of nodes. Indeed, Kademlia is designed to be scalable and all the magic happens when it works with a huge amount of nodes.
+To test our implementation we need some instance nodes of it - actually, quite a lot of nodes. Indeed, Kademlia is designed to be scalable and all the magic happens when it works with a huge amount of nodes.
 
 One of our challenge is to test our system at large-scale.
 
@@ -35,16 +33,13 @@ _Hints_ : bots, proxy to existing DHTs..
 
 # Install
 
-To run KadOH you need __[node.js]__ (v0.4.12) and __[npm]__ \(node's packet manager\) to be installed.
+To run KadOH you need __[node.js]__ (>= v0.4) and __[npm]__ \(node's packet manager\) to be installed.
 
 ## Clone the repository
-
-You may want to checkout our experimental branch
 
 ```bash
 $ git clone https://github.com/jinroh/kadoh.git
 $ cd kadoh
-$ git checkout experimental
 ```
 
 ## Install dependencies
@@ -63,7 +58,13 @@ $ npm install
     
 ## Build the source tree
 
-To build the source you can use either `jake build` or `jake build:normal`. This will build the main program in `/dist/KadOH.js`.
+To build the source you can use :
+
+```
+$ jake build
+```
+
+This will build the main program in the `/dist` directory.
 
 ## Testing
 

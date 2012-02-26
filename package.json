@@ -2,7 +2,7 @@
     "name": "KadOH"
   , "version": "0.1.0"
   , "description": "Kademlia over HTTP in Javascript"
-  , "keywords":["p2p", "kad", "kademlia", "http", "node.js", "node", "javascript"]
+  , "keywords":["p2p", "kad", "kademlia", "dht", "mainline", "bittorrent", "http", "xmpp", "bosh", "udp", "socket.io"]
   , "contributors": [
         "Alexandre Lachèze <alexandre.lacheze@gmail.com>"
       , "Pierre Guilleminot <pierre.guilleminot@gmail.com>"
