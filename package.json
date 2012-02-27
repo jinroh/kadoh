@@ -21,6 +21,7 @@
       , "klass"            : "~1.2"
       , "ltx"              : "~0.1"
       , "node-xmpp"        : "~0.3"
+      , "bncode"           : "~0.2"
       , "restler"          : "~0.2"
       , "socket.io"        : "~0.9"
       , "socket.io-client" : "~0.9"
