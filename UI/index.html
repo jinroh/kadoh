@@ -1,0 +1,469 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KadOH</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <script type="text/javascript" src="../lib/ext/jquery/jquery-1.7.min.js"></script>
+  <script type="text/javascript" src="js/vendor/bootstrap-tabs.js"></script>
+  <script type="text/javascript" src="js/vendor/bootstrap-twipsy.js"></script>
+  <script type="text/javascript" src="js/vendor/bootstrap-popover.js"> </script>
+  <script type="text/javascript" src="js/vendor/bootstrap-buttons.js"></script>
+  <script type="text/javascript" src="js/kadohui.js"></script>
+  <script type="text/javascript" src="js/Log.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/KadOHUI.css" media="all">
+
+  <script type="text/javascript">
+  // SOME BULLSHIT JS TO BE REPLACED IN kadohui.js
+  $(function() { KadOHui.init();}); 
+  
+  function enable(elt) {
+    return elt.removeClass("disabled")
+              .removeAttr("disabled");
+  }
+
+  function disable(elt) {
+    return elt.addClass("disabled")
+              .attr("disabled", "disabled");
+  }
+
+  $(function () {
+    // Popover
+    var config = {
+      reactor : {
+        tranport : {}
+      }
+    };
+    
+    var inputs     = $("#credentials input");
+    var transport  = $("select.transport");
+    var jidInput   = $("#jid");
+    var pswdInput  = $("#password");
+    var connection = $("#connection");
+    var connectBtn = $("#connection input[name=connect]");
+    var joinBtn    = $("#connection input[name=join]");
+    
+    // Transport configs
+    var changeTransport = function() {
+      var type = config.reactor.type = $(this).val();
+      if (type === "XMPP") {
+        enable(inputs);
+      } else {
+        disable(inputs);
+      }
+    }
+    transport.change(changeTransport);
+    changeTransport.call(transport);
+
+    // Login configs
+    jidInput.keyup(function() {
+      config.reactor.transport.jid = $(this).val();
+    });
+    pswdInput.keyup(function() {
+      config.reactor.transport.password = $(this).val();
+    });
+
+    // Connection
+    var connect = function() {
+      var that = $(this);
+      that.unbind("click", connect);
+      that.addClass("disabled");
+      disable(transport);
+      var connected = function() {
+        that.removeClass("primary danger disabled")
+            .addClass("success")
+            .attr("value", "Disconnect");
+        that.click(disconnect);
+        enable(joinBtn);
+      };
+      var failure = function() {
+        that.removeClass("primary danger disabled")
+            .addClass("danger")
+            .attr("value", "Retry ?");
+        that.click(connect);
+        enable(transport);
+      };
+      setTimeout(Math.floor(Math.random() * 2) ? connected : failure, 1000);
+    };
+    var disconnect = function() {
+      var that = $(this);
+      that.unbind("click", disconnect);
+      that.addClass("disabled");
+      var disconnected = function() {
+        that.removeClass("success disabled")
+            .addClass("primary")
+            .attr("value", "Connect");
+        that.click(connect);
+        enable(transport);
+        disable(joinBtn);
+      };
+      var failure = function() {
+        that.removeClass("success disabled")
+            .addClass("danger")
+            .attr("value", "Retry ?");
+        that.click(disconnect);
+      };
+      setTimeout(Math.floor(Math.random() * 2) ? disconnected : failure, 1000);
+    }
+    connectBtn.click(connect);
+  });
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="topbar">
+      <div class="fill">
+        <div class="container"><a href="#" class="brand">KadOH</a></div>
+      </div>
+    </div>
+    <div id="content">
+
+      <div class="page-header">
+        <div id="connection-control">
+          <div class="row">
+            <div class="span2">
+              <select class="span2 transport">
+                <option value="SimUDP">Mainline</option>
+                <option value="XMPP">XMPP</option>
+              </select>
+            </div>
+            <div id="credentials" class="span10">
+              <input class="span3" type="text"     id="jid"      placeholder="Jabber or GMail login" />
+              <input class="span3" type="password" id="password" placeholder="Password" />
+            </div>
+            <div id="connection" class="span3">
+              <input type="submit" class="btn primary"  name="connect" value="Connect" />
+              <input type="submit" class="btn disabled" name="join"    value="Join" />
+            </div>
+          </div>
+        </div>
+        <ul class="tabs" data-tabs="tabs">
+          <li class="active"><a href="#control">Control</a></li>
+          <li><a href="#node">Node</a></li>
+          <li><a href="#reactor">Reactor</a></li>
+          <li><a href="#transport">Transport</a></li>
+          <li><a href="#routing-table">Routing Table</a></li>
+          <li><a href="#value-management">Value Management</a></li>
+          <li><a href="#log">Log</a></li>
+        </ul>
+      </div>
+
+      <div class="tab-content">
+
+        <div class="active tab-pane" id="control">
+          <h3>Control panel</h3>
+        </div>
+
+
+        <div class="tab-pane" id="node">
+          <h3>Node</h3>
+        </div>
+
+
+        <div class="tab-pane" id="reactor">
+          <div class="row">
+            <span class="state label important">Disconnected</span>
+          </div>
+          <div class="row">
+            <div class="span8">
+              <h4>Received RPCs</h4>
+              <div class ="table">
+              <table class='condensed-table'>
+                <tbody>
+                  <tr>
+                    <td>lu</td>
+                    <td><b>jinroh@jabber.org</b><br><a href="#" class="sha" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td><code>PING</code></td>
+                    <td></td>
+                    <td><span class="label success">Resolved</span></td>
+                    <td><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></td>
+                  </tr>
+                  <tr>
+                    <td>fu</td>
+                    <td><b>kadoh@jabber.org</b><br><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><code>FIND_NODE</code></td>
+                    <td><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><span class="label success" rel="popover" data-original-title="Peers" data-content="<table class='condensed-table zebra-striped'>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org</b></td>
+                  <td><a href='#' class='sha' data-placement='below' rel='twipsy' title='da34a3ee5e6b4b0d3255bfef95601890afd80709'>da34a3ee5e</a></td>
+                </tr>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org<b></td>
+                  <td class='sha'><a>da39a3ee5e</a></td>
+                </tr>
+              </table>" data-placement="below">Resolved</span></td>
+                    <td><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></td>
+                  </tr>
+                  <tr>
+                    <td>fu</td>
+                    <td><b>kadoh@jabber.org</b><br><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><code>FIND_NODE</code></td>
+                    <td><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><span class="label success" rel="popover" data-original-title="Peers" data-content="<table class='condensed-table zebra-striped'>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org</b></td>
+                  <td><a href='#' class='sha' data-placement='below' rel='twipsy' title='da34a3ee5e6b4b0d3255bfef95601890afd80709'>da34a3ee5e</a></td>
+                </tr>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org<b></td>
+                  <td class='sha'><a>da39a3ee5e</a></td>
+                </tr>
+              </table>" data-placement="below">Resolved</span></td>
+                    <td><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></td>
+                  </tr>
+                  <tr>
+                    <td>fu</td>
+                    <td><b>kadoh@jabber.org</b><br><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><code>FIND_NODE</code></td>
+                    <td><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><span class="label success" rel="popover" data-original-title="Peers" data-content="<table class='condensed-table zebra-striped'>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org</b></td>
+                  <td><a href='#' class='sha' data-placement='below' rel='twipsy' title='da34a3ee5e6b4b0d3255bfef95601890afd80709'>da34a3ee5e</a></td>
+                </tr>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org<b></td>
+                  <td class='sha'><a>da39a3ee5e</a></td>
+                </tr>
+              </table>" data-placement="below">Resolved</span></td>
+                    <td><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></td>
+                  </tr>
+                  <tr>
+                    <td>fu</td>
+                    <td><b>kadoh@jabber.org</b><br><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><code>FIND_NODE</code></td>
+                    <td><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><span class="label success" rel="popover" data-original-title="Peers" data-content="<table class='condensed-table zebra-striped'>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org</b></td>
+                  <td><a href='#' class='sha' data-placement='below' rel='twipsy' title='da34a3ee5e6b4b0d3255bfef95601890afd80709'>da34a3ee5e</a></td>
+                </tr>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org<b></td>
+                  <td class='sha'><a>da39a3ee5e</a></td>
+                </tr>
+              </table>" data-placement="below">Resolved</span></td>
+                    <td><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></td>
+                  </tr>
+                  <tr>
+                    <td>fu</td>
+                    <td><b>kadoh@jabber.org</b><br><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><code>FIND_NODE</code></td>
+                    <td><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><span class="label success" rel="popover" data-original-title="Peers" data-content="<table class='condensed-table zebra-striped'>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org</b></td>
+                  <td><a href='#' class='sha' data-placement='below' rel='twipsy' title='da34a3ee5e6b4b0d3255bfef95601890afd80709'>da34a3ee5e</a></td>
+                </tr>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org<b></td>
+                  <td class='sha'><a>da39a3ee5e</a></td>
+                </tr>
+              </table>" data-placement="below">Resolved</span></td>
+                    <td><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></td>
+                  </tr>
+                  <tr>
+                    <td>fu</td>
+                    <td><b>kadoh@jabber.org</b><br><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><code>FIND_NODE</code></td>
+                    <td><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><span class="label success" rel="popover" data-original-title="Peers" data-content="<table class='condensed-table zebra-striped'>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org</b></td>
+                  <td><a href='#' class='sha' data-placement='below' rel='twipsy' title='da34a3ee5e6b4b0d3255bfef95601890afd80709'>da34a3ee5e</a></td>
+                </tr>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org<b></td>
+                  <td class='sha'><a>da39a3ee5e</a></td>
+                </tr>
+              </table>" data-placement="below">Resolved</span></td>
+                    <td><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></td>
+                  </tr>
+                  <tr>
+                    <td>fu</td>
+                    <td><b>kadoh@jabber.org</b><br><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><code>FIND_NODE</code></td>
+                    <td><a href="#" class="sha" data-placement="below" rel="twipsy" title="da34a3ee5e6b4b0d3255bfef95601890afd80709">da34a3ee5e</a></td>
+                    <td><span class="label success" rel="popover" data-original-title="Peers" data-content="<table class='condensed-table zebra-striped'>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org</b></td>
+                  <td><a href='#' class='sha' data-placement='below' rel='twipsy' title='da34a3ee5e6b4b0d3255bfef95601890afd80709'>da34a3ee5e</a></td>
+                </tr>
+                <tr>
+                  <td>160</td>
+                  <td><b>jinroh@jabber.org<b></td>
+                  <td class='sha'><a>da39a3ee5e</a></td>
+                </tr>
+              </table>" data-placement="below">Resolved</span></td>
+                    <td><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></td>
+                  </tr>
+                </tbody>
+              </table>
+              </div>
+            </div>
+            <div class="span8">
+              <h4>Sent RPCs</h4>
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="tab-pane" id="log">
+            <div class="well control">
+              <h5>Log level :</h5>
+                <label>
+                  <img src="css/images/info-icon16.png" alt="info">
+                  <input type="checkbox" name="debugLevel" value="info" checked>
+                  <span>info</span>
+                </label>
+                <label>
+                  <img src="css/images/warn-icon16.png" alt="warning">
+                  <input type="checkbox" name="debugLevel" value="warn" checked>
+                  <span>warning</span>
+                </label>
+                <label>
+                  <img src="css/images/error-icon16.png" alt="error">
+                  <input type="checkbox" name="debugLevel" value="error" checked>
+                  <span>error</span>
+                </label>
+                <label>
+                  <img src="css/images/skull-icon16.png" alt="fatal">
+                  <input type="checkbox" name="debugLevel" value="fatal" checked>
+                  <span>fatal</span>
+                </label>
+                <label>
+                  <img src="css/images/debug-icon16.png" alt="debug">
+                  <input type="checkbox" name="debugLevel" value="debug" checked>
+                  <span>debug</span>
+                </label>
+            </div>
+            <div class="console">
+              <div class="row error">
+                <div class="span1">node</div>
+                <div class="span1">&nbsp;</div>
+                <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. </div>
+                <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:14:17Z">July 17, 2008</time></div>
+              </div>
+              <div class="row fatal">
+                <div class="span1">Routing</div>
+                <div class="span1">&nbsp;</div>
+                <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. </div>
+                <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:04:17Z">July 17, 2008</time></div>
+              </div>
+              <div class="row info">
+                <div class="span1">value</div>
+                <div class="span1">&nbsp;</div>
+                <div class="span12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. </div>
+                <div class="span2"><time rel="twipsy" datetime="2012-01-09T15:02:17Z">July 17, 2008</time></div>
+              </div>
+            </div>
+        </div>
+
+
+
+        <div class="tab-pane" id="value-management">
+            <h3>Value Management</h3>
+        </div>
+
+
+
+
+
+        <div class="tab-pane" id="routing-table">
+          <div class="well">
+            <div style="line-height:1em">Routing Table contains a total of <strong>4 peers</strong> in <strong>2 buckets</strong></div>
+          </div>
+          <div class="console">
+            
+
+            <div class="kbucket row">
+              <div class="kb-title span3">
+                <h4>Bucket #1 <small>[160, 159[</small></h4>
+                <span class="kb-refresh">refresh in 3 sec</span>
+              </div>
+              <div class="peers span13">
+                <table class="zebra-striped">
+                  <tr class="peer">
+                    <td class="distance">160</td>
+                    <td class="jid">jinroh@jabber.org</td>
+                    <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td class="last-seen">10 min</td>
+                  </tr>
+                  <tr class="peer">
+                    <td class="distance">160</td>
+                    <td class="jid">jinroh@jabber.org</td>
+                    <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td class="last-seen">10 min</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            
+            <div class="kbucket row">
+              <div class="kb-title span3">
+                <h4>Bucket #2 <small>[159, 158[</small></h4>
+                <span class="kb-refresh">refresh in 1 h</span>
+              </div>
+              <div class="peers span13">
+                <i>Empty</i>
+              </div>
+            </div>
+            
+            <div class="kbucket row">
+              <div class="kb-title span3">
+                <h4>Bucket #3 <small>[158, 0[</small></h4>
+                <span class="kb-refresh">refresh in 1 h</span>
+              </div>
+              <div class="peers span13">
+                <table class="zebra-striped">
+                  <tr class="peer new">
+                    <td class="distance">160</td>
+                    <td class="jid">jinroh@jabber.org</td>
+                    <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td class="last-seen">5 min</td>
+                  </tr>
+                  <tr class="peer">
+                    <td class="distance">160</td>
+                    <td class="jid">jinroh@jabber.org/blala</td>
+                    <td class="sha"><a href="#" data-placement="below" rel="twipsy" title="da39a3ee5e6b4b0d3255bfef95601890afd80709">da39a3ee5e</a></td>
+                    <td class="last-seen">10 min</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="transport">
+          <h3>Transport</h3>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p><strong>Pierre Guilleminot</strong> &amp; <strong>Alexandre Lacheze</strong></p>
+      <p><a href="https://github.com/jinroh/kadoh">KadOH on Github</a></p>
+    </footer>
+  </div>
+</body>
+</html>

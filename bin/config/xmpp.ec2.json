@@ -1,0 +1,15 @@
+{
+  "botType"  : "xmpp",
+  "poolSize" : 30,
+  "speed"    : 1,
+  "size"     : 1000,
+  "activity" : 50,
+  "values"   : 100,
+  "jids"     : ["kadoh%d@ec2-107-21-104-96.compute-1.amazonaws.com", "azerty"],
+  "starter"  : true,
+  "bootstraps" : [
+    ["bootstrap0@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"],
+    ["bootstrap1@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"],
+    ["bootstrap2@ec2-107-21-104-96.compute-1.amazonaws.com", "kadoh", "azerty"]
+  ]
+}

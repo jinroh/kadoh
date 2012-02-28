@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+var util = require('util');
+var Bootstrap = require(__dirname + '/../dist/KadOH_bootstrap.node.js').Bootstrap;
+process.listening = true;
+
+var argv  = require('optimist')
+            .usage('Usage: $0 -j foo@bar -r kadoh -p azerty')
+            .alias('j', 'jid')
+            .alias('r', 'resource')
+            .alias('p', 'password')
+            .argv;
+
+var debug     = !!argv.debug,
+    name      = argv.udp ? 'udpbot'   : 'xmppbot',
+    protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
+    type      = argv.udp ? 'UDP'      : 'NodeXMPP',
+    transport = {
+      jid       : argv.jid,
+      resource  : argv.resource,
+      password  : argv.password,
+      port      : argv.port,
+      reconnect : true
+    },
+    config = {
+      reactor : {
+        protocol  : protocol,
+        type      : type,
+        transport : transport
+      }
+    };
+
+var bootstrap = new Bootstrap(null, config);
+bootstrap.connect(function() {
+  console.log('connected', bootstrap.getAddress());
+});
