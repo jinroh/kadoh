@@ -152,11 +152,11 @@ iterFindRecorder.prototype =  {
 
     state.HeardOf = iterfind.HeardOf.clone();
 
-    state.totalHeardOf = iterfind.HeardOf.length();
-    state.totalQueried = iterfind.Queried.length();
-    state.totalReached = iterfind.Reached.length();
-    state.totalNotReached = iterfind.NotReached.length();
-    state.totalTrap = iterfind.Trap.length();
+    state.totalHeardOf = iterfind.HeardOf.size();
+    state.totalQueried = iterfind.Queried.size();
+    state.totalReached = iterfind.Reached.size();
+    state.totalNotReached = iterfind.NotReached.size();
+    state.totalTrap = iterfind.Trap.size();
 
     state.shot = state.HeardOf.getRawArray()
                       .map(function(peer) {

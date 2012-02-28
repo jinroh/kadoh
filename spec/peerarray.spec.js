@@ -49,7 +49,7 @@ describe('PeerArray', function() {
       var peer1 = new Peer(socket);
       var peer2 = new Peer(socket);
       arr.add([peer1, peer2]);
-      expect(arr.length()).toEqual(1);
+      expect(arr.size()).toEqual(1);
     });
 
     it('should be possible to add a PeerArray instance', function() {
@@ -145,7 +145,7 @@ describe('SortedPeerArray', function() {
       var peer1 = new Peer(socket);
       var peer2 = new Peer(socket);
       arr.add([peer1, peer2]);
-      expect(arr.length()).toEqual(1);
+      expect(arr.size()).toEqual(1);
     });
 
     it('should be possible to add a PeerArray instance', function() {

@@ -323,8 +323,8 @@ KadOHBench.prototype = {
       iterfind.addErrback(function() {
         var res = {};
         res.time = new Date().getTime() - start;
-        res.reached = iterfind.Reached.length();
-        res.queries = iterfind.Queried.length();
+        res.reached = iterfind.Reached.size();
+        res.queries = iterfind.Queried.size();
         res.closest = iterfind.Reached.getPeer(0).getDistanceTo(iterfind._target);
         this.results.join.push(res);
         this.emit('join end', res);
@@ -341,9 +341,9 @@ KadOHBench.prototype = {
       iterfind[method](function() {
         var res = {};
         res.time = new Date().getTime() - start;
-        res.reached = iterfind.Reached.length();
-        res.queries = iterfind.Queried.length();
-        res.closest = (iterfind.Reached.length() !==0) ? iterfind.Reached.getPeer(0).getDistanceTo(iterfind._target) : null;
+        res.reached = iterfind.Reached.size();
+        res.queries = iterfind.Queried.size();
+        res.closest = (iterfind.Reached.size() !==0) ? iterfind.Reached.getPeer(0).getDistanceTo(iterfind._target) : null;
         res_push.push(res);
         this.emit('iterFind end', res);
       }, this);

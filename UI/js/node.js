@@ -73,7 +73,7 @@ KadOHui.Node.prototype = {
     ['<tr>',
       '<td><a href="#" class="sha" data-placement="below" rel="twipsy" data-original-title="'+target+'">'+target.slice(0,10)+'</a></td>',
       '<td><code>'+target_type+'</code></td>',
-      '<td><i>started with <b>'+start_peers.length()+' </b><a rel="popover" data-content="'+KadOHui.helper.peerTable(start_peers, target)+'" data-original-title="Start peers" data-placement="below">peers</a></i></td>',
+      '<td><i>started with <b>'+start_peers.size()+' </b><a rel="popover" data-content="'+KadOHui.helper.peerTable(start_peers, target)+'" data-original-title="Start peers" data-placement="below">peers</a></i></td>',
       '<td><span class="state label warning">Progress</span></td>',
       '<td><time rel="twipsy" datetime="'+time.toISOString()+'" data-placement="below">'+time.toLocaleTimeString()+'</time></td>',
     '</tr>'];
@@ -98,13 +98,13 @@ KadOHui.Node.prototype = {
                 '<tbody>'+
                   '<tr>'+
                     '<td>'+s+'s '+elaps+'ms</td>'+
-                    '<td>'+iterfind.Queried.length()+'</td>'+
-                    '<td>'+iterfind.HeardOf.length()+' peers</td>'+
+                    '<td>'+iterfind.Queried.size()+'</td>'+
+                    '<td>'+iterfind.HeardOf.size()+' peers</td>'+
                   '</tr>'+
                 '</tbody>'+
              '</table>';
 
-     html += '<h5>'+peers.length()+' reached peers</h5>';
+     html += '<h5>'+peers.size()+' reached peers</h5>';
      html += KadOHui.helper.peerTable(peers, iterfind._target);
 
      return html;

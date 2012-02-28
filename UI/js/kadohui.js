@@ -41,7 +41,7 @@ KadOHui.helper.peerTable = function(peerArray, relative_node_id) {
                '</tr>';
      html = html + tr;
    });
-   if(peerArray.length() ===0) html = html + '<i>empty</i>';
+   if(peerArray.size() ===0) html = html + '<i>empty</i>';
 
    html = html+'</table>';
    return html;
