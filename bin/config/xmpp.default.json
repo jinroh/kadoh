@@ -1,0 +1,15 @@
+{
+  "botType"  : "xmpp",
+  "poolSize" : 30,
+  "speed"    : 1,
+  "size"     : 100,
+  "activity" : 50,
+  "values"   : 100,
+  "jids"     : ["kadoh%d@jabber.org", "azerty"],
+  "starter"  : true,
+  "bootstraps" : [
+    ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
+    ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],
+    ["kadohbootstrap2@jabber.org", "kadoh", "azerty"]
+  ]
+}

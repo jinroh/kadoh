@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+
+//
+// Bot CLI
+//
+
+var Bot = require(__dirname + '/../bots/bot').Bot;
+process.listening = true;
+
+var argv  = require('optimist')
+            .usage('Usage: $0 -j foo@bar -r kadoh -p azerty -d [num]')
+            .alias('j', 'jid')
+            .alias('r', 'resource')
+            .alias('p', 'password')
+            .alias('d', 'delay')
+            .alias('b', 'bootstraps')
+            .argv;
+
+var name      = argv.udp ? 'udpbot'   : 'xmppbot',
+    protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
+    type      = argv.udp ? 'UDP'      : 'NodeXMPP',
+    delay     = argv.delay || 0,
+    transport = {
+      jid       : argv.jid,
+      resource  : argv.resource,
+      password  : argv.password,
+      port      : parseInt(argv.port, 10) || 10000,
+      reconnect : true
+    },
+    bootstraps = argv.bootstraps.split(',');
+
+var config = {
+  name : name,
+  node : {
+    bootstraps : bootstraps,
+    reactor : {
+      protocol  : protocol,
+      type      : type,
+      transport : transport
+    }
+  },
+  delay      : delay,
+  activity   : false
+};
+
+var bot = new Bot(config);
+bot.start();
+
+if (argv.cli) {
+  require('repl').start('> ').context.node = bot.kadoh;
+}

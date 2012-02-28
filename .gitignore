@@ -14,7 +14,10 @@ npm-debug.log
 # argo-uml
 *~
 
-#jake
+# hookio
+config.json
+
+# jake
 .jake_tasks
 
 # jasmine-node
@@ -23,3 +26,7 @@ npm-debug.log
 # alex
 dht/lib_test
 dht/dist_test
+
+# pierre
+*.sublime-project
+*.sublime-workspace
