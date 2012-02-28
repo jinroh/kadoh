@@ -45,7 +45,12 @@
         "[KadOH]/rpc/protocol/xmlrpc"
       ],
       "build"   : "[dist]/KadOH.node.js"
-    }, 
+    },
+    "min-node" : {
+      "depends" : "node",
+      "mignify" : true,
+      "build"   : "[dist]/KadOH.node.min.js"
+    },
     "bootstrap" : {
       "entry"   : "[KadOH]/bootstrap",
       "exclude" : [
