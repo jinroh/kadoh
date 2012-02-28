@@ -1,7 +1,7 @@
 //
 // Bot
 //
-var KadOH = require(__dirname + '/../dist/KadOH.node.js');
+var KadOH = require(__dirname + '/../../dist/KadOH.node.js');
 
 KadOH.log.setLevel('error');
 var Bot = exports.Bot = function(options) {

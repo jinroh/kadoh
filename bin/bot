@@ -4,7 +4,7 @@
 // Bot CLI
 //
 
-var Bot = require(__dirname + '/../bots/bot').Bot;
+var Bot = require(__dirname + '/bots/bot').Bot;
 process.listening = true;
 
 var argv  = require('optimist')
