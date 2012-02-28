@@ -97,20 +97,31 @@ function launchPools() {
   var bars    = [];
   var started = [];
   var means   = [];
+  var mins    = [];
+  var maxs    = [];
 
   var progress = function(data) {
     var match = /bot\-(\d+)\-(\d+)\ joined (\d+)/.exec(String(data));
     if (match) {
-      var size = config.poolSize;
-      var i = parseInt(match[1], 10);
-      if (i == bars.length - 1) {
-        size = config.size - config.poolSize * i;
+      var pool   = parseInt(match[1], 10);
+      var joined = parseInt(match[3], 10);
+      var sta    = ++started[pool];
+      var size   = config.poolSize;
+
+      if (pool == bars.length - 1) {
+        size = config.size - config.poolSize * pool;
       }
-      var bar = bars[i];
-      var sta = ++started[i];
-      means[i] = Math.ceil((means[i] * (sta - 1) + parseInt(match[3], 10)) / sta);
+
       var percent = Math.ceil(sta / size * 100);
-      bar.percent(percent, percent + '% (average join ' + means[i] + ')');
+      means[pool] = (means[pool] * (sta - 1) + joined) / sta;
+      maxs[pool]  = joined > maxs[pool] ? joined : maxs[pool];
+      mins[pool]  = joined < mins[pool] ? joined : mins[pool];
+      
+      bars[pool].percent(percent, percent + '%\t' +
+                                  '(min:'+ mins[pool] +
+                                  ' max:'+ maxs[pool] +
+                                  ' avg:' + Math.ceil(means[pool]) + 
+                                  ')    ');
     }
   };
 
@@ -141,6 +152,8 @@ function launchPools() {
     bars.push(bar);
     started.push(0);
     means.push(0);
+    mins.push(Infinity);
+    maxs.push(0);
     pproc.stdout.on('data', progress);
     pproc.stderr.on('data', pipe);
   }
