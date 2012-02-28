@@ -1,8 +1,14 @@
 describe('PeerArray', function() {
   beforeEach(function() {
     PeerArray = KadOH.PeerArray;
-    Peer = KadOH.Peer;
     SHA1 = KadOH.globals.DIGEST;
+    Peer = function() {
+      var args = arguments;
+      if (Array.isArray(args[0])) {
+        args = args[0];
+      }
+      return new KadOH.Peer(args[0], args[1] || SHA1(args[0]));
+    };
     ip = '234.5.78.4';
     port = 1234;
     socket = ip + ':' + port;
@@ -91,8 +97,13 @@ describe('SortedPeerArray', function() {
   
   beforeEach(function() {
     PeerArray = KadOH.XORSortedPeerArray;
-    Peer = KadOH.Peer;
-    SHA1 = KadOH.globals.DIGEST;
+    Peer = function() {
+      var args = arguments;
+      if (Array.isArray(args[0])) {
+        args = args[0];
+      }
+      return new KadOH.Peer(args[0], args[1] || SHA1(args[0]));
+    };    SHA1 = KadOH.globals.DIGEST;
     ip = '234.5.78.4';
     port = 1234;
     socket = ip + ':' + port;

@@ -1,7 +1,8 @@
 describe('in Reactor', function() {
   beforeEach(function() {
-    Peer      = KadOH.Peer;
-    PeerArray = KadOH.PeerArray;
+    Peer          = KadOH.Peer;
+    PeerBootstrap = KadOH.PeerBootstrap;
+    PeerArray     = KadOH.PeerArray;
 
     //mocking
     Reactor = KadOH.rpc.Reactor.extend({
@@ -146,7 +147,7 @@ describe('in Reactor', function() {
 
     describe('when sending but i dont know the id (bootstrap)', function() {
       beforeEach(function() {
-        you = new Peer('you@you.me',null);
+        you = new PeerBootstrap('you@you.me');
         rpc = R.sendRPC(you ,'PING');
       });
       describe('when receiving a response', function() {

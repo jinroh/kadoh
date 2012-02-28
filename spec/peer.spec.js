@@ -1,8 +1,13 @@
 describe('Peer', function() {
+  var rID = function() {
+    return KadOH.util.Crypto.digest.randomSHA1();
+  }
+
   beforeEach(function() {
     Peer = KadOH.Peer;
     SHA1 = KadOH.globals.DIGEST;
     ip = '234.5.78.4:1234';
+    id = rID();
   });
   
   it('should be a function', function() {
@@ -12,7 +17,7 @@ describe('Peer', function() {
   describe('When I instantiate a new Peer', function() {
     
     beforeEach(function() {
-      peer = new Peer(ip);
+      peer = new Peer(ip, id);
     });
     
     it('should respond to `getAddress()` and `getID()`', function() {
@@ -24,8 +29,8 @@ describe('Peer', function() {
       expect(peer.getAddress()).toEqual(ip);
     });
 
-    it('should get an ID which is the SHA1 of IP:PORT', function() {
-      expect(peer.getID()).toEqual(SHA1(ip));
+    it('should get the ID', function() {
+      expect(peer.getID()).toEqual(id);
     });
 
   });
@@ -37,11 +42,13 @@ describe('Peer', function() {
     expect(peer1.getID()).toEqual(SHA1('foo'));
     expect(peer1.equals(peer2)).toBeTruthy();
   });
-  
+
   it('should be possible to test their equality', function() {
-    var peer1 = new Peer(['127.0.0.1:1234']);
-    var peer2 = new Peer(['127.0.0.1:1234']);
-    var peer3 = new Peer(['127.0.0.1:1235']);
+    var id1 = rID();
+    var id2 = rID();
+    var peer1 = new Peer(['127.0.0.1:1234', id1]);
+    var peer2 = new Peer('127.0.0.1:1234', id1);
+    var peer3 = new Peer(['127.0.0.1:1235', id2]);
     
     expect(peer1.equals(peer2)).toBeTruthy();
     expect(peer1.equals(peer3)).toBeFalsy();
