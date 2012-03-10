@@ -65,7 +65,7 @@
   new KadOHui.Transport(node._reactor._transport, '#transport>pre');
 
   node._reactor.on('connected', function(iam) {
-    $('#info').empty().append('<h3>'+iam+' / <small><a href="#" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>')
+    $('#info').empty().append('<h3>'+iam+' / <small><span class="sha" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</span></small></h3>')
   })
 
   $('#ping_btn').click(function() {
