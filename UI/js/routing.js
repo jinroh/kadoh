@@ -70,7 +70,7 @@ KadOHui.Routing.prototype = {
                 '<tr class="peer">',
                   '<td class="distance">'+peer[3]+'</td>',
                   '<td class="jid">'+peer[0]+'</td>',
-                  '<td class="sha"><a href="#" data-placement="below" rel="twipsy" title="'+peer[1]+'">'+peer[1].slice(0,10)+'</a></td>',
+                  '<td class="sha"><span data-placement="below" rel="twipsy" title="'+peer[1]+'">'+peer[1].slice(0,10)+'</span></td>',
                   '<td class="last-seen">',
                     '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="below">'+time.toLocaleTimeString()+'</time>',
                   '</td>',

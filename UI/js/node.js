@@ -71,7 +71,7 @@ KadOHui.Node.prototype = {
 
     var tr =
     ['<tr>',
-      '<td><a href="#" class="sha" data-placement="below" rel="twipsy" data-original-title="'+target+'">'+target.slice(0,10)+'</a></td>',
+      '<td><span class="sha" data-placement="below" rel="twipsy" data-original-title="'+target+'">'+target.slice(0,10)+'</span></td>',
       '<td><code>'+target_type+'</code></td>',
       '<td><i>started with <b>'+start_peers.size()+' </b><a rel="popover" data-content="'+KadOHui.helper.peerTable(start_peers, target)+'" data-original-title="Start peers" data-placement="below">peers</a></i></td>',
       '<td><span class="state label warning">Progress</span></td>',

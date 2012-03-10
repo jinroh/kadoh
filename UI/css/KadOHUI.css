@@ -66,6 +66,10 @@
 
       .sha {
         font-family: "Monaco", "Courier", monospace;
+        color: #0069D6;
+      }
+      .sha:hover {
+        color: #00438a;
       }
 
       time {

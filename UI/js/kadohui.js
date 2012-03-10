@@ -35,7 +35,7 @@ KadOHui.helper.peerTable = function(peerArray, relative_node_id) {
                   '</td>'+
                   '<td><b>'+peer.getAddress()+'</b></td>'+
                   '<td>'+ ((peer.getID() !== null) ?
-                    '<a href=\'#\' class=\'sh\' data-placement=\'below\' rel=\'twipsy\' title=\''+peer.getID()+'\'>'+peer.getID().slice(0,10)+'</a>' :
+                    '<span class=\'sha\' data-placement=\'below\' rel=\'twipsy\' title=\''+peer.getID()+'\'>'+peer.getID().slice(0,10)+'</span>' :
                     '<i>null</i>')+
                   '</td>'+
                '</tr>';

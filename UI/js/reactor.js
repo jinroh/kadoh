@@ -58,7 +58,7 @@ KadOHui.Reactor.prototype = {
         break;
       case 'FIND_NODE':
       case 'FIND_VALUE':
-        param = '<a href="#" class="sha" data-placement="below" rel="twipsy" data-original-title="'+rpc.getTarget()+'">'+rpc.getTarget().slice(0,10)+'</a>';
+        param = '<span class="sha" data-placement="below" rel="twipsy" data-original-title="'+rpc.getTarget()+'">'+rpc.getTarget().slice(0,10)+'</span>';
         break;
       case 'STORE' :
         var code = [
@@ -88,7 +88,7 @@ KadOHui.Reactor.prototype = {
       '<td>'+id+'</td>',
       '<td>',
         '<b>'+addr+'</b><br>',
-        (nodeid !== null) ? '<a href="#" class="sha" data-placement="below" rel="twipsy" data-original-title="'+nodeid+'">'+nodeid.slice(0,10)+'</a>' : '<i>null</i>',
+        (nodeid !== null) ? '<span class="sha" data-placement="below" rel="twipsy" data-original-title="'+nodeid+'">'+nodeid.slice(0,10)+'</span>' : '<i>null</i>',
       '</td>',
       '<td><code>'+meth+'</code><br>'+param+'</td>',
       '<td><span class="state label warning">Progress</span></td>',
