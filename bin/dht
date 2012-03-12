@@ -12,8 +12,12 @@ var fork   = require('child_process').fork;
 var BBIN = __dirname + "/bootstrap";
 var PBIN = __dirname + "/pool";
 
+charm.setMaxListeners(100);
 charm.reset();
-charm.on('^C', process.exit);
+charm.on('^C', function() {
+  spawn('reset');
+  process.exit();
+});
 
 var defaults = {
   botType  : 'xmpp',
@@ -144,9 +148,8 @@ function launchPools() {
     var bar = multi(1, i + 5, {
         width : 40,
         solid : {
-            text : '-',
-            foreground : 'white',
-            background : 'red'
+            text : '=',
+            foreground : 'green'
         }});
     bar.percent(0);
     bars.push(bar);
@@ -164,9 +167,8 @@ function launchBootstraps() {
   var bar = multi(1, 3, {
     width : 40,
     solid : {
-        text : '-',
-        foreground : 'white',
-        background : 'green'
+        text : '=',
+        foreground : 'green'
     }
   });
 
