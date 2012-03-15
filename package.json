@@ -13,7 +13,7 @@
     }
   , "dependencies": {
         "colors"           : "~0.6"
-      , "connect"          : "~1.8"
+      , "connect"          : "~2.0"
       , "express"          : "~2.5"
       , "ifconfig.me"      : "https://github.com/alexstrat/ifconfig.me-node/tarball/master"
       , "jake"             : "~0.1"
