@@ -1,0 +1,18 @@
+<div id="connection-control">
+  <div class="row">
+    <div class="span2">
+      <select class="span2 transport">
+        <option value="SimUDP">Mainline</option>
+        <option value="XMPP">XMPP</option>
+      </select>
+    </div>
+    <div id="credentials" class="span10">
+      <input class="span3" type="text"     id="jid"      placeholder="Jabber or GMail login" />
+      <input class="span3" type="password" id="password" placeholder="Password" />
+    </div>
+    <div id="connection" class="span3">
+      <input type="submit" class="btn primary"  name="connect" value="Connect" />
+      <input type="submit" class="btn disabled" name="join"    value="Join" />
+    </div>
+  </div>
+</div>

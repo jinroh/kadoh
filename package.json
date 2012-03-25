@@ -25,6 +25,7 @@
       , "restler"          : "~0.2"
       , "socket.io"        : "~0.9"
       , "socket.io-client" : "~0.9"
+      , "mustache"         : "~0.4" 
     },
     "scripts": {
       "test": "jake build:node && jasmine-node spec"

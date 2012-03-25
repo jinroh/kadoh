@@ -1,0 +1,45 @@
+{
+  "template" : "index.tmpl.html",
+
+  "tabs": ["Node", "Reactor", "Transport", "Routing Table", "Value Management", "Log"],
+
+  "tabs-ressources": {
+    "Node": {
+      "href" : "control",
+      "js"   : "js/node.js",
+      "html" : "html/node.html"
+    },
+    "Reactor": {
+      "href" : "reactor",
+      "js"   : "js/reactor.js",
+      "html" : "html/reactor.html"
+    },
+    "Transport": {
+      "href" : "transport",
+      "js"   : "js/transport.js",
+      "html" : "html/transport.html"
+    },
+    "Routing Table": {
+      "href" : "routing-table",
+      "js"   : "js/routing-table.js",
+      "html" : "html/routing-table.html"
+    },
+    "Value Management": {
+      "href" : "value-management",
+      "js"   : "js/value-management.js",
+      "html" : "html/value-management.html"
+    },
+    "Log": {
+      "href" : "log",
+      "js"   : "js/log.js",
+      "html" : "html/log.html"
+    }
+  },
+
+  "connection-ressources": {
+    "js"   : null,
+    "html" : "html/connection.html"
+  },
+
+  "init-script": null
+}

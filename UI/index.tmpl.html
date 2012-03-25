@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KadOH</title>
+  <script type="text/javascript" src="/dist/KadOH.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <script type="text/javascript" src="../lib/ext/jquery/jquery-1.7.min.js"></script>
+  <script type="text/javascript" src="js/vendor/bootstrap-tabs.js"></script>
+  <script type="text/javascript" src="js/vendor/bootstrap-twipsy.js"></script>
+  <script type="text/javascript" src="js/vendor/bootstrap-popover.js"> </script>
+  <script type="text/javascript" src="js/vendor/bootstrap-buttons.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/KadOHUI.css" media="all">
+  <script type="text/javascript" src="js/kadohui.js"></script>
+  {{#tabs}}
+  <script type="text/javascript" src="{{script}}"></script>
+  {{/tabs}}
+   
+
+  <script type="text/javascript">
+    {{& init-script}}
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="topbar">
+      <div class="fill">
+        <div class="container"><a href="#" class="brand">KadOH</a></div>
+      </div>
+    </div>
+    <div id="content">
+
+      <div class="page-header">
+        {{& connection}}
+        <ul class="tabs" data-tabs="tabs">
+          {{#tabs}}
+            {{& li}}
+          {{/tabs}}
+        </ul>
+      </div>
+
+      <div class="tab-content">
+        {{#tabs}}
+          {{& content}}
+        {{/tabs}}
+      </div>
+    </div>
+
+    <footer>
+      <p><strong>Pierre Guilleminot</strong> &amp; <strong>Alexandre Lacheze</strong></p>
+      <p><a href="https://github.com/jinroh/kadoh">KadOH on Github</a></p>
+    </footer>
+  </div>
+</body>
+</html>
