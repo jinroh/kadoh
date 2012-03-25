@@ -23,7 +23,7 @@ var Pool = module.exports = function(config) {
 Pool.prototype._botConfig = function(number, delay) {
   var config = getCloneOfObject(this._options);
   config.reactor.transport.port = this._port + this._id * this._size + number;
-  config.reactor.transport.resource = Math.random().toString().substr(2,4)[1];
+  config.reactor.transport.resource = Math.random().toString().substr(2,4);
   config.bootstraps = [this._bootstraps[Math.floor(Math.random()*this._bootstraps.length)]];
   var regex = /\%d/;
   if (this._jid && regex.test(this._jid)) {

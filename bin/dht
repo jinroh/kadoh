@@ -140,9 +140,6 @@ function launchPools() {
   multi.write('Starting a ' + config.botType.green + ' DHT of ' + (config.size + ' bots').red + ' in ' + (l + ' pools').red);
   for (var i = 0; i < l; i++) {
     var params = poolParams(i);
-    if (i === l - 1) {
-      params.size = config.size - config.poolSize * i;
-    }
     var pproc  = spawn('node', [PBIN, JSON.stringify(params)]);
     procs.push(pproc);
     var bar = multi(1, i + 5, {
