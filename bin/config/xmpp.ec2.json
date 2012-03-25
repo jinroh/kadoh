@@ -5,7 +5,7 @@
   "size"     : 1000,
   "activity" : 50,
   "values"   : 100,
-  "jids"     : ["kadoh%d@kadoh.fr.nf", "azerty"],
+  "jids"     : ["bot%d@kadoh.fr.nf", "azerty"],
   "starter"  : true,
   "bootstraps" : [
     ["bootstrap0@kadoh.fr.nf", "kadoh", "azerty"],
