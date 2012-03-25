@@ -5,7 +5,7 @@
 
   "tabs-ressources": {
     "Node": {
-      "href" : "control",
+      "href" : "node",
       "js"   : "js/node.js",
       "html" : "html/node.html"
     },
