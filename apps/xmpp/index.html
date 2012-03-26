@@ -20,7 +20,6 @@
   <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
 
   <script type="text/javascript">
-  // SOME BULLSHIT JS TO BE REPLACED IN kadohui.js
   $(function() { KadOHui.init();}); 
   
   function enable(elt) {
@@ -37,6 +36,7 @@
     node = undefined;
 
     KadOH.log.setLevel('debug');
+    KadOH.log.removeAllLoggers();
     logger = new KadOHui.Logger('#log .console', '#log .control');
     KadOH.log.addLogger('UILogger', logger);
 
@@ -111,10 +111,12 @@
       };
 
       node = new KadOH.Node(undefined, config);
+
       KadOH.log.subscribeTo(node, 'Node');
       KadOH.log.subscribeTo(node._reactor, 'Reactor');
       KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
       KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
+
       new KadOHui.Routing(node._routingTable, '#routing-table');
       new KadOHui.Transport(node._reactor._transport, '#transport>pre');
       new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
