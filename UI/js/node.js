@@ -34,7 +34,7 @@ KadOHui.Node.prototype = {
         if(iterfind._targetType !== 'NODE') {
           html =[
           '<ul>',
-              '<li><b>Value : </b><code>'+res.value+'</code></li>',
+              '<li><b>Value : </b><code>'+KadOHui.util.escapeHTML(res.value)+'</code></li>',
               '<li><b>Expiration : </b>',
                   (!res.exp || res.exp<0) ?
                   '<i>never</i>':

@@ -47,6 +47,16 @@ KadOHui.helper.peerTable = function(peerArray, relative_node_id) {
    return html;
 };
 
+KadOHui.util = {};
+
+KadOHui.util.escapeHTML = function(toescape) {
+  return toescape.replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quote;")
+                 .replace(/'/g, "&#39;");
+};
+
 
 KadOHui.init = function() {
   

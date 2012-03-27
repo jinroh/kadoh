@@ -64,7 +64,7 @@ KadOHui.Reactor.prototype = {
         var code = [
           '<ul>',
             '<li><b>Key : </b><a href=\'#\' class=\'sha\' data-placement=\'below\' rel=\'twipsy\' data-original-title=\''+rpc.getKey()+'\'>'+rpc.getKey().slice(0,10)+'</a></li>',
-            '<li><b>Value : </b><code>'+rpc.getValue()+'</code></li>',
+            '<li><b>Value : </b><code>'+KadOHui.util.escapeHTML(rpc.getValue())+'</code></li>',
             '<li><b>Expiration : </b>',
                 (!rpc.getExpiration() || rpc.getExpiration()<0) ?
                 '<i>never</i>':
