@@ -57,7 +57,7 @@ KadOHui.Logger =  function(console_element, control_element) {
                       abbr[group] || 'general',
                     '</div>',
                     '<div class="span1">&nbsp;</div>',
-                    '<div class="span12">',
+                    '<div class="span11">',
                       message,
                     '</div>',
                     '<div class="span2">',

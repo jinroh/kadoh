@@ -112,10 +112,10 @@
 
       node = new KadOH.Node(undefined, config);
 
-      KadOH.log.subscribeTo(node, 'Node');
-      KadOH.log.subscribeTo(node._reactor, 'Reactor');
-      KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
-      KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
+      KadOH.log.subscribeTo(node, 'Node', 'info');
+      KadOH.log.subscribeTo(node._reactor, 'Reactor', 'debug');
+      KadOH.log.subscribeTo(node._reactor._transport, 'Transport', 'debug');
+      KadOH.log.subscribeTo(node._routingTable, 'RoutingTable', 'debug');
 
       new KadOHui.Routing(node._routingTable, '#routing-table');
       new KadOHui.Transport(node._reactor._transport, '#transport>pre');
@@ -300,7 +300,7 @@
                 </label>
                 <label>
                   <img src="UI/css/images/debug-icon16.png" alt="debug">
-                  <input type="checkbox" name="debugLevel" value="debug" checked>
+                  <input type="checkbox" name="debugLevel" value="debug" unchecked>
                   <span>debug</span>
                 </label>
             </div>
