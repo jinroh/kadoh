@@ -279,79 +279,114 @@ KadOHBench = function(node, options) {
   this.node = node;
 
   this.options = options;
-  this.hopes = options.hopes || 4;
-  this.idle = options.idle || 5*1000;
+  this.hops = options.hops || 4;
+  this.idle = options.idle || 3 * 1000;
+
+  // Benchmark sequences
+  this.bench = [
+    {
+      name : 'join',
+      fn   : 'join',
+      cb   : 'addErrback'
+    },
+    {
+      name   : 'unreached', 
+      fn     : 'iterativeFindValue',
+      cb     : 'addErrback',
+      values : this.randomSeq(this.hops)
+    },
+    {
+      name   : 'reached',
+      fn     : 'iterativeFindValue',
+      cb     : 'addCallback',
+      values : this.seq(this.hops)
+    }
+  ];
 
   this.results = {
-    join              : [],
-    iterFind_reached  : [],
-    iterFind          : []
+    // join
+    // unreached
+    // ...
   };
 };
 
+// extends EventEmitter
+for (var i in EventEmitter.prototype) { KadOHBench.prototype[i] = EventEmitter.prototype[i]; }
 
-KadOHBench.prototype = {
-  start: function() {
-    var count = 0;
-    var count_re = 0;
-    var self = this;
+var SHA1 = KadOH.util.Crypto.digest.SHA1;
 
-    var iter_reached = function() { setTimeout(function(){
-      if(++count_re > self.hopes) {
-        self.emit('results', self.results);
-        return;
-      }
-      var key = KadOH.util.Crypto.digest.SHA1(String(count_re));
-      self.executeIterativeFindValue(count_re, self.results.iterFind_reached, 'addCallback', key, iter_reached);
-    }, self.idle)};
+KadOHBench.prototype.start = function() {
+  this.current = 0;
+  this.startSequence(0);
+};
 
-    var iter = function() { setTimeout(function(){
-      if(++count > self.hopes) {
-        iter_reached.call(self);
-        return;
-      }
-      var key = KadOH.util.Crypto.digest.randomSHA1();
-      self.executeIterativeFindValue(count, self.results.iterFind, 'addErrback', key, iter);
-    }, self.idle)};
+KadOHBench.prototype.startSequence = function(n) {
+  var seq = this.bench[n];
+  if (!seq) {
+    throw new Error('no sequence ' + n);
+  }
+  seq.values  = seq.values || [null];
+  seq.start   = new Date().getTime();
+  seq.current = 0;
 
-    this.executeJoin(iter);
-  },
+  var self = this;
+  seq.next = function() {
+    if (seq.current < seq.values.length) {
+      self.collectResults(seq);
+      self.node[seq.fn](seq.values[seq.current]);
+    } else {
+      self.nextSequence();
+    }
+  };
 
-  executeJoin: function(cb) {
-    this.node.once('iterativeFind started', function(iterfind) {
-      var start = new Date().getTime();
-      iterfind.addErrback(function() {
-        var res = {};
-        res.time = new Date().getTime() - start;
-        res.reached = iterfind.Reached.size();
-        res.queries = iterfind.Queried.size();
-        res.closest = iterfind.Reached.getPeer(0).getDistanceTo(iterfind._target);
-        this.results.join.push(res);
-        this.emit('join end', res);
-      }, this);
-    }, this);
-    this.node.join(cb, this);
-    this.emit('join start');
-    return this;
-  },
+  seq.next();
+};
 
-  executeIterativeFindValue: function(count, res_push, method, target, cb) {
-    this.node.once('iterativeFind started', function(iterfind) {
-      var start = new Date().getTime();
-      iterfind[method](function() {
-        var res = {};
-        res.time = new Date().getTime() - start;
-        res.reached = iterfind.Reached.size();
-        res.queries = iterfind.Queried.size();
-        res.closest = (iterfind.Reached.size() !==0) ? iterfind.Reached.getPeer(0).getDistanceTo(iterfind._target) : null;
-        res_push.push(res);
-        this.emit('iterFind end', res);
-      }, this);
-    }, this);
-    this.node.iterativeFindValue(target).then(cb,cb, this);
-    this.emit('iterFind start', target, count);
-    return this;
+KadOHBench.prototype.nextSequence = function() {
+  var self = this;
+  if (++this.current < this.bench.length) {
+    setTimeout(function() {
+      self.startSequence(self.current);
+    }, this.idle);
+  } else {
+    this.emit('end', this.results);
   }
 };
 
-for(var i in EventEmitter.prototype) { KadOHBench.prototype[i] = EventEmitter.prototype[i]};
+KadOHBench.prototype.collectResults = function(seq) {
+  var self = this;
+  this.node.once('iterativeFind started', function(lookup) {
+    lookup[seq.cb](function() {
+      if (seq.current === 0) {
+        self.results[seq.name] = [];
+      }
+
+      self.results[seq.name].push({
+        time    : new Date().getTime() - seq.start,
+        reached : lookup.Reached.size(),
+        queries : lookup.Queried.size(),
+        closest : lookup.Reached.size() > 0 ? lookup.Reached.getPeer(0).getDistanceTo(lookup._target) : -1
+      });
+
+      self.emit('data', self.results);
+      seq.current++;
+      seq.next();
+    });
+  });
+};
+
+//
+// Utils
+//
+
+KadOHBench.prototype.seq = function(n) {
+  var a = [];
+  for (var i = 0; i < n; i++) { a.push(SHA1(i.toString())); }
+  return a;
+};
+
+KadOHBench.prototype.randomSeq = function(n) {
+  var a = [];
+  for (var i = 0; i < n; i++) { a.push(SHA1(Math.random().toString())); }
+  return a;
+};
