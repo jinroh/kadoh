@@ -25,7 +25,8 @@ class Result
 
   property :dht_size,   Integer
   property :user_agent, String
-  property :network,    String
+  property :mobile,     Boolean
+  property :cellular,   Boolean
 
   property :created_at, DateTime
 

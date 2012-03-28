@@ -326,11 +326,11 @@ KadOHBench.prototype.startSequence = function(n) {
     throw new Error('no sequence ' + n);
   }
   seq.values  = seq.values || [null];
-  seq.start   = new Date().getTime();
   seq.current = 0;
 
   var self = this;
   seq.next = function() {
+    seq.start = new Date().getTime();
     if (seq.current < seq.values.length) {
       self.collectResults(seq);
       self.node[seq.fn](seq.values[seq.current]);
@@ -390,3 +390,62 @@ KadOHBench.prototype.randomSeq = function(n) {
   for (var i = 0; i < n; i++) { a.push(SHA1(Math.random().toString())); }
   return a;
 };
+
+document.addEventListener("DOMContentLoaded", function() {
+  KadOH.log.setLevel('info');
+  var monitor  = document.getElementById("monitor");
+  var cellular = document.getElementById("cellular");
+  var start    = document.getElementById("start");
+  var node = new KadOH.Node('b21108ffbbff076647a0ac0662acf4e4a5244b66', {
+    bootstraps : [
+      "bootstrap0@kadoh.fr.nf/kadoh",
+      "bootstrap1@kadoh.fr.nf/kadoh",
+      "bootstrap2@kadoh.fr.nf/kadoh"
+    ],
+    reactor : {
+      transport : {
+        jid      : 'kadoh@jabber.org',
+        password : 'azerty',
+        resource : 'kadoh'
+      }
+    }
+  });
+  KadOH.log.subscribeTo(node, 'Node', 'info');
+  var bench = new KadOHBench(node, {
+    hops : 5,
+    idle : 2000
+  });
+  bench.on('data', function(results) {
+    results = JSON.stringify(results, null, "\t");
+    monitor.innerHTML = results;
+  });
+  bench.on('end', function(results) {
+    // parse and sending
+    results = {
+      cellular : cellular.checked,
+      data : results
+    };
+    
+    var json = JSON.stringify(results);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "/results", true);
+    xmlhttp.setRequestHeader("Content-Type", "application/json");
+    xmlhttp.send(json);
+    xmlhttp.onreadystatechange = function() {
+      if (xmlhttp.readyState == 4) {
+        if (xmlhttp.status == 200) {
+          alert("OK.");
+        }
+      }
+    }
+    node.disconnect();
+  });
+  start.addEventListener("click", function() {
+    monitor.innerHTML = "connecting...";
+    node.connect(function() {
+      monitor.innerHTML = "connected\n\nstarting the benchmark...";
+      bench.start();
+    });
+    return false;
+  });
+});

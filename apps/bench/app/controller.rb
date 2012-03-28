@@ -1,6 +1,7 @@
 require 'dm-serializer'
 require 'sinatra'
 require 'haml'
+require 'user_agent'
 
 class Controller < Sinatra::Base
 
@@ -24,17 +25,22 @@ class Controller < Sinatra::Base
   end
 
   post '/results' do
-    user_agent = request.user_agent
-    dht_size   = ENV['DHT_SIZE'].to_i || 100
+    json = JSON.parse(request.body.read)
 
-    data = JSON.parse(request.body.read)
+    cell = json['cellular']
+    data = json['data']
+    size = ENV['DHT_SIZE'].to_i
+    uagt = UserAgent.new(request.user_agent)
+
     data.each do |type, results|
-      results.each do |val|
-        result = Result.new(val)
+      results.each do |row|
+        result = Result.new(row)
         result.attributes = {
           :type       => type,
-          :user_agent => user_agent,
-          :dht_size   => dht_size,
+          :user_agent => [uagt.name, uagt.engine, uagt.platform].join(','),
+          :mobile     => uagt.mobile?,
+          :cellular   => cell,
+          :dht_size   => size,
           :created_at => Time.now
         }
         result.save
