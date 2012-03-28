@@ -6,37 +6,37 @@
   "tabs-ressources": {
     "Control": {
       "href" : "control",
-      "js"   : "js/control.js",
+      "js"   : "UI/js/control.js",
       "html" : "html/control.html"
     },
     "Node": {
       "href" : "node",
-      "js"   : "js/node.js",
+      "js"   : "UI/js/node.js",
       "html" : "html/node.html"
     },
     "Reactor": {
       "href" : "reactor",
-      "js"   : "js/reactor.js",
+      "js"   : "UI/js/reactor.js",
       "html" : "html/reactor.html"
     },
     "Transport": {
       "href" : "transport",
-      "js"   : "js/transport.js",
+      "js"   : "UI/js/transport.js",
       "html" : "html/transport.html"
     },
     "Routing Table": {
       "href" : "routing-table",
-      "js"   : "js/routing-table.js",
+      "js"   : "UI/js/routing-table.js",
       "html" : "html/routing-table.html"
     },
     "Value Management": {
       "href" : "value-management",
-      "js"   : "js/value-management.js",
+      "js"   : "UI/js/value-management.js",
       "html" : "html/value-management.html"
     },
     "Log": {
       "href" : "log",
-      "js"   : "js/log.js",
+      "js"   : "UI/js/Log.js",
       "html" : "html/log.html"
     }
   },
