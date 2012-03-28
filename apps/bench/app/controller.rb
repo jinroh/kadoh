@@ -1,5 +1,6 @@
 require 'dm-serializer'
 require 'sinatra'
+require 'haml'
 
 class Controller < Sinatra::Base
 
@@ -7,12 +8,11 @@ class Controller < Sinatra::Base
   set :public_folder, PUBLIC_DIR
 
   get '/' do
-    send_file File.join(PUBLIC_DIR, 'index.html')
+    haml :index
   end
 
-  get '/dist/KadOH.js' do
-    content_type 'application/javascript'
-    send_file File.join(KADOH_DIR, 'dist', 'KadOH.js')
+  get '/monitor' do
+    haml :monitor
   end
 
   get '/results' do
