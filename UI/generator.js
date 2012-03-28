@@ -23,7 +23,7 @@ exports.generate = function(path) {
  * @return {Object}         Absolute configuration
  */
 var mergeConf = function(conf, dirpath) {
-  var defolt = JSON.parse(fs.readFileSync(__dirname+'/UIConf.default.json', 'ascii'));
+  var defolt = JSON.parse(fs.readFileSync(__dirname+'/conf.default.json', 'ascii'));
 
   var fin = {};
 
@@ -51,6 +51,8 @@ var mergeConf = function(conf, dirpath) {
 
   fin['connection-ressources'] = conf['connection-ressources'];
   fin['connection-ressources'].html = dirpath+'/'+fin['connection-ressources'].html;
+
+  fin['init-script'] = conf['init-script'];
 
   return fin;
 };
@@ -84,9 +86,11 @@ var generateFromConf = function(conf) {
                       fs.readFileSync(conf['connection-ressources'].html, 'ascii')
                     : null;
 
-  view['init-script'] = (typeof conf['init-script'] == 'string') ?
+  view['init_script'] = (typeof conf['init-script'] == 'string') ?
                       fs.readFileSync(conf['init-script'], 'ascii')
                     : null;
+
+  //console.error(conf, view);
 
   return mu.to_html(tmpl, view);
 };

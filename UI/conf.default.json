@@ -26,12 +26,12 @@
     },
     "Routing Table": {
       "href" : "routing-table",
-      "js"   : "UI/js/routing-table.js",
+      "js"   : "UI/js/routing.js",
       "html" : "html/routing-table.html"
     },
     "Value Management": {
       "href" : "value-management",
-      "js"   : "UI/js/value-management.js",
+      "js"   : "UI/js/valueM.js",
       "html" : "html/value-management.html"
     },
     "Log": {
@@ -46,5 +46,5 @@
     "html" : "html/connection.html"
   },
 
-  "init-script": null
+  "init-script": "assets/init.js"
 }
