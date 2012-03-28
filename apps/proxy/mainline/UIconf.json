@@ -1,0 +1,18 @@
+{
+  "tabs": ["Control", "Node", "Reactor", "Transport", "Routing Table", "Log"],
+
+  "tabs-ressources": {
+    "Control": {
+      "href": "control",
+      "js": "assets/control.js",
+      "html": "assets/control.html"
+    }
+  },
+
+  "connection-ressources": {
+    "js": null,
+    "html": "assets/connection.html"
+  },
+
+  "init-script": "assets/init.js"
+}
