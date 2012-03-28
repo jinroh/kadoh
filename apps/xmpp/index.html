@@ -10,6 +10,7 @@
   <script type="text/javascript" src="UI/js/vendor/bootstrap-popover.js"> </script>
   <script type="text/javascript" src="UI/js/vendor/bootstrap-buttons.js"></script>
   <script type="text/javascript" src="UI/js/kadohui.js"></script>
+  <script type="text/javascript" src="UI/js/control.js"></script>
   <script type="text/javascript" src="UI/js/Log.js"></script>
   <script type="text/javascript" src="UI/js/routing.js"></script>
   <script type="text/javascript" src="UI/js/reactor.js"></script>
@@ -62,12 +63,6 @@
     var connection = $("#connection");
     var connectBtn = $("#connection input[name=connect]");
     var joinBtn    = $("#connection input[name=join]");
-    var putBtn     = $("#put_btn");
-    var putValue   = $("#put_value");
-    var putResult  = $("#put_result");
-    var getBtn     = $("#get_btn");
-    var getValue   = $("#get_value");
-    var getResult  = $("#get_result");
     
     // Transport configs
     var changeTransport = function() {
@@ -117,6 +112,7 @@
       KadOH.log.subscribeTo(node._reactor._transport, 'Transport', 'debug');
       KadOH.log.subscribeTo(node._routingTable, 'RoutingTable', 'debug');
 
+      new KadOHui.Control(node);
       new KadOHui.Routing(node._routingTable, '#routing-table');
       new KadOHui.Transport(node._reactor._transport, '#transport>pre');
       new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
@@ -153,22 +149,6 @@
     connectBtn.click(connect);
     joinBtn.click(function() {
       node.join();
-    });
-    putBtn.click(function() {
-      node.put(null, putValue.val(), null, function(key) {
-        putResult.text("value stored with key " + key);
-      });
-    });
-    getBtn.click(function() {
-      node.get(getValue.val(), function(value) {
-        var text;
-        if (value === null) {
-          text = "value not found..."
-        } else {
-          text = value;
-        }
-        getResult.text(text);
-      });
     });
   });
   </script>

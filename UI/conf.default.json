@@ -1,9 +1,14 @@
 {
   "template" : "index.tmpl.html",
 
-  "tabs": ["Node", "Reactor", "Transport", "Routing Table", "Value Management", "Log"],
+  "tabs": ["Control", "Node", "Reactor", "Transport", "Routing Table", "Value Management", "Log"],
 
   "tabs-ressources": {
+    "Control": {
+      "href" : "control",
+      "js"   : "js/control.js",
+      "html" : "html/control.html"
+    },
     "Node": {
       "href" : "node",
       "js"   : "js/node.js",
