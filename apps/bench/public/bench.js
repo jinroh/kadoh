@@ -33,11 +33,7 @@ KadOHBench = function(node, options) {
     }
   ];
 
-  this.results = {
-    // join
-    // unreached
-    // ...
-  };
+  this.results = [];
 };
 
 // extends EventEmitter
@@ -87,11 +83,8 @@ KadOHBench.prototype.collectResults = function(seq) {
   var self = this;
   this.node.once('iterativeFind started', function(lookup) {
     lookup[seq.cb](function() {
-      if (seq.current === 0) {
-        self.results[seq.name] = [];
-      }
-
-      self.results[seq.name].push({
+      self.results.push({
+        type    : seq.name,
         time    : new Date().getTime() - seq.start,
         reached : lookup.Reached.size(),
         queries : lookup.Queried.size(),
@@ -152,8 +145,8 @@ document.addEventListener("DOMContentLoaded", function() {
   bench.on('end', function(results) {
     // parse and sending
     results = {
-      cellular : cellular.checked,
-      data : results
+      infos   : { cellular : cellular.checked },
+      results : results
     };
     
     var json = JSON.stringify(results);
@@ -164,7 +157,7 @@ document.addEventListener("DOMContentLoaded", function() {
     xmlhttp.onreadystatechange = function() {
       if (xmlhttp.readyState == 4) {
         if (xmlhttp.status == 200) {
-          alert("OK.");
+          monitor.innerHTML = "OK !\n\n" + monitor.innerHTML;
         }
       }
     }
