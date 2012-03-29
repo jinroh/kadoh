@@ -144,10 +144,14 @@ document.addEventListener("DOMContentLoaded", function() {
   });
   bench.on('end', function(results) {
     // parse and sending
-    results = {
-      infos   : { cellular : cellular.checked },
-      results : results
+    var infos = {
+      cellular : cellular.checked
     };
+
+    results = results.map(function(r) {
+      for (var i in infos) { r[i] = infos[i] }
+      return r;
+    });
     
     var json = JSON.stringify(results);
     var xmlhttp = new XMLHttpRequest();

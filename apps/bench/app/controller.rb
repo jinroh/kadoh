@@ -26,16 +26,14 @@ class Controller < Sinatra::Base
 
   post '/results' do
     uagt = UserAgent.new(request.user_agent)
-    json = JSON.parse(request.body.read)
-
-    results = json['results'];
-    infos   = json['infos'].merge({
+    infos = {
       :user_agent => [uagt.name, uagt.engine, uagt.platform].join(','),
       :mobile     => uagt.mobile?,
       :dht_size   => ENV['DHT_SIZE'].to_i,
       :created_at => Time.now
-    })
+    }
 
+    results = JSON.parse(request.body.read)
     results.each { |r| Result.create(r.merge(infos)) }
     "OK."
   end
