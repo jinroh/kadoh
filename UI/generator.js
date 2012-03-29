@@ -52,7 +52,7 @@ var mergeConf = function(conf, dirpath) {
   fin['connection-ressources'] = conf['connection-ressources'];
   fin['connection-ressources'].html = dirpath+'/'+fin['connection-ressources'].html;
 
-  fin['init-script'] = conf['init-script'];
+  fin['init-script'] = dirpath+'/'+conf['init-script'];
 
   return fin;
 };
