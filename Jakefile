@@ -5,11 +5,19 @@ var JsDoc3_EXEC = __dirname + '/doc/jsdoc3/jsdoc';
 
 var BUILD_CONF_FILE = __dirname + '/build.json';
 
-var FS = require('fs');
-var PATH = require('path');
-var PROC = require('child_process');
+var UI_FILES = {
+  mainline : {
+    conf  : __dirname + '/apps/proxy/mainline/UIconf.json',
+    index : __dirname + '/apps/proxy/mainline/index.html'
+  }
+};
+
+var FS     = require('fs');
+var PATH   = require('path');
+var PROC   = require('child_process');
 var CICADA = require('jsCicada');
 var COLORS = require('colors');
+var UI     = require(__dirname + '/UI/generator');
 
 // ------------ DEFAULT ------------
 desc('Say Hello to Kadoh');
@@ -124,5 +132,19 @@ namespace('build', function() {
   desc('Building the code for a node bootstrap');
   task('bootstrap', ['default'], function() {
     builder.build('bootstrap');
+  });
+});
+
+// ------------ UI GENERATE ------------
+
+namespace('generate', function() {
+  
+  desc('Generate the mainline proxy app UI');
+  task('mainline', ['default'], function() {
+    fs.writeFileSync(
+      UI_FILES.mainline.index,
+      UI.generate(UI_FILES.mainline.conf)
+    );
+    console.log('UI index generated successfully !');
   });
 });
