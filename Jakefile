@@ -8,7 +8,8 @@ var BUILD_CONF_FILE = __dirname + '/build.json';
 var UI_FILES = {
   mainline : {
     conf  : __dirname + '/apps/proxy/mainline/UIconf.json',
-    index : __dirname + '/apps/proxy/mainline/index.html'
+    index : __dirname + '/apps/proxy/mainline/index.html',
+    app   : __dirname + '/apps/proxy/mainline/app.js'
   }
 };
 
@@ -146,5 +147,17 @@ namespace('generate', function() {
       UI.generate(UI_FILES.mainline.conf)
     );
     console.log('UI index generated successfully !');
+  });
+});
+
+// ------------ RUN SERVER ------------
+
+namespace('run', function() {
+  
+  desc('Run the mainline proxy app server');
+  task('mainline', ['generate:mainline'], function(port) {
+    port = parseInt(port, 10) || 8080 ;
+    require(UI_FILES.mainline.app).server.listen(port);
+    console.log('http://localhost:'+port);
   });
 });
