@@ -174,4 +174,11 @@ namespace('run', function() {
     require(UI_FILES.mainline.app).server.listen(port);
     console.log('http://localhost:'+port);
   });
+
+  desc('Run the udp proxy app server');
+  task('udp', ['generate:udp'], function(port) {
+    port = parseInt(port, 10) || 8080 ;
+    require(UI_FILES.udp.app).server.listen(port);
+    console.log('http://localhost:'+port);
+  });
 });
