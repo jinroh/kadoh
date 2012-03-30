@@ -15,6 +15,11 @@ var UI_FILES = {
     conf  : __dirname + '/apps/proxy/udp/UIconf.json',
     index : __dirname + '/apps/proxy/udp/index.html',
     app   : __dirname + '/apps/proxy/udp/app.js'
+  },
+  xmpp : {
+    conf  : __dirname + '/apps/xmpp/UIconf.json',
+    index : __dirname + '/apps/xmpp/index.html',
+    app   : __dirname + '/apps/xmpp/app.js'
   }
 };
 
@@ -162,6 +167,15 @@ namespace('generate', function() {
     );
     console.log('UI index generated successfully !');
   });
+
+  desc('Generate the xmpp app UI');
+  task('xmpp', ['default'], function() {
+    fs.writeFileSync(
+      UI_FILES.xmpp.index,
+      UI.generate(UI_FILES.xmpp.conf)
+    );
+    console.log('UI index generated successfully !');
+  });
 });
 
 // ------------ RUN SERVER ------------
@@ -179,6 +193,13 @@ namespace('run', function() {
   task('udp', ['generate:udp'], function(port) {
     port = parseInt(port, 10) || 8080 ;
     require(UI_FILES.udp.app).server.listen(port);
+    console.log('http://localhost:'+port);
+  });
+
+  desc('Run the xmpp app server');
+  task('xmpp', ['generate:xmpp'], function(port) {
+    port = parseInt(port, 10) || 8080 ;
+    require(UI_FILES.xmpp.app).server.listen(port);
     console.log('http://localhost:'+port);
   });
 });
