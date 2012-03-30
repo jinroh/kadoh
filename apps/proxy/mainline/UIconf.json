@@ -1,5 +1,5 @@
 {
-  "tabs": ["Control", "Node", "Reactor", "Transport", "Routing Table", "Value Management", "Log"],
+  "tabs": ["Control", "Node", "Reactor", "Transport", "Routing Table", "Log"],
 
   "tabs-ressources": {
     "Control": {
