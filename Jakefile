@@ -10,6 +10,11 @@ var UI_FILES = {
     conf  : __dirname + '/apps/proxy/mainline/UIconf.json',
     index : __dirname + '/apps/proxy/mainline/index.html',
     app   : __dirname + '/apps/proxy/mainline/app.js'
+  },
+  udp : {
+    conf  : __dirname + '/apps/proxy/udp/UIconf.json',
+    index : __dirname + '/apps/proxy/udp/index.html',
+    app   : __dirname + '/apps/proxy/udp/app.js'
   }
 };
 
@@ -145,6 +150,15 @@ namespace('generate', function() {
     fs.writeFileSync(
       UI_FILES.mainline.index,
       UI.generate(UI_FILES.mainline.conf)
+    );
+    console.log('UI index generated successfully !');
+  });
+
+  desc('Generate the udp proxy app UI');
+  task('udp', ['default'], function() {
+    fs.writeFileSync(
+      UI_FILES.udp.index,
+      UI.generate(UI_FILES.udp.conf)
     );
     console.log('UI index generated successfully !');
   });

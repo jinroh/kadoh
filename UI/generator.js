@@ -36,6 +36,7 @@ var mergeConf = function(conf, dirpath) {
   //tabs ressources
   var i, res;
   fin['tabs-ressources'] = {};
+  defolt['tabs-ressources'] = defolt['tabs-ressources'] || null;
 
   for(i in defolt['tabs-ressources']) {
     res = defolt['tabs-ressources'][i];
