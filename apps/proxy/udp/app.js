@@ -9,7 +9,7 @@ var server = exports.server = connect.createServer()
           // .use('/benchmark', connect.static(path.join(__dirname, '../../..', 'benchmarking')))
              .use('/UI'    , connect.static(path.join(__dirname, '../../..', 'UI')));
 
-console.log('http://localhost:8080');
+
 proxy = require('../../../lib/server/udpproxy').listen(server);
 
 if(require.main === module) {
