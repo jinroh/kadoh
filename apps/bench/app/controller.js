@@ -1,17 +1,11 @@
-var path = require('path');
-var express = require('express');
-var uagent  = require('express-useragent');
-var _ = require('underscore');
+var express = require('express'),
+    uagent  = require('express-useragent'),
+    _       = require('underscore');
 
-var app = express.createServer();
+var Result = app.settings.db.import(__dirname+'/models/result.js');
 
-app.use(express.static(path.join(__dirname, '../../..')))
-   .use(express.static(path.join(__dirname, '../public')))
-   .use(express.bodyParser())
-   .register('.haml', require('hamljs'))
-   .set('view engine', 'haml')
-   .set('views', __dirname + '/views')
-   .use(uagent.express())
+app.use(express.bodyParser())
+   .use(uagent.express());
 
 app.get('/', function(req, res) {
   res.render('index', { layout: false });
@@ -24,12 +18,16 @@ app.get('/monitor', function(req, res) {
 app.post('/results', function(req, res) {
   var infos = {
     user_agent : [req.useragent.Browser, req.useragent.OS].join(','),
-    mobile : req.useragent.isMobile,
-    dht_size
-  }
-  _.extend(req.body, infos);
-  ////////////TBC
-  console.log(req.body);
-})
+    mobile     : req.useragent.isMobile,
+    dht_size   : app.settings.dht.size,
+    created_at : Date.now()
+  };
 
-app.listen(8080);
+  _.each(req.body, function(r) {
+    Result.create(_.extend(r, infos));
+  });
+});
+
+app.get('/results', function(req, res) {
+  res.send('This is a bad 404...', 404);
+});
