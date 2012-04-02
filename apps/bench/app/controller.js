@@ -26,6 +26,7 @@ app.post('/results', function(req, res) {
   _.each(req.body, function(r) {
     Result.create(_.extend(r, infos));
   });
+  res.send();
 });
 
 app.get('/results', function(req, res) {
