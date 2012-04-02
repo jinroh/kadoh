@@ -263,8 +263,9 @@ body{font-size:15px;}
 }
 
 @media print {
-  * { background: transparent !important; color: black !important; filter:none !important; -ms-filter: none !important; }
-  body{font-size:12pt; max-width:100%;}
+  * { background: transparent !important; color: black !important; filter:none !important; -ms-filter: none !important; text-shadow: none !important; }
+  body{font-size:10pt; max-width:100%;}
+  body > section { width: 70%; left: auto; margin: auto; font-size: 10pt !important }
   a, a:visited { text-decoration: underline; }
   hr { height: 1px; border:0; border-bottom:1px solid black; }
   a[href]:after { content: " (" attr(href) ")"; }
@@ -277,4 +278,5 @@ body{font-size:15px;}
   @page :right { margin: 15mm 10mm 15mm 20mm; }
   p, h2, h3 { orphans: 3; widows: 3; }
   h2, h3 { page-break-after: avoid; }
+  nav { display: none !important; }
 }
