@@ -30,5 +30,12 @@ app.post('/results', function(req, res) {
 });
 
 app.get('/results', function(req, res) {
+  Result.all()
+  .success(function(results) {
+    res.json(results);
+  }).error(function(err) {
+    res.send(err, 500);
+  })
+
   res.send('This is a bad 404...', 404);
 });
