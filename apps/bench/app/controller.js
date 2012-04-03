@@ -8,11 +8,11 @@ app.use(express.bodyParser())
    .use(uagent.express());
 
 app.get('/', function(req, res) {
-  res.render('index', { layout: false });
+  res.render('index');
 });
 
 app.get('/monitor', function(req, res) {
-  res.render('monitor', { layout: false });
+  res.render('monitor');
 });
 
 app.post('/results', function(req, res) {
