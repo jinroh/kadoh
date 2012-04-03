@@ -36,6 +36,4 @@ app.get('/results', function(req, res) {
   }).error(function(err) {
     res.send(err, 500);
   })
-
-  res.send('This is a bad 404...', 404);
 });
