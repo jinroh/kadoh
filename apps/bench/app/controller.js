@@ -19,8 +19,7 @@ app.post('/results', function(req, res) {
   var infos = {
     user_agent : [req.useragent.Browser, req.useragent.OS].join(','),
     mobile     : req.useragent.isMobile,
-    dht_size   : app.settings.dht.size,
-    created_at : Date.now()
+    dht_size   : app.settings.dht.size
   };
 
   _.each(req.body, function(r) {
@@ -29,11 +28,8 @@ app.post('/results', function(req, res) {
   res.send();
 });
 
-app.get('/results', function(req, res) {
-  Result.all()
-  .success(function(results) {
-    res.json(results);
-  }).error(function(err) {
-    res.send(err, 500);
-  })
+app.get('/results', function(req, res, next) {
+  Result.findAll().success(function(results) {
+    res.json(_.map(results, function(r) {return r.values;}));
+  }).error(next);
 });
