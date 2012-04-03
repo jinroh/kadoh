@@ -19,7 +19,7 @@ app
   //views rendering
    .register('.haml', hamljs)
    .set('view engine', 'haml')
-   .set('view options', {layout: false});
+   .set('view options', {layout: false})
    .set('views', __dirname + '/app/views')
 
   //set database
