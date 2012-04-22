@@ -25,7 +25,8 @@
       , "restler"          : "~0.2"
       , "socket.io"        : "~0.9"
       , "socket.io-client" : "~0.9"
-      , "mustache"         : "~0.4" 
+      , "mustache"         : "~0.4"
+      , "Strophe.js"       : "https://github.com/metajack/strophejs/tarball/master"
     },
     "scripts": {
       "test": "jake build:node && jasmine-node spec"
