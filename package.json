@@ -19,7 +19,7 @@
       , "jake"             : "~0.1"
       , "jsCicada"         : "~0.1"
       , "klass"            : "~1.2"
-      , "ltx"              : "~0.1"
+      , "ltx"              : ">= 0.2.0"
       , "node-xmpp"        : "~0.3"
       , "bncode"           : "~0.2"
       , "restler"          : "~0.2"
