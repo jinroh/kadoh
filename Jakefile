@@ -146,8 +146,8 @@ namespace('build', function() {
     builder.build('bootstrap');
   });
 
-  desc('Building the brower-side code using browerify');
-  task('browerify', ['default'], function() {
+  desc('Building the brower-side code using browserify');
+  task('browserify', ['default'], function() {
     var build = require('browserify')({debug : true});
     build.use(require('ignorify'));
 
