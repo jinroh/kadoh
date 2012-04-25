@@ -13,10 +13,10 @@ function disable(elt) {
 $(function () {
   node = undefined;
 
-  KadOH.log.setLevel('debug');
-  KadOH.log.removeAllLoggers();
-  logger = new KadOHui.Logger('#log .console', '#log .control');
-  KadOH.log.addLogger('UILogger', logger);
+ // KadOH.log.setLevel('debug');
+ // KadOH.log.removeAllLoggers();
+ // logger = new KadOHui.Logger('#log .console', '#log .control');
+ // KadOH.log.addLogger('UILogger', logger);
 
   var config = {
     bootstraps : [
@@ -84,10 +84,10 @@ $(function () {
 
     node = new KadOH.Node(undefined, config);
 
-    KadOH.log.subscribeTo(node, 'Node', 'info');
-    KadOH.log.subscribeTo(node._reactor, 'Reactor', 'debug');
-    KadOH.log.subscribeTo(node._reactor._transport, 'Transport', 'debug');
-    KadOH.log.subscribeTo(node._routingTable, 'RoutingTable', 'debug');
+  //  KadOH.log.subscribeTo(node, 'Node', 'info');
+  //  KadOH.log.subscribeTo(node._reactor, 'Reactor', 'debug');
+ //   KadOH.log.subscribeTo(node._reactor._transport, 'Transport', 'debug');
+ //   KadOH.log.subscribeTo(node._routingTable, 'RoutingTable', 'debug');
 
     new KadOHui.Control(node);
     new KadOHui.Routing(node._routingTable, '#routing-table');
