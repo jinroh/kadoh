@@ -1,5 +1,6 @@
 var DOC_DIR     = __dirname + '/doc/jsdoc/';
-var LIB_DIR     = __dirname + '/lib/client/';
+var LIB_DIR     = __dirname + '/lib/';
+var DIST_DIR    = __dirname + '/dist/';
 var JsDoc3_CONF = __dirname + '/doc/JsDocConf.json';
 var JsDoc3_EXEC = __dirname + '/doc/jsdoc3/jsdoc';
 
@@ -143,6 +144,19 @@ namespace('build', function() {
   desc('Building the code for a node bootstrap');
   task('bootstrap', ['default'], function() {
     builder.build('bootstrap');
+  });
+
+  desc('Building the brower-side code using browerify');
+  task('browerify', ['default'], function() {
+    var build = require('browserify')({debug : true});
+    build.use(require('ignorify'));
+
+    build.addEntry(LIB_DIR+'index-browserify.js');
+    fs.writeFileSync(
+      DIST_DIR+'KadOH.browserify.js',
+      build.bundle()
+    );
+    console.log("OK");
   });
 });
 
