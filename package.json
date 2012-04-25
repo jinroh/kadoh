@@ -26,8 +26,8 @@
       , "socket.io"        : "~0.9"
       , "socket.io-client" : "~0.9"
       , "mustache"         : "~0.4"
-      , "browserify"       : "~1.10"
-      , "ignorify"         : "~0.1"
+      , "browserify"       : ">=1.10"
+      , "ignorify"         : "*"
       , "Strophe.js"       : "https://github.com/metajack/strophejs/tarball/master"
     },
     "scripts": {
