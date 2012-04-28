@@ -4,7 +4,6 @@
 // Bot CLI
 //
 
-var Bot = require(__dirname + '/bots/bot').Bot;
 process.listening = true;
 
 var argv  = require('optimist')
@@ -43,6 +42,7 @@ var config = {
 };
 
 process.env.KADOH_TRANSPORT = type;
+var Bot = require(__dirname + '/bots/bot').Bot;
 var bot = new Bot(config);
 bot.start();
 

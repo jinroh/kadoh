@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var util = require('util');
-var Bootstrap = require(__dirname + '/../lib/bootstrap');
 process.listening = true;
 
 var argv  = require('optimist')
@@ -30,6 +29,7 @@ var debug     = !!argv.debug,
     };
 
 process.env.KADOH_TRANSPORT = type;
+var Bootstrap = require(__dirname + '/../lib/bootstrap');
 var bootstrap = new Bootstrap(null, config);
 bootstrap.connect(function() {
   console.log('connected', bootstrap.getAddress());
