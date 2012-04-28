@@ -18,7 +18,7 @@ var argv  = require('optimist')
 
 var name      = argv.udp ? 'udpbot'   : 'xmppbot',
     protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
-    type      = argv.udp ? 'UDP'      : 'NodeXMPP',
+    type      = argv.udp ? 'udp'      : 'xmpp',
     delay     = argv.delay || 0,
     transport = {
       jid       : argv.jid,
@@ -35,7 +35,6 @@ var config = {
     bootstraps : bootstraps,
     reactor : {
       protocol  : protocol,
-      type      : type,
       transport : transport
     }
   },
@@ -43,6 +42,7 @@ var config = {
   activity   : false
 };
 
+process.env.KADOH_TRANSPORT = type;
 var bot = new Bot(config);
 bot.start();
 

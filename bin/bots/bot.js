@@ -1,9 +1,10 @@
 //
 // Bot
 //
-var KadOH = require(__dirname + '/../../dist/KadOH.node.js');
+var Node = require(__dirname + '/../../lib/node');
+var SHA1 = require(__dirname + '/../../lib/util/crypto').digest.SHA1;
 
-KadOH.log.setLevel('error');
+// KadOH.log.setLevel('error');
 var Bot = exports.Bot = function(options) {
   options = this._options = options || {
     node       : {},
@@ -15,7 +16,7 @@ var Bot = exports.Bot = function(options) {
   options.node.reactor = options.node.reactor || {};
   options.node.reactor.transport = options.node.reactor.transport || {};
   options.node.reactor.transport.reconnect = true;
-  this.kadoh = new KadOH.Node(null, options.node);
+  this.kadoh = new Node(null, options.node);
 };
 
 Bot.prototype.start = function() {
@@ -51,7 +52,7 @@ Bot.prototype.randomActivity = function() {
     var value  = String(Math.floor(Math.random() * self._options.values));
     switch(random) {
       case 0:
-        self.kadoh.get(KadOH.util.Crypto.digest.SHA1(value), function(){});
+        self.kadoh.get(SHA1(value), function(){});
         break;
       case 1:
         self.kadoh.put(null, value);
