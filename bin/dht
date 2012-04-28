@@ -35,8 +35,9 @@ var defaults = {
   ]
 };
 
-var config = configuration();
 var procs = [];
+var config = configuration();
+process.env.KADOH_TRANSPORT = (config.botType === 'udp' ? 'udp' : 'xmpp');
 (config.starter === false) ? launchPools() : launchBootstraps();
 
 function configuration() {
@@ -69,7 +70,6 @@ function configuration() {
 
 function poolParams(id) {
   var protocol   = config.botType === 'udp' ? 'jsonrpc2' : 'node_xmlrpc';
-  var type       = config.botType === 'udp' ? 'UDP'      : 'NodeXMPP';
   var bootstraps = config.botType === 'udp' ? 
                    config.bootstraps :
                    config.bootstraps.map(function(bootstrap) {
@@ -85,7 +85,6 @@ function poolParams(id) {
       bootstraps : bootstraps,
       reactor : {
         protocol  : protocol, 
-        type      : type,
         transport : {
           jid       : config.jids[0],
           password  : config.jids[1],
