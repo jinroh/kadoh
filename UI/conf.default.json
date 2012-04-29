@@ -36,7 +36,7 @@
     },
     "Log": {
       "href" : "log",
-      "js"   : "UI/js/Log.js",
+      "js"   : "UI/js/log.js",
       "html" : "html/log.html"
     }
   },
