@@ -1,6 +1,8 @@
 {
   "template" : "index.tmpl.html",
 
+  "KadOH-lib" : "KadOH.js?debug=true",
+
   "tabs": ["Control", "Node", "Reactor", "Transport", "Routing Table", "Value Management", "Log"],
 
   "tabs-ressources": {

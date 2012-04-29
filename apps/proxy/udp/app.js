@@ -5,7 +5,7 @@ var connect = require('connect'),
 
 var app = connect.createServer()
                  .use('/'      , connect.static(__dirname))
-                 .use('/dist'  , connect.static(path.join(__dirname, '../../..', 'dist')))
+                 .use(require('../../../lib/server/build-middleware.js')({debug : true}))
                  .use('/jquery', connect.static(path.join(__dirname, '../../..', 'lib/ext/jquery')))
              //  .use('/benchmark', connect.static(path.join(__dirname, '../../..', 'benchmarking')))
                  .use('/UI'    , connect.static(path.join(__dirname, '../../..', 'UI')));

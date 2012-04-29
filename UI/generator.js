@@ -30,6 +30,10 @@ var mergeConf = function(conf, dirpath) {
   //template
   fin.template = conf.template ? dirpath+'/'+conf.template : __dirname+'/'+defolt.template;
 
+  //kadoh-lib
+  fin['KadOH-lib'] = conf['KadOH-lib'] ? conf['KadOH-lib'] : defolt['KadOH-lib'];
+  
+
   //tabs
   fin.tabs = conf.tabs ? conf.tabs : defolt.tabs;
 
@@ -71,6 +75,7 @@ var generateFromConf = function(conf) {
 
   var view = {};
   view.tabs = [];
+  view['KadOH-lib'] = conf['KadOH-lib'];
 
   for(var i in conf.tabs) {
     var tab = conf['tabs-ressources'][conf.tabs[i]];
