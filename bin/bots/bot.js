@@ -3,6 +3,7 @@
 //
 var Node = require(__dirname + '/../../lib/node');
 var SHA1 = require(__dirname + '/../../lib/util/crypto').digest.SHA1;
+var Reporter = require(__dirname + '/../../lib/ext/cube/reporter');
 
 // KadOH.log.setLevel('error');
 var Bot = exports.Bot = function(options) {
@@ -17,6 +18,7 @@ var Bot = exports.Bot = function(options) {
   options.node.reactor.transport = options.node.reactor.transport || {};
   options.node.reactor.transport.reconnect = true;
   this.kadoh = new Node(null, options.node);
+  this.reporter = new Reporter(this.kadoh);
 };
 
 Bot.prototype.start = function() {
@@ -30,6 +32,7 @@ Bot.prototype.connect = function() {
   var self = this;
   this.kadoh.connect(function() {
     self.join();
+    self.reporter.start();
   });
 };
 
