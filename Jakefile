@@ -27,7 +27,6 @@ var UI_FILES = {
 var FS     = require('fs');
 var PATH   = require('path');
 var PROC   = require('child_process');
-var CICADA = require('jsCicada');
 var COLORS = require('colors');
 var UI     = require(__dirname + '/UI/generator');
 
@@ -110,47 +109,39 @@ task('doc', ['default'], function(){
 // ------------ BUILD ------------
 desc('Building and minifing the embedded code');
 task('build', ['default'], function() {
-  var builder = new CICADA.builder(BUILD_CONF_FILE);
-  builder.build(['normal', 'browser', 'node', 'bootstrap']);
+  jake.Task['build:xmpp'].execute();
+  jake.Task['build:simudp'].execute();
 });
 
 namespace('build', function() {
-  var builder = new CICADA.builder(BUILD_CONF_FILE);
-  desc('Building the code');
-  task('normal', ['default'], function() {
-    builder.build('normal');
-  });
 
-  desc('Building the code for browsers');
-  task('browser', ['default'], function() {
-    builder.build('browser');
-  });
+  desc('Building the brower-side code with xmpp configuration');
+  task('xmpp', ['default'], function() {
+    console.log('Building the brower-side code with xmpp configuration');
 
-  desc('Minifying the embedded code');
-  task('min', ['default'], function() {
-    builder.build(['min', 'min-node']);
-  });
+    var build = require('./lib/server/build.js')({
+      debug : false,
+      transport : 'xmpp'
+    });
 
-  desc('Building code for test');
-  task('test', [], function(){
-    builder.build('test');
-  });
-
-  desc('Building the code for node');
-  task('node', ['default'], function() {
-    builder.build('node');
-  });
-
-  desc('Building the code for a node bootstrap');
-  task('bootstrap', ['default'], function() {
-    builder.build('bootstrap');
-  });
-
-  desc('Building the brower-side code using browserify');
-  task('browserify', ['default'], function() {
-    var build = require('./lib/server/build.js')({debug : true});
     fs.writeFileSync(
-      DIST_DIR+'KadOH.browserify.js',
+      DIST_DIR+'KadOH.xmpp.js',
+      build.bundle()
+    );
+    console.log("OK");
+  });
+
+  desc('Building the brower-side code with simudp configuration');
+  task('simudp', ['default'], function() {
+    console.log('Building the brower-side code with simudp configuration');
+
+    var build = require('./lib/server/build.js')({
+      debug : false,
+      transport : 'simudp'
+    });
+
+    fs.writeFileSync(
+      DIST_DIR+'KadOH.simudp.js',
       build.bundle()
     );
     console.log("OK");
