@@ -148,10 +148,7 @@ namespace('build', function() {
 
   desc('Building the brower-side code using browserify');
   task('browserify', ['default'], function() {
-    var build = require('browserify')({debug : true});
-    build.use(require('ignorify'));
-
-    build.addEntry(LIB_DIR+'index-browserify.js');
+    var build = require('./lib/server/build.js')({debug : true});
     fs.writeFileSync(
       DIST_DIR+'KadOH.browserify.js',
       build.bundle()

@@ -24,9 +24,9 @@
       , "bncode"           : "~0.2"
       , "restler"          : "~0.2"
       , "socket.io"        : "~0.9"
-      , "socket.io-client" : "~0.9"
+      , "socket.io-client" : "https://github.com/substack/socket.io-client/tarball/master"
       , "mustache"         : "~0.4"
-      , "browserify"       : ">=1.10"
+      , "browserify"       : "https://github.com/alexstrat/node-browserify/tarball/for-kadoh"
       , "ignorify"         : "*"
       , "Strophe.js"       : "https://github.com/metajack/strophejs/tarball/master"
     },
