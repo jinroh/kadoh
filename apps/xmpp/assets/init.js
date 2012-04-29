@@ -13,11 +13,6 @@ function disable(elt) {
 $(function () {
   node = undefined;
 
- // KadOH.log.setLevel('debug');
- // KadOH.log.removeAllLoggers();
- // logger = new KadOHui.Logger('#log .console', '#log .control');
- // KadOH.log.addLogger('UILogger', logger);
-
   var config = {
     bootstraps : [
       'bootstrap0@kadoh.fr.nf/kadoh',
@@ -49,7 +44,7 @@ $(function () {
     } else {
       disable(inputs);
     }
-  }
+  };
   transport.change(changeTransport);
   changeTransport.call(transport);
 
@@ -84,10 +79,12 @@ $(function () {
 
     node = new KadOH.Node(undefined, config);
 
-  //  KadOH.log.subscribeTo(node, 'Node', 'info');
-  //  KadOH.log.subscribeTo(node._reactor, 'Reactor', 'debug');
- //   KadOH.log.subscribeTo(node._reactor._transport, 'Transport', 'debug');
- //   KadOH.log.subscribeTo(node._routingTable, 'RoutingTable', 'debug');
+    KadOH.log.subscribeTo(node, 'Node', 'info');
+    KadOH.log.subscribeTo(node._reactor, 'Reactor', 'debug');
+    KadOH.log.subscribeTo(node._reactor._transport, 'Transport', 'debug');
+    KadOH.log.subscribeTo(node._routingTable, 'RoutingTable', 'debug');
+
+    logger = new KadOHui.Logger(KadOH.log, '#log .console', '#log .control');
 
     new KadOHui.Control(node);
     new KadOHui.Routing(node._routingTable, '#routing-table');
@@ -96,7 +93,7 @@ $(function () {
     node.once('connected', function() {
       valueM = new KadOHui.ValueM(node._store, '#value-management');
     }, this);
-    new KadOHui.Node(node, '#node')
+    new KadOHui.Node(node, '#node');
     node.once('connected', connected);
     node.connect();
   };

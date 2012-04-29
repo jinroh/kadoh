@@ -27,15 +27,14 @@ $(function() { KadOHui.init();
   };
 
   node = new KadOH.Node(undefined, options);
-  KadOH.log.setLevel('debug');
+
   KadOH.log.subscribeTo(node, 'Node');
   KadOH.log.subscribeTo(node._reactor, 'Reactor');
   KadOH.log.subscribeTo(node._reactor._transport, 'Transport');
   KadOH.log.subscribeTo(node._routingTable, 'RoutingTable');
 
-  logger = new KadOHui.Logger('#log .console', '#log .control');
-  KadOH.log.addLogger('UILogger', logger);
-
+  logger = new KadOHui.Logger(KadOH.log, '#log .console', '#log .control');
+  
   routing = new KadOHui.Routing(node._routingTable, '#routing-table');
   reactor = new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
   new KadOHui.Node(node, '#node');
