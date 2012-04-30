@@ -40,7 +40,7 @@ function connect() {
   that.button('loading');
   var connected = function() {
     that.button('complete').button('toggle');
-    $('#info').html('<h3>'+node.getAddress()+' / <small><a href="#" data-placement="below" rel="tooltip" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>');
+    $('#info').html('<h3>'+node.getAddress()+' / <small><a href="#" data-placement="bottom" rel="tooltip" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>');
     that.click(disconnect);
   };
   var failure = function() {

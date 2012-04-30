@@ -108,8 +108,7 @@ KadOHui.init = function() {
           return self.attr('data-original-title');
         }
       },
-      offset: 10,
-      live: true
+      offset: 10
     })
     .click(function(e) {
       e.preventDefault();

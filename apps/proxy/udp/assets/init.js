@@ -43,7 +43,7 @@ $(function() {
   new KadOHui.Control(node);
   
   node.once('connected', function() {
-    $('#info').html('<h3>'+node.getAddress()+' / <small><a href="#" data-placement="below" rel="tooltip" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>');
+    $('#info').html('<h3>'+node.getAddress()+' / <small><a href="#" data-placement="bottom" rel="tooltip" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>');
   });
   
   connectionBtn = $('#connection_btn').button();
