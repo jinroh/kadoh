@@ -107,19 +107,19 @@ time {
   background-position: left center;
 }      
 #log .error>div:nth-child(2) {
-  background-image: url('images/error-icon16.png');
+  background-image: url('../img/error-icon16.png');
 }      
 #log .warn>div:nth-child(2) {
-  background-image: url('images/warn-icon16.png');
+  background-image: url('../img/warn-icon16.png');
 }           
 #log .info> div:nth-child(2) {
-  background-image: url('images/info-icon16.png');
+  background-image: url('../img/info-icon16.png');
 } 
 #log .debug>div:nth-child(2) {
-  background-image: url('images/debug-icon16.png');
+  background-image: url('../img/debug-icon16.png');
 } 
 #log .fatal>div:nth-child(2) {
-  background-image: url('images/skull-icon16.png');
+  background-image: url('../img/skull-icon16.png');
 }
 
 #log .row>div:nth-child(3) {
