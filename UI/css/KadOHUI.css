@@ -7,7 +7,7 @@ body {
   z-index: 12100;
 }
 
-.popover .content {
+.popover-content {
   padding: 6px;
 }
 .container > footer {
@@ -19,7 +19,7 @@ body {
   text-align: center; /* center align it with the container */
 }
 
-.popover .inner {
+.popover-inner {
   width: 400px;
 }
 .tooltip-inner {
