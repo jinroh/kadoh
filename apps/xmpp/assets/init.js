@@ -47,7 +47,6 @@ function connect() {
     that.button('failed');
     that.click(connect);
   };
-  createNode();
   node.once('connected', connected);
   node.connect();
 }
@@ -72,6 +71,8 @@ function disconnect() {
 
 $(function () {
   KadOHui.init();
+
+  createNode();
   
   var jidInput   = $("#jid");
   var pswdInput  = $("#password");
