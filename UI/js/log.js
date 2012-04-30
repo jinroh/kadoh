@@ -44,13 +44,13 @@ KadOHui.Logger.prototype = {
       else {
         var reg = new RegExp("\"", "g");
         var code = '<code>' + this._stringify(obj).replace(reg, "'") + '</code>';
-        return '<b rel="popover" data-content="' + code + '" data-original-title="Object inspector" data-placement="below">[Object]</b>';
+        return '<b rel="popover" data-content="' + code + '" data-original-title="Object inspector" data-placement="bottom">[Object]</b>';
       }
     }, this).join(', ');
 
     var human_time = (time.getMonth() + 1) + '/' + time.getDate() + '/' + time.getFullYear() + ' ' + time.toLocaleTimeString();
 
-    var html = ['<div class="row ' + level + '">', '<div class="span1">', abbr[ns] || 'general', '</div>', '<div class="span1">&nbsp;</div>', '<div class="span11">', message, '</div>', '<div class="span2">', '<time rel="twipsy" datetime="' + time.toISOString() + '" title="' + human_time + '" data-placement="below">' + time.toLocaleTimeString() + '</time>', '</div>', '</div>'].join('\n');
+    var html = ['<div class="row ' + level + '">', '<div class="span1">', abbr[ns] || 'general', '</div>', '<div class="span1">&nbsp;</div>', '<div class="span8">', message, '</div>', '<div class="span1">', '<time rel="tooltip" datetime="' + time.toISOString() + '" title="' + human_time + '" data-placement="bottom">' + time.toLocaleTimeString() + '</time>', '</div>', '</div>'].join('\n');
     return $(html);
   },
 

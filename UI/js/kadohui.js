@@ -35,7 +35,7 @@ KadOHui.helper.peerTable = function(peerArray, relative_node_id) {
                   '</td>'+
                   '<td><b>'+peer.getAddress()+'</b></td>'+
                   '<td>'+ ((peer.getID() !== null) ?
-                    '<span class=\'sha\' data-placement=\'below\' rel=\'twipsy\' title=\''+peer.getID()+'\'>'+peer.getID().slice(0,10)+'</span>' :
+                    '<span class=\'sha\' data-placement=\'below\' rel=\'tooltip\' title=\''+peer.getID()+'\'>'+peer.getID().slice(0,10)+'</span>' :
                     '<i>null</i>')+
                   '</td>'+
                '</tr>';
@@ -63,47 +63,46 @@ KadOHui.init = function() {
   var popover_options = {
       offset: 10,
       //live: true,
-      html: true,
       trigger : 'manual'
   };
 
   $("[rel=popover]")
     .popover(popover_options)
     .live('click', function(e) {
-      var popover = $(e.target).popover(popover_options, 'get')[0];
-       if($(e.target).is('.popover-hold')) {
-          popover.hide();
-         $(e.target).removeClass('popover-hold');
+      var self = $(this);
+      var popover = self.popover(popover_options, 'get')[0];
+       if(self.is('.popover-hold')) {
+         self.popover('hide');
+         self.removeClass('popover-hold');
        } else {
-          //popover.show();
-         $(e.target).addClass('popover-hold');
+         self.addClass('popover-hold');
        }
     })
     .live('mouseenter',function(e) {
-       var popover = $(e.target).popover(popover_options, 'get')[0];
-       if(! $(e.target).is('.popover-hold'))
-         popover.show();
+      var self = $(this);
+      var popover = self.popover(popover_options, 'get')[0];
+      if(!self.is('.popover-hold'))
+        self.popover('show');
      })
      .live('mouseleave',function(e) {
-      var popover = $(e.target).popover(popover_options, 'get')[0];
-       if(! $(e.target).is('.popover-hold'))
-       popover.hide();
+      var self = $(this);
+      var popover = self.popover(popover_options, 'get')[0];
+       if(! self.is('.popover-hold'))
+         self.popover('hide');
      });
 
     $('.popover .title').live('click', function(e){
         e.preventDefault();
-        
        $('[rel=popover].popover-hold').each(function(){
-            $(this).removeClass('popover-hold').data('popover').hide();
+            $(this).removeClass('popover-hold').data('popover').popover('hide');
         });
     });
 
-  $("[rel=twipsy]")
-    .twipsy({
+  $("[rel=tooltip]")
+    .tooltip({
       title : function() {
         var self = $(this);
-
-        if(self.is('time')) {
+        if (self.is('time')) {
           return KadOHui.helper.timeDif(new Date(self.attr('datetime')));
         } else {
           return self.attr('data-original-title');
@@ -115,6 +114,5 @@ KadOHui.init = function() {
     .click(function(e) {
       e.preventDefault();
     });
-
 
 };

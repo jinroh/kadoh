@@ -1,27 +1,28 @@
-$(function() { KadOHui.init();
+$(function() {
+  KadOHui.init();
      
-    var inputs     = $("#credentials input");
-    var transport  = $("select.transport");
-    var jidInput   = $("#jid");
-    var pswdInput  = $("#password");
-    var connection = $("#connection");
-    var joinBtn    = $("#connection input[name=join]");
+  var inputs     = $("#credentials input");
+  var transport  = $("select.transport");
+  var jidInput   = $("#jid");
+  var pswdInput  = $("#password");
+  var connection = $("#connection");
+  var joinBtn    = $("#connection input[name=join]");
 
-    var options = {
-    bootstraps : ['67.215.242.139:6881', '67.215.242.138:6881'],
-    reactor : {
-      protocol  : 'jsonrpc2',
-      //host      : 'localhost',
-      type      : 'SimUDP',
-      transport : {
-        transports : [
-                      //'websocket', 
-                      'flashsocket', 
-                      'htmlfile', 
-                      'xhr-multipart', 
-                      'xhr-polling', 
-                      'jsonp-polling'
-                      ]
+  var options = {
+  bootstraps : ['67.215.242.139:6881', '67.215.242.138:6881'],
+  reactor : {
+    protocol  : 'jsonrpc2',
+    //host      : 'localhost',
+    type      : 'SimUDP',
+    transport : {
+      transports : [
+                    //'websocket', 
+                    'flashsocket', 
+                    'htmlfile', 
+                    'xhr-multipart', 
+                    'xhr-polling', 
+                    'jsonp-polling'
+                    ]
       }
     }
   };
@@ -40,27 +41,18 @@ $(function() { KadOHui.init();
   new KadOHui.Node(node, '#node');
 
   new KadOHui.Transport(node._reactor._transport, '#transport>pre');
-
-  node._reactor.on('connected', function(iam) {
-    $('#info').empty().append('<h3>'+iam+' / <small><span class="sha" data-placement="below" rel="twipsy" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</span></small></h3>');
-  });
-
   new KadOHui.Control(node);
 
-  function onClickJoin(event) {
-    try {
-      if(node.stateIsNot('connected')){ 
-        node.connect().once('connected', function() {
-          node.join();
-        });
-        } else {
-          node.join();
-        }
-    } catch(e) {
-      console.error(e.stack);
-    }
-    event.preventDefault();
-  }
+  node.on('connected', function() {
+    $('#info').html('<h3>'+node.getAddress()+' / <small><a href="#" data-placement="below" rel="tooltip" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>');
+  });
 
-  joinBtn.click(onClickJoin);
+  connectionBtn = $('#connection_btn').button();
+  var onConnect = function() {
+    connectionBtn.unbind('click', onConnect);
+    node.connect(function() {
+      connectionBtn.button('complete').button('toggle');
+    });
+  }
+  connectionBtn.click(onConnect);
 });

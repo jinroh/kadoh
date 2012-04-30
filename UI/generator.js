@@ -83,7 +83,7 @@ var generateFromConf = function(conf) {
 
     view.tabs.push({
       script : tab.js,
-      li :  '<li'+(i === '0' ? ' class="active"' : '')+'><a href="#'+tab.href+'">'+tab.name+'</a></li>',
+      li :  '<li'+(i === '0' ? ' class="active"' : '')+'><a href="#'+tab.href+'" data-toggle="tab">'+tab.name+'</a></li>',
       content : tab.html ? fs.readFileSync(tab.html, 'ascii') : null
     });
   }

@@ -38,15 +38,15 @@ KadOHui.Node.prototype = {
               '<li><b>Expiration : </b>',
                   (!res.exp || res.exp<0) ?
                   '<i>never</i>':
-                  '<time rel=\'twipsy\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(res.exp).toString())+'</time>',
+                  '<time rel=\'tooltip\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(res.exp).toString())+'</time>',
               '</li>',
             '</ul>'].join('\n');
         }
 
           html += this.iterfindInfo(iterfind, peers, start);
 
-        el.find('.state').removeClass('warning')
-                         .addClass('success')
+        el.find('.state').removeClass('label-warning')
+                         .addClass('label-success')
                          .text('resolved')
                          .attr('rel', 'popover')
                          .attr('data-original-title', 'Resolved')
@@ -56,8 +56,8 @@ KadOHui.Node.prototype = {
       function(peers) {
         var html = this.iterfindInfo(iterfind, peers, start);
 
-        el.find('.state').removeClass('warning')
-                         .addClass('important')
+        el.find('.state').removeClass('label-warning')
+                         .addClass('label-important')
                          .text('rejected')
                          .attr('rel', 'popover')
                          .attr('data-original-title', 'Rejected')
@@ -71,11 +71,11 @@ KadOHui.Node.prototype = {
 
     var tr =
     ['<tr>',
-      '<td><span class="sha" data-placement="below" rel="twipsy" data-original-title="'+target+'">'+target.slice(0,10)+'</span></td>',
+      '<td><span class="sha" data-placement="bottom" rel="tooltip" data-original-title="'+target+'">'+target.slice(0,10)+'</span></td>',
       '<td><code>'+target_type+'</code></td>',
-      '<td><i>started with <b>'+start_peers.size()+' </b><a rel="popover" data-content="'+KadOHui.helper.peerTable(start_peers, target)+'" data-original-title="Start peers" data-placement="below">peers</a></i></td>',
-      '<td><span class="state label warning">Progress</span></td>',
-      '<td><time rel="twipsy" datetime="'+time.toISOString()+'" data-placement="below">'+time.toLocaleTimeString()+'</time></td>',
+      '<td><i>started with <b>'+start_peers.size()+' </b><a rel="popover" data-content="'+KadOHui.helper.peerTable(start_peers, target)+'" data-original-title="Start peers" data-placement="bottom">peers</a></i></td>',
+      '<td><span class="state label label-warning">Progress</span></td>',
+      '<td><time rel="tooltip" datetime="'+time.toISOString()+'" data-placement="bottom">'+time.toLocaleTimeString()+'</time></td>',
     '</tr>'];
 
     return tr.join('\n');

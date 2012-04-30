@@ -2,19 +2,35 @@ KadOHui = (typeof KadOHui !== 'undefined') ? KadOHui : {};
 
 KadOHui.Control = function(node) {
   this.node = node;
-  this.putBtn     = $("#put_btn");
+  this.joinBtn    = $("#join_btn").button();
+  this.putBtn     = $("#put_btn").button();
   this.putValue   = $("#put_value");
+  this.putKey     = $("#put_key");
   this.putResult  = $("#put_result");
-  this.getBtn     = $("#get_btn");
-  this.getValue   = $("#get_value");
+  this.getBtn     = $("#get_btn").button();
+  this.getKey     = $("#get_key");
   this.getResult  = $("#get_result");
 
-  this.init_get()
-      .init_put();
+  this.initJoin()
+      .initGet()
+      .initPut();
 };
 
 KadOHui.Control.prototype = {
-  init_get: function() {
+  initJoin: function() {
+    var that = this;
+    var onJoin = function() {
+      that.joinBtn.unbind('click', onJoin);
+      that.joinBtn.button('loading');
+      that.node.join(function() {
+        that.joinBtn.button('complete').button('toggle');
+      });
+    };
+    this.joinBtn.click(onJoin);
+    return this;
+  },
+
+  initGet: function() {
     var that = this;
     this.getBtn.click(function() {
       that.node.get(that.getValue.val(), function(value) {
@@ -30,7 +46,7 @@ KadOHui.Control.prototype = {
     return this;
   },
 
-  init_put: function() {
+  initPut: function() {
     var that = this;
     this.putBtn.click(function() {
       that.node.put(null, that.putValue.val(), null, function(key) {

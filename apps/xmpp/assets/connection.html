@@ -1,17 +1,10 @@
-<div id="connection-control">
-  <div class="row">
-    <div class="span2">
-      <select class="span2 transport">
-        <option value="XMPP">XMPP</option>
-      </select>
-    </div>
-    <div id="credentials" class="span10">
-      <input class="span3" type="text"     id="jid"      placeholder="Jabber or GMail login" />
-      <input class="span3" type="password" id="password" placeholder="Password" />
-    </div>
-    <div id="connection" class="span3">
-      <input type="submit" class="btn primary"  name="connect" value="Connect" />
-      <input type="submit" class="btn disabled" name="join"    value="Join" />
-    </div>
+<div id="credentials" class="navbar-search pull-right">
+  <div class="input-prepend">
+    <input class="search-query input-medium" type="text" id="jid" placeholder="Jabber ID" />
+    <input class="search-query input-small" type="password" id="password" placeholder="Password" />
+    <button type="submit" class="btn btn-mini" style="margin:0" id="connection_btn"
+            data-loading-text="Connecting..." data-complete-text="Connected" data-failed-text="Retry ?">
+      Connect
+    </button>
   </div>
 </div>

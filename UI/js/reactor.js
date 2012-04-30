@@ -58,20 +58,20 @@ KadOHui.Reactor.prototype = {
         break;
       case 'FIND_NODE':
       case 'FIND_VALUE':
-        param = '<span class="sha" data-placement="below" rel="twipsy" data-original-title="'+rpc.getTarget()+'">'+rpc.getTarget().slice(0,10)+'</span>';
+        param = '<span class="sha" data-placement="bottom" rel="tooltip" data-original-title="'+rpc.getTarget()+'">'+rpc.getTarget().slice(0,10)+'</span>';
         break;
       case 'STORE' :
         var code = [
           '<ul>',
-            '<li><b>Key : </b><a href=\'#\' class=\'sha\' data-placement=\'below\' rel=\'twipsy\' data-original-title=\''+rpc.getKey()+'\'>'+rpc.getKey().slice(0,10)+'</a></li>',
+            '<li><b>Key : </b><a href=\'#\' class=\'sha\' data-placement=\'below\' rel=\'tooltip\' data-original-title=\''+rpc.getKey()+'\'>'+rpc.getKey().slice(0,10)+'</a></li>',
             '<li><b>Value : </b><code>'+KadOHui.util.escapeHTML(rpc.getValue())+'</code></li>',
             '<li><b>Expiration : </b>',
                 (!rpc.getExpiration() || rpc.getExpiration()<0) ?
                 '<i>never</i>':
-                '<time rel=\'twipsy\' datetime=\''+(new Date(rpc.getExpiration())).toISOString()+'\' data-placement=\'below\'>'+(new Date(rpc.getExpiration()).toString())+'</time>',
+                '<time rel=\'tooltip\' datetime=\''+(new Date(rpc.getExpiration())).toISOString()+'\' data-placement=\'below\'>'+(new Date(rpc.getExpiration()).toString())+'</time>',
             '</li>',
           '</ul>'].join('\n');
-        param = '<i><a rel="popover" data-content="'+code+'" data-original-title="Params" data-placement="below">params</a></i>';
+        param = '<i><a rel="popover" data-content="'+code+'" data-original-title="Params" data-placement="bottom">params</a></i>';
         break;
       default:
         break;
@@ -88,19 +88,19 @@ KadOHui.Reactor.prototype = {
       '<td>'+id+'</td>',
       '<td>',
         '<b>'+addr+'</b><br>',
-        (nodeid !== null) ? '<span class="sha" data-placement="below" rel="twipsy" data-original-title="'+nodeid+'">'+nodeid.slice(0,10)+'</span>' : '<i>null</i>',
+        (nodeid !== null) ? '<span class="sha" data-placement="bottom" rel="tooltip" data-original-title="'+nodeid+'">'+nodeid.slice(0,10)+'</span>' : '<i>null</i>',
       '</td>',
       '<td><code>'+meth+'</code><br>'+param+'</td>',
-      '<td><span class="state label warning">Progress</span></td>',
-      '<td><time rel="twipsy" datetime="'+time.toISOString()+'" data-placement="below">'+time.toLocaleTimeString()+'</time></td>',
+      '<td><span class="state label label-warning">Progress</span></td>',
+      '<td><time rel="tooltip" datetime="'+time.toISOString()+'" data-placement="bottom">'+time.toLocaleTimeString()+'</time></td>',
     '</tr>'];
 
     return tr.join('\n');
   },
 
   _resolve: function(el,html) {
-    el.find('.state').removeClass('warning')
-                      .addClass('success')
+    el.find('.state').removeClass('label-warning')
+                      .addClass('label-success')
                       .text('resolved');
     if(html)
       el.find('.state').attr('rel', 'popover')
@@ -111,8 +111,8 @@ KadOHui.Reactor.prototype = {
   },
 
   _reject: function(el, html) {
-    el.find('.state').removeClass('warning')
-                      .addClass('important')
+    el.find('.state').removeClass('label-warning')
+                      .addClass('label-important')
                       .text('rejected');
     if(html)
       el.find('.state').attr('rel', 'popover')
@@ -137,7 +137,7 @@ KadOHui.Reactor.prototype = {
             '<li><b>Expiration : </b>',
                 (args[0].exp<0) ?
                 '<i>never</i>':
-                '<time rel=\'twipsy\' datetime=\''+(new Date(args[0].exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(args[0].exp).toString())+'</time>',
+                '<time rel=\'tooltip\' datetime=\''+(new Date(args[0].exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(args[0].exp).toString())+'</time>',
             '</li>',
           '</ul>'].join('\n');
         } else{
@@ -155,7 +155,6 @@ KadOHui.Reactor.prototype = {
       'disconnected' : 'important',
       'connected'    : 'success'
     };
-
-    this.state.html('<span class="state label '+labels[state]+'">'+state+'</span>');
+    this.state.html('<span class="state label label-'+labels[state]+'">'+state+'</span>');
   }
 };

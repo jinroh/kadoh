@@ -1,21 +1,27 @@
 <div class="tab-pane" id="reactor">
-  <div class="row connection_state">
-    <span class="state label important">Disconnected</span>
+  <div class="row">
+    <div class="span9 columns">
+      <h3>Reactor</h3>
+      <p>List of all the received and sent RPCs</p>
+    </div>
+    <div class="span3 columns connection_state">
+      <span class="state label label-important">Disconnected</span>
+    </div>
   </div>
   <div class="row">
-    <div class="span8">
-      <h4>Received RPCs</h4>
+    <div class="span5 offset1">
       <div class ="table">
-        <table class='condensed-table'>
+        <table class="table table-striped">
+          <thead><caption><h4>Incoming</h4></caption></thead>
           <tbody class="received">
           </tbody>
         </table>
       </div>
     </div>
-    <div class="span8">
-      <h4>Sent RPCs</h4>
+    <div class="span5">
       <div class ="table">
-        <table class='condensed-table'>
+        <table class="table table-striped">
+          <thead><caption><h4>Outgoing</h4><caption></caption>
           <tbody class="sent">
           </tbody>
         </table>

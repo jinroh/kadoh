@@ -1,19 +1,61 @@
 <div class="active tab-pane" id="control">
-  <h3>Control panel</h3>
-
   <div class="row">
-    <input class="xlarge span4" id="put_value" placeholder="value" name="put_value" size="30" type="text">
-    <div class="span3">
-      <button style="margin-right : 15px;" id="put_btn" class="btn success">Put !</button> 
+    <div class="span12">
+      <h2>Control panel</h2>
     </div>
-    <div id="put_result"></div>
+  </div>
+  <div class="row">
+    <div class="span10 columns">
+      
+      <p>This panel will allow you to interact with the DHT. Before that, you need to follow these two steps :</p>
+
+      <ul>
+        <li>first, be sure to have connected your browser by entering your GMail or Jabber credentials above, and clicking the <code>Connect</code> button</li>
+        <li>then <strong>make sure to join the network</strong> by clicking on the <code>Join</code> button. This will start an iterative lookup to search for nodes close to you</p></li>
+      </ul>
+
+      <p>After that, feel free to post and retrieve data from the DHT and to take a look at all the different panels to see what is happening behind the scene.</p>
+    </div>
+    <div class="span2 colums">
+      <button id="join_btn" name="join" class="btn btn-success btn-large"
+              data-loading-text="Joining..." data-complete-text="Joined">
+        Join
+      </button>
+    </div>
+  </div>
+
+  <div class="row columns">
+    <div class="span6">
+      <h3>Post</h3>
+      <p>Post a value to the DHT associated to a key.</p>
+      <div class="well">
+        <div class="control-group">
+          <textarea id="put_value" name="put_value" placeholder="Value" style="height:125px;width:410px"></textarea>
+        </div>
+        <div class="control-group">
+          <label class="checkbox">
+            <input type="checkbox" id="default_key" checked> Generate the <code>SHA1</code> key 
+          </label>
+          <input class="input-xlarge disabled" id="put_key" name="put_key" type="text" placeholder="Key" disabled>
+        </div>
+
+        <button id="put_btn" class="btn">Put</button> 
+        <div id="put_result"></div>
+      </div>
+    </div>
+    <div class="span6">
+      <h3>Find</h3>
+      <p>Retrieve a value from the DHT given its key.</p>
+      <div class="well">
+        <div class="input-append">
+          <input class="input-xlarge" id="get_key" name="get_key" type="text" placeholder="Key">
+          <button id="get_btn" class="btn">Get</button> 
+        </div>
+        <div id="get_result"></div>
+      </div>
+    </div>
   </div>
 
   <div class="row">
-    <input class="xlarge span4" id="get_value" placeholder="sha1" name="put_value" size="30" type="text">
-    <div class="span3">
-      <button style="margin-right : 15px;" id="get_btn" class="btn success">Get !</button> 
-    </div>
-    <div id="get_result"></div>
   </div>
 </div>

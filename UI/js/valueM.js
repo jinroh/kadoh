@@ -22,7 +22,7 @@ KadOHui.ValueM.prototype = {
     });
 
     this.tbody.empty();
-    $('.twipsy').remove();
+    $('.tooltip').remove();
 
     this.vm._store.each(function(obj) {
       var kv = $(self._renderKeyValue(obj));
@@ -36,10 +36,10 @@ KadOHui.ValueM.prototype = {
 
     return [
     '<tr>',
-      '<td><span class="sha" data-placement="below" rel="twipsy" data-original-title="'+obj.key+'">'+obj.key.slice(0,10)+'</span> ('+this.vm._getDistanceToKey(obj.key)+')</td>',
+      '<td><span class="sha" data-placement="bottom" rel="tooltip" data-original-title="'+obj.key+'">'+obj.key.slice(0,10)+'</span> ('+this.vm._getDistanceToKey(obj.key)+')</td>',
       '<td><code>'+KadOHui.util.escapeHTML(obj.value.toString())+'</code></td>',
-      '<td><time rel="twipsy" datetime="'+rep.toISOString()+'" title="'+rep.toLocaleTimeString()+'" data-placement="right">'+rep.toLocaleTimeString()+'</time></td>',
-      '<td>'+((exp !== -1) ? '<time rel="twipsy" datetime="'+exp.toISOString()+'" title="'+exp.toLocaleTimeString()+'" data-placement="right">'+exp.toLocaleTimeString()+'</time>' : '<i>never</i>')+'</td>',
+      '<td><time rel="tooltip" datetime="'+rep.toISOString()+'" title="'+rep.toLocaleTimeString()+'" data-placement="right">'+rep.toLocaleTimeString()+'</time></td>',
+      '<td>'+((exp !== -1) ? '<time rel="tooltip" datetime="'+exp.toISOString()+'" title="'+exp.toLocaleTimeString()+'" data-placement="right">'+exp.toLocaleTimeString()+'</time>' : '<i>never</i>')+'</td>',
     '</tr>'
       ].join('\n');
 
