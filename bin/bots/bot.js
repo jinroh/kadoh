@@ -12,13 +12,15 @@ var Bot = exports.Bot = function(options) {
     delay      : undefined,
     name       : 'bot',
     activity   : false,
-    values     : 10
+    values     : 10,
+    reporter   : false
   };
   options.node.reactor = options.node.reactor || {};
   options.node.reactor.transport = options.node.reactor.transport || {};
   options.node.reactor.transport.reconnect = true;
   this.kadoh = new Node(null, options.node);
-  this.reporter = new Reporter(this.kadoh);
+  if (options.reporter)
+    this.reporter = new Reporter(this.kadoh);
 };
 
 Bot.prototype.start = function() {
@@ -32,7 +34,8 @@ Bot.prototype.connect = function() {
   var self = this;
   this.kadoh.connect(function() {
     self.join();
-    self.reporter.start();
+    if (self.reporter)
+      self.reporter.start();
   });
 };
 

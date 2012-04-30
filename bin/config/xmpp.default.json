@@ -7,6 +7,7 @@
   "values"   : 100,
   "jids"     : ["kadohbot%d@jabber.org", "azerty"],
   "starter"  : true,
+  "reporter" : false,
   "bootstraps" : [
     ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
     ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],

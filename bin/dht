@@ -28,6 +28,7 @@ var defaults = {
   values   : 100,
   jids     : ["kadoh%d@jabber.org", "azerty"],
   starter  : true,
+  reporter : false,
   bootstraps : [
     ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
     ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],
@@ -81,6 +82,7 @@ function poolParams(id) {
     activity : config.activity,
     lambda   : config.speed,
     values   : config.values,
+    reporter : config.reporter,
     bot : {
       bootstraps : bootstraps,
       reactor : {

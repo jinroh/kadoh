@@ -15,6 +15,7 @@ var Pool = module.exports = function(config) {
   this._size       = config.size;
   this._activity   = config.activity || false;
   this._values     = config.values   || 10;
+  this._reporter   = config.reporter || false;
 
   this._nodes      = [];
   this._launched   = false;
@@ -34,7 +35,8 @@ Pool.prototype._botConfig = function(number, delay) {
     name     : 'bot-' + this._id + '-' + number,
     delay    : delay,
     activity : this._activity,
-    values   : this._values
+    values   : this._values,
+    reporter : this._reporter
   };
 };
 
