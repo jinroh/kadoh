@@ -29,8 +29,8 @@ function createNode() {
   new KadOHui.Transport(node._reactor._transport, '#transport>pre');
   new KadOHui.Reactor(node._reactor, '#reactor .received', '#reactor .sent', '#reactor .connection_state');
   node.once('connected', function() {
-    valueM = new KadOHui.ValueM(node._store, '#value-management');
-  }, this);
+    new KadOHui.ValueM(node._store, '#value-management');
+  });
   new KadOHui.Node(node, '#node');
 }
 
@@ -40,6 +40,7 @@ function connect() {
   that.button('loading');
   var connected = function() {
     that.button('complete').button('toggle');
+    $('#info').html('<h3>'+node.getAddress()+' / <small><a href="#" data-placement="below" rel="tooltip" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>');
     that.click(disconnect);
   };
   var failure = function() {
@@ -56,7 +57,7 @@ function disconnect() {
   that.unbind("click", disconnect);
   that.addClass("disabled");
   var disconnected = function() {
-    that.button('reset');
+    that.button('toggle').button('reset');
     that.click(connect);
   };
   var failure = function() {

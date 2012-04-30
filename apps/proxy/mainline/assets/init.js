@@ -43,7 +43,7 @@ $(function() {
   new KadOHui.Transport(node._reactor._transport, '#transport>pre');
   new KadOHui.Control(node);
 
-  node.on('connected', function() {
+  node.once('connected', function() {
     $('#info').html('<h3>'+node.getAddress()+' / <small><a href="#" data-placement="below" rel="tooltip" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>');
   });
 

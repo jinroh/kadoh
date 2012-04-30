@@ -36,13 +36,13 @@ $(function() {
   new KadOHui.Node(node, '#node');
   
   node.once('connected', function() {
-    valueM = new KadOHui.ValueM(node._store, '#value-management');
-  }, this);
+    new KadOHui.ValueM(node._store, '#value-management');
+  });
 
   new KadOHui.Transport(node._reactor._transport, '#transport>pre');
   new KadOHui.Control(node);
   
-  node.on('connected', function() {
+  node.once('connected', function() {
     $('#info').html('<h3>'+node.getAddress()+' / <small><a href="#" data-placement="below" rel="tooltip" title="'+node.getID()+'">'+node.getID().slice(0,10)+'</a></small></h3>');
   });
   
