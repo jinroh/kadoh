@@ -15,9 +15,14 @@ KadOHui.Control = function(node) {
   this.getKey     = $("#get_key");
   this.getResult  = $("#get_result");
 
+  this.pingBtn     = $("#ping_btn").button();
+  this.pingAddress = $("#ping_address");
+  this.pingResult  = $("#ping_result");
+
   this.initJoin()
       .initGet()
-      .initPut();
+      .initPut()
+      .initPing();
 };
 
 KadOHui.Control.prototype = {
@@ -92,6 +97,33 @@ KadOHui.Control.prototype = {
       });
     };
     this.putBtn.click(onPut);
+    return this;
+  },
+
+  initPing: function() {
+    var that = this;
+    var onPing = function() {
+      if (!that._checkConnection()) {
+        return;
+      }
+      that.pingBtn.unbind('click', onPing)
+                  .button('toggle');
+      that.pingResult.empty();
+      var address = that.pingAddress.val();
+      var peer = new (require('/dht/bootstrap-peer'))(address);
+      var ping = that.node._reactor.PING(peer);
+      ping.then(function() {
+        that.pingResult.html('<img src="/UI/img/success-icon24.png">'+
+                             '<code>'+ping.getQueried().getID()+'</code>');
+        console.log();
+      }, function() {
+        that.pingResult.html('<img src="/UI/img/error-icon24.png">');
+      }).always(function() {
+        that.pingBtn.click(onPing)
+                    .button('toggle');
+      });
+    };
+    this.pingBtn.click(onPing);
     return this;
   },
 
