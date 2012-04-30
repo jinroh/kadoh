@@ -50,13 +50,13 @@ KadOHui.helper.peerTable = function(peerArray, relative_node_id) {
 KadOHui.util = {};
 
 KadOHui.util.escapeHTML = function(toescape) {
-  return toescape.replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quote;")
-                 .replace(/'/g, "&#39;");
+  return toescape.replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, '&amp;')
+                 .replace(/</g, '&lt;')
+                 .replace(/>/g, '&gt;')
+                 .replace(/"/g, '&quot;')
+                 .replace(/'/g, '&#x27;')
+                 .replace(/\//g,'&#x2F;');
 };
-
 
 KadOHui.init = function() {
   

@@ -34,13 +34,23 @@
         </div>
         <div class="control-group">
           <label class="checkbox">
-            <input type="checkbox" id="default_key" checked> Generate the <code>SHA1</code> key 
+            <input type="checkbox" id="default_key" checked disabled> Generate the <code>SHA1</code> key 
           </label>
           <input class="input-xlarge disabled" id="put_key" name="put_key" type="text" placeholder="Key" disabled>
         </div>
 
         <button id="put_btn" class="btn">Put</button> 
-        <div id="put_result"></div>
+      </div>
+      <div id="put_result">
+        <table class="table table-condensed table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
     <div class="span6">
@@ -51,7 +61,11 @@
           <input class="input-xlarge" id="get_key" name="get_key" type="text" placeholder="Key">
           <button id="get_btn" class="btn">Get</button> 
         </div>
-        <div id="get_result"></div>
+      </div>
+
+      <div id="get_result" class="well">
+        <img class="loader" src="UI/img/ajax-loader.gif">
+        <div class="content"></div>
       </div>
     </div>
   </div>
