@@ -38,7 +38,7 @@ KadOHui.Node.prototype = {
               '<li><b>Expiration : </b>',
                   (!res.exp || res.exp<0) ?
                   '<i>never</i>':
-                  '<time rel=\'tooltip\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(res.exp).toString())+'</time>',
+                  '<time rel=\'tooltip\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'bottom\'>'+(new Date(res.exp).toString())+'</time>',
               '</li>',
             '</ul>'].join('\n');
         }
@@ -50,7 +50,7 @@ KadOHui.Node.prototype = {
                          .text('resolved')
                          .attr('rel', 'popover')
                          .attr('data-original-title', 'Resolved')
-                         .attr('data-placement', 'below')
+                         .attr('data-placement', 'bottom')
                          .attr('data-content', html);
       },
       function(peers) {
@@ -61,7 +61,7 @@ KadOHui.Node.prototype = {
                          .text('rejected')
                          .attr('rel', 'popover')
                          .attr('data-original-title', 'Rejected')
-                         .attr('data-placement', 'below')
+                         .attr('data-placement', 'bottom')
                          .attr('data-content', html);
     },this);
   },

@@ -63,12 +63,12 @@ KadOHui.Reactor.prototype = {
       case 'STORE' :
         var code = [
           '<ul>',
-            '<li><b>Key : </b><a href=\'#\' class=\'sha\' data-placement=\'below\' rel=\'tooltip\' data-original-title=\''+rpc.getKey()+'\'>'+rpc.getKey().slice(0,10)+'</a></li>',
+            '<li><b>Key : </b><a href=\'#\' class=\'sha\' data-placement=\'bottom\' rel=\'tooltip\' data-original-title=\''+rpc.getKey()+'\'>'+rpc.getKey().slice(0,10)+'</a></li>',
             '<li><b>Value : </b><code>'+KadOHui.util.escapeHTML(rpc.getValue())+'</code></li>',
             '<li><b>Expiration : </b>',
                 (!rpc.getExpiration() || rpc.getExpiration()<0) ?
                 '<i>never</i>':
-                '<time rel=\'tooltip\' datetime=\''+(new Date(rpc.getExpiration())).toISOString()+'\' data-placement=\'below\'>'+(new Date(rpc.getExpiration()).toString())+'</time>',
+                '<time rel=\'tooltip\' datetime=\''+(new Date(rpc.getExpiration())).toISOString()+'\' data-placement=\'bottom\'>'+(new Date(rpc.getExpiration()).toString())+'</time>',
             '</li>',
           '</ul>'].join('\n');
         param = '<i><a rel="popover" data-content="'+code+'" data-original-title="Params" data-placement="bottom">params</a></i>';
@@ -105,7 +105,7 @@ KadOHui.Reactor.prototype = {
     if(html)
       el.find('.state').attr('rel', 'popover')
                        .attr('data-original-title', 'Resolved')
-                       .attr('data-placement', 'below')
+                       .attr('data-placement', 'bottom')
                        .attr('data-content', html);
       
   },
@@ -117,7 +117,7 @@ KadOHui.Reactor.prototype = {
     if(html)
       el.find('.state').attr('rel', 'popover')
                        .attr('data-original-title', 'Rejected')
-                       .attr('data-placement', 'below')
+                       .attr('data-placement', 'bottom')
                        .attr('data-content', html);
   },
 
@@ -137,7 +137,7 @@ KadOHui.Reactor.prototype = {
             '<li><b>Expiration : </b>',
                 (args[0].exp<0) ?
                 '<i>never</i>':
-                '<time rel=\'tooltip\' datetime=\''+(new Date(args[0].exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(args[0].exp).toString())+'</time>',
+                '<time rel=\'tooltip\' datetime=\''+(new Date(args[0].exp)).toISOString()+'\' data-placement=\'bottom\'>'+(new Date(args[0].exp).toString())+'</time>',
             '</li>',
           '</ul>'].join('\n');
         } else{
