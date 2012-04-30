@@ -87,7 +87,7 @@ KadOHui.Node.prototype = {
      var s = Math.floor(elaps/1000); elaps = elaps - 1000*s;
 
      html += '<h5>Info</h5>'+
-              '<table class=\'bordered-table condensed-table\'>'+
+              '<table class=\'table table-bordered table-condensed\'>'+
                 '<thead>'+
                   '<tr>'+
                     '<th>Elapse</th>'+

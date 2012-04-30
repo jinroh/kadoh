@@ -27,7 +27,7 @@ KadOHui.helper.timeDif = function(date) {
 
 KadOHui.helper.peerTable = function(peerArray, relative_node_id) {
    var html;
-   html = '<table class=\'condensed-table zebra-striped\'>';
+   html = '<table class=\'table table-condensed table-striped\'>';
    peerArray.forEach(function(peer) {
      var tr = '<tr><td>'+ ((peer.getID() !== null) ?
                     String((relative_node_id) ? peer.getDistanceTo(relative_node_id) : peer.getDistance()) :
