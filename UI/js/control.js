@@ -2,6 +2,8 @@ KadOHui = (typeof KadOHui !== 'undefined') ? KadOHui : {};
 
 KadOHui.Control = function(node) {
   this.node = node;
+  this.control = $("#control");
+
   this.joinBtn    = $("#join_btn").button();
 
   this.putBtn     = $("#put_btn").button();
@@ -22,6 +24,9 @@ KadOHui.Control.prototype = {
   initJoin: function() {
     var that = this;
     var onJoin = function() {
+      if (!that._checkConnection()) {
+        return;
+      }
       that.joinBtn.unbind('click', onJoin);
       that.joinBtn.button('loading');
       that.node.join(function() {
@@ -39,6 +44,9 @@ KadOHui.Control.prototype = {
     var content = result.find('.content');
     result.hide();
     var onGet = function() {
+      if (!that._checkConnection()) {
+        return;
+      }
       that.getBtn.unbind('click', onGet)
                  .button('toggle');
       var key = that.getKey.val();
@@ -67,6 +75,9 @@ KadOHui.Control.prototype = {
     var that = this;
     var tbody = this.putResult.find('tbody');
     var onPut = function() {
+      if (!that._checkConnection()) {
+        return;
+      }
       that.putBtn.unbind('click', onPut)
                  .button('toggle');
       var value = that.putValue.val();
@@ -82,5 +93,17 @@ KadOHui.Control.prototype = {
     };
     this.putBtn.click(onPut);
     return this;
+  },
+
+  _checkConnection: function() {
+    if (this.node.stateIsNot('connected')) {
+      var alert = $('<div class="span6 offset3 alert alert-error">' +
+        '<button class="close" data-dismiss="alert">×</button>' +
+        '<strong>Warning!</strong> You need to be connected to perform this action.'+
+      '</div>').alert();
+      this.control.prepend(alert);
+      return false;
+    }
+    return true;
   }
 };
