@@ -98,8 +98,9 @@ KadOHui.init = function() {
         });
     });
 
-  $("[rel=tooltip]")
+  $(".tab-content")
     .tooltip({
+      selector : "[rel=tooltip]",
       title : function() {
         var self = $(this);
         if (self.is('time')) {
