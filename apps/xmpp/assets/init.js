@@ -47,12 +47,15 @@ function connect() {
     that.button('failed');
     that.click(connect);
   };
+  createNode();
+  enableControls();
   node.once('connected', connected);
   node.connect();
 }
 
 function disconnect() {
   var that = $(this);
+  disableControls();
   that.unbind("click", disconnect);
   that.addClass("disabled");
   var disconnected = function() {
@@ -69,15 +72,34 @@ function disconnect() {
   });
 }
 
+function warning() {
+  var alert = $('<div class="span6 offset3 alert alert-error">' +
+    '<button class="close" data-dismiss="alert">×</button>' +
+    '<strong>Warning!</strong> You need to be connected to perform this action.'+
+    '</div>').alert();
+  $("#control").prepend(alert);
+}
+
+function disableControls() {
+  buttons = $("#control button");
+  buttons.unbind();
+  buttons.click(warning);
+}
+
+function enableControls() {
+  buttons = $("#control button");
+  buttons.unbind('click', warning);
+}
+
 $(function () {
   KadOHui.init();
-
-  createNode();
   
   var jidInput   = $("#jid");
   var pswdInput  = $("#password");
   var connectBtn = $("#connection_btn");
   connectBtn.button();
+
+  disableControls();
 
   // Connect button
   connectBtn.click(connect);
