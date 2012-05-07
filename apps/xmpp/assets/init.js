@@ -22,8 +22,9 @@ function createNode() {
   KadOH.log.subscribeTo(node._reactor, 'Reactor', 'debug');
   KadOH.log.subscribeTo(node._reactor._transport, 'Transport', 'debug');
   KadOH.log.subscribeTo(node._routingTable, 'RoutingTable', 'debug');
-  logger = new KadOHui.Logger(KadOH.log, '#log .console', '#log .control');
 
+  // UI ...
+  new KadOHui.Logger(KadOH.log, '#log .console', '#log .control');
   new KadOHui.Control(node);
   new KadOHui.Routing(node._routingTable, '#routing-table');
   new KadOHui.Transport(node._reactor._transport, '#transport>pre');
