@@ -4,8 +4,11 @@
 var Node = require(__dirname + '/../../lib/node');
 var SHA1 = require(__dirname + '/../../lib/util/crypto').digest.SHA1;
 var Reporter = require(__dirname + '/../../lib/ext/cube/reporter');
+var logging = require(__dirname + '/../../lib/logging');
+var ConsoleLogger = require(__dirname + '/  ../../lib/logger/reporter/color-console')
 
-// KadOH.log.setLevel('error');
+new ConsoleLogger(logging, 'error');
+
 var Bot = exports.Bot = function(options) {
   options = this._options = options || {
     node       : {},

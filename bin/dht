@@ -129,7 +129,7 @@ function launchPools() {
   var pipe = function(data) {
     data = String(data);
     if (!/StringPrep/.test(data)) {
-      process.stdout.write(String(data));
+      process.stderr.write(String(data));
     }
   };
 
