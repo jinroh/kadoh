@@ -1,5 +1,5 @@
 var config = {
-  bootstraps : ["127.0.0.1:3000", "127.0.0.1:3001", "127.0.0.1:3002"],
+  bootstraps : ['67.215.242.139:6881', '67.215.242.138:6881'],
   reactor : {
     protocol  : 'jsonrpc2',
     type      : 'SimUDP',
