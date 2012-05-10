@@ -1,7 +1,7 @@
 {
   "tabs": ["Control", "Node", "Reactor", "Transport", "Routing Table", "Value Management", "Log"],
 
-  "KadOH-lib" : "KadOH.js?debug=true&transport=simudp",
+  "KadOH-lib" : "KadOH.js?debug=true",
 
   "connection-ressources": {
     "js": null,

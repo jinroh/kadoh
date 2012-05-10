@@ -1,6 +1,6 @@
 {
   "tabs": ["Control", "Node", "Reactor", "Transport", "Routing Table", "Value Management",  "Log"],
-  "KadOH-lib" : "KadOH.js?debug=true&transport=xmpp",
+  "KadOH-lib" : "KadOH.js?debug=true",
   "connection-ressources": {
     "js": null,
     "html": "assets/connection.html"
