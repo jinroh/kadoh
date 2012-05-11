@@ -32,8 +32,8 @@
       "test": "jake build:node && jasmine-node spec"
     },
    "devDependencies": {
-        "jasmine-node"   : "~1.0"
-      , "jasmine-runner" : "https://github.com/alexstrat/jasmine-tool/tarball/master"
+        "mocha"          : "~1.0"
+      , "chai"           : "~1.0"
       , "optimist"       : "~0.3"
       , "nconf"          : "~0.5"
       , "multimeter"     : "~0.1"
