@@ -26,7 +26,7 @@
       , "mustache"         : "~0.4"
       , "browserify"       : "https://github.com/alexstrat/node-browserify/tarball/for-kadoh"
       , "ignorify"         : "*"
-      , "Strophe.js"       : "https://github.com/metajack/strophejs/tarball/master"
+      , "Strophe.js"       : "https://github.com/alexstrat/strophejs/tarball/for-kadoh"
     },
     "scripts": {
       "test": "jake build:node && jasmine-node spec"
