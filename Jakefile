@@ -8,17 +8,17 @@ var BUILD_CONF_FILE = __dirname + '/build.json';
 
 var UI_FILES = {
   mainline : {
-    conf  : __dirname + '/apps/proxy/mainline/UIconf.json',
-    index : __dirname + '/apps/proxy/mainline/index.html',
-    app   : __dirname + '/apps/proxy/mainline/app.js'
+    conf  : __dirname + '/apps/mainline/conf.json',
+    index : __dirname + '/apps/mainline/index.html',
+    app   : __dirname + '/apps/mainline/app.js'
   },
   udp : {
-    conf  : __dirname + '/apps/proxy/udp/UIconf.json',
-    index : __dirname + '/apps/proxy/udp/index.html',
-    app   : __dirname + '/apps/proxy/udp/app.js'
+    conf  : __dirname + '/apps/udp/conf.json',
+    index : __dirname + '/apps/udp/index.html',
+    app   : __dirname + '/apps/udp/app.js'
   },
   xmpp : {
-    conf  : __dirname + '/apps/xmpp/UIconf.json',
+    conf  : __dirname + '/apps/xmpp/conf.json',
     index : __dirname + '/apps/xmpp/index.html',
     app   : __dirname + '/apps/xmpp/app.js'
   }
@@ -107,6 +107,9 @@ task('doc', ['default'], function(){
 });
 
 // ------------ BUILD ------------
+
+var checked = ' done ✓'.green + '\n';
+
 desc('Building and minifing the embedded code');
 task('build', ['default'], function() {
   jake.Task['build:xmpp'].execute();
@@ -115,93 +118,74 @@ task('build', ['default'], function() {
 
 namespace('build', function() {
 
+  function build(type, debug) {
+    return function() {
+      process.stdout.write('Building '+type);
+
+      var builder = require('./lib/server/build.js')({
+        debug : debug || false,
+        transport : type
+      });
+
+      fs.writeFileSync(
+        DIST_DIR+'KadOH.'+type+'.js',
+        builder.bundle()
+      );
+
+      process.stdout.write(checked);
+    }
+  }
+
   desc('Building the brower-side code with xmpp configuration');
-  task('xmpp', ['default'], function() {
-    console.log('Building the brower-side code with xmpp configuration');
-
-    var build = require('./lib/server/build.js')({
-      debug : false,
-      transport : 'xmpp'
-    });
-
-    fs.writeFileSync(
-      DIST_DIR+'KadOH.xmpp.js',
-      build.bundle()
-    );
-    console.log("OK");
-  });
+  task('xmpp', ['default'], build('xmpp', false));
 
   desc('Building the brower-side code with simudp configuration');
-  task('simudp', ['default'], function() {
-    console.log('Building the brower-side code with simudp configuration');
-
-    var build = require('./lib/server/build.js')({
-      debug : false,
-      transport : 'simudp'
-    });
-
-    fs.writeFileSync(
-      DIST_DIR+'KadOH.simudp.js',
-      build.bundle()
-    );
-    console.log("OK");
-  });
+  task('simudp', ['default'], build('simudp', false));
 });
 
 // ------------ UI GENERATE ------------
 
 namespace('generate', function() {
   
+  function generate(type) {
+    return function() {
+      process.stdout.write('Creating '+type+' UI');
+      fs.writeFileSync(
+        UI_FILES[type].index,
+        UI.generate(UI_FILES[type].conf)
+      );
+      process.stdout.write(checked);
+    }
+  }
+
   desc('Generate the mainline proxy app UI');
-  task('mainline', ['default'], function() {
-    fs.writeFileSync(
-      UI_FILES.mainline.index,
-      UI.generate(UI_FILES.mainline.conf)
-    );
-    console.log('UI index generated successfully !');
-  });
+  task('mainline', ['default'], generate('mainline'));
 
   desc('Generate the udp proxy app UI');
-  task('udp', ['default'], function() {
-    fs.writeFileSync(
-      UI_FILES.udp.index,
-      UI.generate(UI_FILES.udp.conf)
-    );
-    console.log('UI index generated successfully !');
-  });
+  task('udp', ['default'], generate('udp'));
 
   desc('Generate the xmpp app UI');
-  task('xmpp', ['default'], function() {
-    fs.writeFileSync(
-      UI_FILES.xmpp.index,
-      UI.generate(UI_FILES.xmpp.conf)
-    );
-    console.log('UI index generated successfully !');
-  });
+  task('xmpp', ['default'], generate('xmpp'));
 });
 
 // ------------ RUN SERVER ------------
 
 namespace('run', function() {
   
+  function run(type) {
+    return function(port) {
+      port = parseInt(port, 10) || 8080 ;
+      require(UI_FILES[type].app).server.listen(port);
+      console.log('Server running on http://localhost:'+port);
+    }
+  }
+
   desc('Run the mainline proxy app server');
-  task('mainline', ['generate:mainline'], function(port) {
-    port = parseInt(port, 10) || 8080 ;
-    require(UI_FILES.mainline.app).server.listen(port);
-    console.log('http://localhost:'+port);
-  });
+  task('mainline', ['generate:mainline'], run('mainline'));
 
   desc('Run the udp proxy app server');
-  task('udp', ['generate:udp'], function(port) {
-    port = parseInt(port, 10) || 8080 ;
-    require(UI_FILES.udp.app).server.listen(port);
-    console.log('http://localhost:'+port);
-  });
+  task('udp', ['generate:udp'], run('udp'));
 
   desc('Run the xmpp app server');
-  task('xmpp', ['generate:xmpp'], function(port) {
-    port = parseInt(port, 10) || 8080 ;
-    require(UI_FILES.xmpp.app).server.listen(port);
-    console.log('http://localhost:'+port);
-  });
+  task('xmpp', ['generate:xmpp'], run('xmpp'));
 });
