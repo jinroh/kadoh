@@ -30,7 +30,7 @@ Then in an other terminal, start the server using the following Jake command and
 jake run:udp
 ```
 
-See the wiki for more informations on how to [launch your own DHT](/jinroh/kadoh/wiki) from scratch and on different environments.
+See the wiki for more informations on how to [launch your own DHT](/jinroh/kadoh/wiki/DHT-simulation) from scratch and on different environments.
 
 ## Installation
 
