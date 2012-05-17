@@ -31,7 +31,7 @@ describe('KBucket', function() {
     });
     
     it('should be empty, from 1 to _B with the right parent id', function() {
-      expect(kbucket.length()).toEqual(0);
+      expect(kbucket.size()).toEqual(0);
       
       expect(kbucket.getRange().min).toEqual(0);
       expect(KadOH.globals.B).toEqual(kbucket.getRange().max);
@@ -42,7 +42,7 @@ describe('KBucket', function() {
     it('should have a new peer when i add one', function() {
       kbucket.addPeer(new Peer('127.0.0.1:1234', rID()));
       
-      expect(kbucket.length()).toEqual(1);
+      expect(kbucket.size()).toEqual(1);
     });
     
     it('should be empty when i add and remove a peer', function() {
@@ -50,7 +50,7 @@ describe('KBucket', function() {
       kbucket.addPeer(peer);
       kbucket.removePeer(peer);
       
-      expect(kbucket.length()).toEqual(0);
+      expect(kbucket.size()).toEqual(0);
     });
     
     it('should update a peer if i add an already existing one', function() {
@@ -69,7 +69,7 @@ describe('KBucket', function() {
       for (var i=0; i < KadOH.globals.K; i++) {
         kbucket.addPeer(new Peer('127.0.0.1:' + (1025+i), rID()));
       }
-      expect(kbucket.getPeers(KadOH.globals.K - 1).length()).toEqual(KadOH.globals.K - 1);
+      expect(kbucket.getPeers(KadOH.globals.K - 1).size()).toEqual(KadOH.globals.K - 1);
       expect(kbucket.getPeers(KadOH.globals.K).getRawArray().map(function(peer) {
         return peer.getAddress().split(':')[1];
       })).toBeDescSorted();
@@ -83,7 +83,7 @@ describe('KBucket', function() {
           var exclude = [peer];
         }
       }
-      expect(kbucket.getPeers(kbucket.length(), exclude).contains(exclude)).toBeFalsy();
+      expect(kbucket.getPeers(kbucket.size(), exclude).contains(exclude)).toBeFalsy();
     });
     
   });

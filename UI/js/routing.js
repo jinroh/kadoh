@@ -33,7 +33,7 @@ KadOHui.Routing.prototype = {
       '</div>');
 
     this.console.empty();
-    $('.twipsy').remove();
+    $('.tooltip').remove();
 
     RT.kbuckets.forEach(function(kbucket, index) {
       var buck = $(this._renderKbucket(kbucket, index));
@@ -48,19 +48,19 @@ KadOHui.Routing.prototype = {
 
     var head = [
    '<div class="kbucket row">',
-      '<div class="kb-title span3">',
+      '<div class="kb-title span2">',
         '<h4>Bucket #'+(index+1)+' <small>]'+kbucket.range.min+','+ kbucket.range.max+']</small></h4>',
         '<span class="kb-refresh">refresh : ',
-          '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+time.toLocaleTimeString()+'</time>',
+          '<time rel="tooltip" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="right">'+time.toLocaleTimeString()+'</time>',
         '</span>',
         '</div>',
-          '<div class="peers span13">'].join('\n');
+          '<div class="peers span10">'].join('\n');
 
     var content = (kbucket.peers.length ===0) ?
               //---if empty
             '<i>Empty</i>' :
               //---otherwise
-            '<table class="zebra-striped">' +
+            '<table class="table table-striped">' +
 
             kbucket.peers.map(function(peer) {
               var time = new Date(peer[2]);
@@ -70,9 +70,9 @@ KadOHui.Routing.prototype = {
                 '<tr class="peer">',
                   '<td class="distance">'+peer[3]+'</td>',
                   '<td class="jid">'+peer[0]+'</td>',
-                  '<td class="sha"><a href="#" data-placement="below" rel="twipsy" title="'+peer[1]+'">'+peer[1].slice(0,10)+'</a></td>',
+                  '<td class="sha"><span data-placement="bottom" rel="tooltip" title="'+peer[1]+'">'+peer[1].slice(0,10)+'</span></td>',
                   '<td class="last-seen">',
-                    '<time rel="twipsy" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="below">'+time.toLocaleTimeString()+'</time>',
+                    '<time rel="tooltip" datetime="'+time.toISOString()+'" title="'+human_time+'" data-placement="bottom">'+time.toLocaleTimeString()+'</time>',
                   '</td>',
                 '</tr>'
               ].join('\n');

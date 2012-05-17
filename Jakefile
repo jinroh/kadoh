@@ -1,15 +1,34 @@
 var DOC_DIR     = __dirname + '/doc/jsdoc/';
-var LIB_DIR     = __dirname + '/lib/client/';
+var LIB_DIR     = __dirname + '/lib/';
+var DIST_DIR    = __dirname + '/dist/';
 var JsDoc3_CONF = __dirname + '/doc/JsDocConf.json';
 var JsDoc3_EXEC = __dirname + '/doc/jsdoc3/jsdoc';
 
 var BUILD_CONF_FILE = __dirname + '/build.json';
 
-var FS = require('fs');
-var PATH = require('path');
-var PROC = require('child_process');
-var CICADA = require('jsCicada');
+var UI_FILES = {
+  mainline : {
+    conf  : __dirname + '/apps/mainline/conf.json',
+    index : __dirname + '/apps/mainline/index.html',
+    app   : __dirname + '/apps/mainline/app.js'
+  },
+  udp : {
+    conf  : __dirname + '/apps/udp/conf.json',
+    index : __dirname + '/apps/udp/index.html',
+    app   : __dirname + '/apps/udp/app.js'
+  },
+  xmpp : {
+    conf  : __dirname + '/apps/xmpp/conf.json',
+    index : __dirname + '/apps/xmpp/index.html',
+    app   : __dirname + '/apps/xmpp/app.js'
+  }
+};
+
+var FS     = require('fs');
+var PATH   = require('path');
+var PROC   = require('child_process');
 var COLORS = require('colors');
+var UI     = require(__dirname + '/UI/generator');
 
 // ------------ DEFAULT ------------
 desc('Say Hello to Kadoh');
@@ -88,41 +107,85 @@ task('doc', ['default'], function(){
 });
 
 // ------------ BUILD ------------
+
+var checked = ' done ✓'.green + '\n';
+
 desc('Building and minifing the embedded code');
 task('build', ['default'], function() {
-  var builder = new CICADA.builder(BUILD_CONF_FILE);
-  builder.build(['normal', 'browser', 'node', 'bootstrap', 'min']);
+  jake.Task['build:xmpp'].execute();
+  jake.Task['build:simudp'].execute();
 });
 
 namespace('build', function() {
-  var builder = new CICADA.builder(BUILD_CONF_FILE);
-  desc('Building the code');
-  task('normal', ['default'], function() {
-    builder.build('normal');
-  });
 
-  desc('Building the code for browsers');
-  task('browser', ['default'], function() {
-    builder.build('browser');
-  });
+  function build(type, debug) {
+    return function() {
+      process.stdout.write('Building '+type);
 
-  desc('Minifying the embedded code');
-  task('min', ['default'], function() {
-    builder.build('min');
-  });
+      var builder = require('./lib/server/build.js')({
+        debug : debug || false,
+        transport : type
+      });
 
-  desc('Building code for test');
-  task('test', [], function(){
-    builder.build('test');
-  });
+      fs.writeFileSync(
+        DIST_DIR+'KadOH.'+type+'.js',
+        builder.bundle()
+      );
 
-  desc('Building the code for node');
-  task('node', ['default'], function() {
-    builder.build('node');
-  });
+      process.stdout.write(checked);
+    }
+  }
 
-  desc('Building the code for a node bootstrap');
-  task('bootstrap', ['default'], function() {
-    builder.build('bootstrap');
-  });
+  desc('Building the brower-side code with xmpp configuration');
+  task('xmpp', ['default'], build('xmpp', false));
+
+  desc('Building the brower-side code with simudp configuration');
+  task('simudp', ['default'], build('simudp', false));
+});
+
+// ------------ UI GENERATE ------------
+
+namespace('generate', function() {
+  
+  function generate(type) {
+    return function() {
+      process.stdout.write('Creating '+type+' UI');
+      fs.writeFileSync(
+        UI_FILES[type].index,
+        UI.generate(UI_FILES[type].conf)
+      );
+      process.stdout.write(checked);
+    }
+  }
+
+  desc('Generate the mainline proxy app UI');
+  task('mainline', ['default'], generate('mainline'));
+
+  desc('Generate the udp proxy app UI');
+  task('udp', ['default'], generate('udp'));
+
+  desc('Generate the xmpp app UI');
+  task('xmpp', ['default'], generate('xmpp'));
+});
+
+// ------------ RUN SERVER ------------
+
+namespace('run', function() {
+  
+  function run(type) {
+    return function(port) {
+      port = parseInt(port, 10) || 8080 ;
+      require(UI_FILES[type].app).server.listen(port);
+      console.log('Server running on http://localhost:'+port);
+    }
+  }
+
+  desc('Run the mainline proxy app server');
+  task('mainline', ['generate:mainline'], run('mainline'));
+
+  desc('Run the udp proxy app server');
+  task('udp', ['generate:udp'], run('udp'));
+
+  desc('Run the xmpp app server');
+  task('xmpp', ['generate:xmpp'], run('xmpp'));
 });

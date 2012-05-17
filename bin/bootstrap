@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var util = require('util');
-var Bootstrap = require(__dirname + '/../dist/KadOH_bootstrap.node.js').Bootstrap;
 process.listening = true;
 
 var argv  = require('optimist')
@@ -14,7 +13,7 @@ var argv  = require('optimist')
 var debug     = !!argv.debug,
     name      = argv.udp ? 'udpbot'   : 'xmppbot',
     protocol  = argv.udp ? 'jsonrpc2' : 'node_xmlrpc',
-    type      = argv.udp ? 'UDP'      : 'NodeXMPP',
+    type      = argv.udp ? 'udp'      : 'xmpp',
     transport = {
       jid       : argv.jid,
       resource  : argv.resource,
@@ -25,11 +24,12 @@ var debug     = !!argv.debug,
     config = {
       reactor : {
         protocol  : protocol,
-        type      : type,
         transport : transport
       }
     };
 
+process.env.KADOH_TRANSPORT = type;
+var Bootstrap = require(__dirname + '/../lib/bootstrap');
 var bootstrap = new Bootstrap(null, config);
 bootstrap.connect(function() {
   console.log('connected', bootstrap.getAddress());

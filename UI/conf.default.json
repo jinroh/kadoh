@@ -1,0 +1,52 @@
+{
+  "template" : "index.tmpl.html",
+
+  "KadOH-lib" : "KadOH.js?debug=true",
+
+  "tabs": ["Control", "Node", "Reactor", "Transport", "Routing Table", "Value Management", "Log"],
+
+  "tabs-ressources": {
+    "Control": {
+      "href" : "control",
+      "js"   : "UI/js/control.js",
+      "html" : "html/control.html"
+    },
+    "Node": {
+      "href" : "node",
+      "js"   : "UI/js/node.js",
+      "html" : "html/node.html"
+    },
+    "Reactor": {
+      "href" : "reactor",
+      "js"   : "UI/js/reactor.js",
+      "html" : "html/reactor.html"
+    },
+    "Transport": {
+      "href" : "transport",
+      "js"   : "UI/js/transport.js",
+      "html" : "html/transport.html"
+    },
+    "Routing Table": {
+      "href" : "routing-table",
+      "js"   : "UI/js/routing.js",
+      "html" : "html/routing-table.html"
+    },
+    "Value Management": {
+      "href" : "value-management",
+      "js"   : "UI/js/valueM.js",
+      "html" : "html/value-management.html"
+    },
+    "Log": {
+      "href" : "log",
+      "js"   : "UI/js/log.js",
+      "html" : "html/log.html"
+    }
+  },
+
+  "connection-ressources": {
+    "js"   : null,
+    "html" : "html/connection.html"
+  },
+
+  "init-script": "assets/init.js"
+}

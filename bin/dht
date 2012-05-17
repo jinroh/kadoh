@@ -12,8 +12,12 @@ var fork   = require('child_process').fork;
 var BBIN = __dirname + "/bootstrap";
 var PBIN = __dirname + "/pool";
 
+charm.setMaxListeners(100);
 charm.reset();
-charm.on('^C', process.exit);
+charm.on('^C', function() {
+  spawn('reset');
+  process.exit();
+});
 
 var defaults = {
   botType  : 'xmpp',
@@ -24,6 +28,7 @@ var defaults = {
   values   : 100,
   jids     : ["kadoh%d@jabber.org", "azerty"],
   starter  : true,
+  reporter : false,
   bootstraps : [
     ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
     ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],
@@ -31,8 +36,9 @@ var defaults = {
   ]
 };
 
-var config = configuration();
 var procs = [];
+var config = configuration();
+process.env.KADOH_TRANSPORT = (config.botType === 'udp' ? 'udp' : 'xmpp');
 (config.starter === false) ? launchPools() : launchBootstraps();
 
 function configuration() {
@@ -65,7 +71,6 @@ function configuration() {
 
 function poolParams(id) {
   var protocol   = config.botType === 'udp' ? 'jsonrpc2' : 'node_xmlrpc';
-  var type       = config.botType === 'udp' ? 'UDP'      : 'NodeXMPP';
   var bootstraps = config.botType === 'udp' ? 
                    config.bootstraps :
                    config.bootstraps.map(function(bootstrap) {
@@ -77,11 +82,11 @@ function poolParams(id) {
     activity : config.activity,
     lambda   : config.speed,
     values   : config.values,
+    reporter : config.reporter,
     bot : {
       bootstraps : bootstraps,
       reactor : {
         protocol  : protocol, 
-        type      : type,
         transport : {
           jid       : config.jids[0],
           password  : config.jids[1],
@@ -108,10 +113,6 @@ function launchPools() {
       var sta    = ++started[pool];
       var size   = config.poolSize;
 
-      if (pool == bars.length - 1) {
-        size = config.size - config.poolSize * pool;
-      }
-
       var percent = Math.ceil(sta / size * 100);
       means[pool] = (means[pool] * (sta - 1) + joined) / sta;
       maxs[pool]  = joined > maxs[pool] ? joined : maxs[pool];
@@ -128,7 +129,7 @@ function launchPools() {
   var pipe = function(data) {
     data = String(data);
     if (!/StringPrep/.test(data)) {
-      process.stdout.write(String(data));
+      process.stderr.write(String(data));
     }
   };
 
@@ -136,17 +137,13 @@ function launchPools() {
   multi.write('Starting a ' + config.botType.green + ' DHT of ' + (config.size + ' bots').red + ' in ' + (l + ' pools').red);
   for (var i = 0; i < l; i++) {
     var params = poolParams(i);
-    if (i === l - 1) {
-      params.size = config.size - config.poolSize * i;
-    }
     var pproc  = spawn('node', [PBIN, JSON.stringify(params)]);
     procs.push(pproc);
     var bar = multi(1, i + 5, {
         width : 40,
         solid : {
-            text : '-',
-            foreground : 'white',
-            background : 'red'
+            text : '=',
+            foreground : 'green'
         }});
     bar.percent(0);
     bars.push(bar);
@@ -164,9 +161,8 @@ function launchBootstraps() {
   var bar = multi(1, 3, {
     width : 40,
     solid : {
-        text : '-',
-        foreground : 'white',
-        background : 'green'
+        text : '=',
+        foreground : 'green'
     }
   });
 

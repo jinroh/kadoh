@@ -1,0 +1,85 @@
+<div class="active tab-pane" id="control">
+  <div class="row">
+    <div class="span12">
+      <h2>Control panel</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="span10 columns">
+      
+      <p>This panel will allow you to interact with the DHT. Before that, you need to follow these two steps :</p>
+
+      <ul>
+        <li>first, be sure to have connected your browser by entering your GMail or Jabber credentials above, and clicking the <code>Connect</code> button</li>
+        <li>then <strong>make sure to join the network</strong> by clicking on the <code>Join</code> button. This will start an iterative lookup to search for nodes close to you</li>
+      </ul>
+
+      <p>After that, feel free to post and retrieve data from the DHT and to take a look at all the different panels to see what is happening behind the scene.</p>
+    </div>
+    <div class="span2 colums">
+      <button id="join_btn" name="join" class="btn btn-success btn-large"
+              data-loading-text="Joining..." data-complete-text="Joined">
+        Join
+      </button>
+    </div>
+  </div>
+
+  <div class="row columns">
+    <div class="span6">
+      <h3>Put</h3>
+      <p>Post a value to the DHT associated to a key.</p>
+      <div class="well">
+        <div class="control-group">
+          <textarea id="put_value" name="put_value" placeholder="Value" class="span5" rows="6"></textarea>
+        </div>
+        <div class="control-group">
+          <label class="checkbox">
+            <input type="checkbox" id="default_key" checked disabled> Generate the <code>SHA1</code> key 
+          </label>
+          <input class="input-xlarge disabled" id="put_key" name="put_key" type="text" placeholder="Key" disabled>
+        </div>
+
+        <button id="put_btn" class="btn">Put</button> 
+      </div>
+      <div id="put_result">
+        <table class="table table-condensed table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="span6">
+      <h3>Ping</h3>
+      <p>Ping a node given its address.</p>
+      <div class="well">
+        <div class="input-append">
+          <input class="input-xlarge" id="ping_address" name="ping_address" type="text" placeholder="Address">
+          <button id="ping_btn" class="btn">Ping</button>
+          <span id="ping_result"></span>
+        </div>
+      </div>
+
+      <h3>Get</h3>
+      <p>Retrieve a value from the DHT given its key.</p>
+      <div class="well">
+        <div class="input-append">
+          <input class="input-xlarge" id="get_key" name="get_key" type="text" placeholder="Key">
+          <button id="get_btn" class="btn">Get</button> 
+        </div>
+      </div>
+
+      <div id="get_result" class="well" style="display:none">
+        <img class="loader" src="UI/img/ajax-loader.gif">
+        <div class="content"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+  </div>
+</div>

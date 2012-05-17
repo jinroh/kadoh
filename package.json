@@ -13,17 +13,20 @@
     }
   , "dependencies": {
         "colors"           : "~0.6"
-      , "connect"          : "~1.8"
+      , "connect"          : "~2.0"
       , "express"          : "~2.5"
       , "ifconfig.me"      : "https://github.com/alexstrat/ifconfig.me-node/tarball/master"
       , "jake"             : "~0.1"
-      , "jsCicada"         : "~0.1"
       , "klass"            : "~1.2"
-      , "ltx"              : "~0.1"
+      , "ltx"              : ">= 0.2.0"
       , "node-xmpp"        : "~0.3"
       , "bncode"           : "~0.2"
       , "socket.io"        : "~0.9"
-      , "socket.io-client" : "~0.9"
+      , "socket.io-client" : "https://github.com/substack/socket.io-client/tarball/master"
+      , "mustache"         : "~0.4"
+      , "browserify"       : "https://github.com/alexstrat/node-browserify/tarball/for-kadoh"
+      , "ignorify"         : "*"
+      , "Strophe.js"       : "https://github.com/alexstrat/strophejs/tarball/for-kadoh"
     },
     "scripts": {
       "test": "jake build:node && jasmine-node spec"

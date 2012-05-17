@@ -34,34 +34,34 @@ KadOHui.Node.prototype = {
         if(iterfind._targetType !== 'NODE') {
           html =[
           '<ul>',
-              '<li><b>Value : </b><code>'+res.value+'</code></li>',
+              '<li><b>Value : </b><code>'+KadOHui.util.escapeHTML(res.value)+'</code></li>',
               '<li><b>Expiration : </b>',
                   (!res.exp || res.exp<0) ?
                   '<i>never</i>':
-                  '<time rel=\'twipsy\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'below\'>'+(new Date(res.exp).toString())+'</time>',
+                  '<time rel=\'tooltip\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'bottom\'>'+(new Date(res.exp).toString())+'</time>',
               '</li>',
             '</ul>'].join('\n');
         }
 
           html += this.iterfindInfo(iterfind, peers, start);
 
-        el.find('.state').removeClass('warning')
-                         .addClass('success')
+        el.find('.state').removeClass('label-warning')
+                         .addClass('label-success')
                          .text('resolved')
                          .attr('rel', 'popover')
                          .attr('data-original-title', 'Resolved')
-                         .attr('data-placement', 'below')
+                         .attr('data-placement', 'bottom')
                          .attr('data-content', html);
       },
       function(peers) {
         var html = this.iterfindInfo(iterfind, peers, start);
 
-        el.find('.state').removeClass('warning')
-                         .addClass('important')
+        el.find('.state').removeClass('label-warning')
+                         .addClass('label-important')
                          .text('rejected')
                          .attr('rel', 'popover')
                          .attr('data-original-title', 'Rejected')
-                         .attr('data-placement', 'below')
+                         .attr('data-placement', 'bottom')
                          .attr('data-content', html);
     },this);
   },
@@ -71,11 +71,11 @@ KadOHui.Node.prototype = {
 
     var tr =
     ['<tr>',
-      '<td><a href="#" class="sha" data-placement="below" rel="twipsy" data-original-title="'+target+'">'+target.slice(0,10)+'</a></td>',
+      '<td><span class="sha" data-placement="bottom" rel="tooltip" data-original-title="'+target+'">'+target.slice(0,10)+'</span></td>',
       '<td><code>'+target_type+'</code></td>',
-      '<td><i>started with <b>'+start_peers.length()+' </b><a rel="popover" data-content="'+KadOHui.helper.peerTable(start_peers, target)+'" data-original-title="Start peers" data-placement="below">peers</a></i></td>',
-      '<td><span class="state label warning">Progress</span></td>',
-      '<td><time rel="twipsy" datetime="'+time.toISOString()+'" data-placement="below">'+time.toLocaleTimeString()+'</time></td>',
+      '<td><i>started with <b>'+start_peers.size()+' </b><a rel="popover" data-content="'+KadOHui.helper.peerTable(start_peers, target)+'" data-original-title="Start peers" data-placement="bottom">peers</a></i></td>',
+      '<td><span class="state label label-warning">Progress</span></td>',
+      '<td><time rel="tooltip" datetime="'+time.toISOString()+'" data-placement="bottom">'+time.toLocaleTimeString()+'</time></td>',
     '</tr>'];
 
     return tr.join('\n');
@@ -87,7 +87,7 @@ KadOHui.Node.prototype = {
      var s = Math.floor(elaps/1000); elaps = elaps - 1000*s;
 
      html += '<h5>Info</h5>'+
-              '<table class=\'bordered-table condensed-table\'>'+
+              '<table class=\'table table-bordered table-condensed\'>'+
                 '<thead>'+
                   '<tr>'+
                     '<th>Elapse</th>'+
@@ -98,13 +98,13 @@ KadOHui.Node.prototype = {
                 '<tbody>'+
                   '<tr>'+
                     '<td>'+s+'s '+elaps+'ms</td>'+
-                    '<td>'+iterfind.Queried.length()+'</td>'+
-                    '<td>'+iterfind.HeardOf.length()+' peers</td>'+
+                    '<td>'+iterfind.Queried.size()+'</td>'+
+                    '<td>'+iterfind.HeardOf.size()+' peers</td>'+
                   '</tr>'+
                 '</tbody>'+
              '</table>';
 
-     html += '<h5>'+peers.length()+' reached peers</h5>';
+     html += '<h5>'+peers.size()+' reached peers</h5>';
      html += KadOHui.helper.peerTable(peers, iterfind._target);
 
      return html;

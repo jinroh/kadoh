@@ -1,0 +1,26 @@
+!!! 5
+%html
+  %head
+    %meta{:charset => "UTF-8"}
+    %script{:type => "text/javascript",
+            :src  => "/dist/KadOH.js"}
+    %script{:type => "text/javascript",
+            :src  => "/eventemitter.js"}
+    %script{:type => "text/javascript",
+            :src  => "/bench.js"}
+
+    %title KadOH Benchmarking
+    :css
+      body { font-family : "Helvetica Neue", Helvetica, Arial, sans-serif; }
+
+  %body
+    %p
+      %input#cellular{:type  => "checkbox",
+                      :value => "cellular", :name => "cellular"}
+      Cellular network
+
+    %p
+      %input#start{:type  => "submit",
+                   :value => "start", :name => "start"}
+
+    %pre#monitor

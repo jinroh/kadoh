@@ -78,7 +78,7 @@ To launch you own DHT, you can use our built in scripts. The `dht` executable fr
 
 Here is an explanation of such configurations (be aware that comments are not allowed in JSON files) :
 
-```json
+```javascript
 {
   // transport type (xmpp or udp)
   "botType"  : "xmpp",

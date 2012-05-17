@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var Pool = require(__dirname + '/../bots/pool');
+var Pool = require(__dirname + '/bots/pool');
 
 var conf = JSON.parse(process.argv[2]);
 var pool = new Pool(conf);

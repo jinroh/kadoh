@@ -274,7 +274,7 @@ describe('in Reactor', function() {
         it('should be resolved', function() {
           expect(cb).toHaveBeenCalled();
           var peers = cb.mostRecentCall.args[0];
-          expect(peers.length()).toEqual(2);
+          expect(peers.size()).toEqual(2);
           var axel = new Peer(['axel@him.him', 'c97013ab971561ce573dc061d36504b85da9328e']);
           var francoise = new Peer(['francoise@her.her','ebbd7f3e89354ac25411b29cbfd08b2f7c3b03c0']);
           expect(peers.contains(axel)).toBeTruthy();

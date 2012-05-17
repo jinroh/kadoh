@@ -35,7 +35,7 @@ describe('Routing Table', function() {
       var peer = new Peer('127.0.0.1:54321', SHA1('127.0.0.1:54321'));
       routing_table.addPeer(peer);
       
-      expect(routing_table.getKBuckets()[0].length()).toEqual(1);
+      expect(routing_table.getKBuckets()[0].size()).toEqual(1);
       
       expect(function() {
         routing_table.getPeer(peer);

@@ -5,8 +5,9 @@
   "size"     : 100,
   "activity" : 50,
   "values"   : 100,
-  "jids"     : ["kadoh%d@jabber.org", "azerty"],
+  "jids"     : ["kadohbot%d@jabber.org", "azerty"],
   "starter"  : true,
+  "reporter" : false,
   "bootstraps" : [
     ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
     ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],

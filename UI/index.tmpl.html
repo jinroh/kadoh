@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KadOH</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" type="text/css" href="UI/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="UI/css/bootstrap-responsive.min.css">
+  <link rel="stylesheet" type="text/css" href="UI/css/KadOHUI.css" media="all">
+
+  <script type="text/javascript" src="/{{{KadOH-lib}}}"></script>
+  <script type="text/javascript" src="jquery/jquery-1.7.js"></script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-button.js"></script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-tooltip.js"></script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-popover.js"></script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-tab.js"></script>
+  <script type="text/javascript" src="UI/js/vendor/bootstrap-alert.js"></script>
+  <script type="text/javascript" src="UI/js/kadohui.js"></script>
+  {{#tabs}}
+  <script type="text/javascript" src="{{script}}"></script>
+  {{/tabs}}
+   
+  <script type="text/javascript">
+    {{& init_script}}
+  </script>
+</head>
+<body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a href="#" class="brand">KadOH</a>
+        <ul class="nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="https://github.com/jinroh/kadoh">Source</a></li>
+          <li><a href="http://jinroh.github.com/kadoh">Documentation</a></li>
+        </ul>
+        {{& connection}}
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <header class="subhead">
+      <div class="subnav subnav-fixed">
+        <ul class="nav nav-pills">
+          {{#tabs}}
+            {{& li}}
+          {{/tabs}}
+        </ul>
+      </div>
+    </header>
+
+    <div class="tab-content">
+      {{#tabs}}
+          {{& content}}
+      {{/tabs}}
+    </div>
+
+    <footer>
+      <p><strong>Pierre Guilleminot</strong> and <strong>Alexandre Lacheze</strong></p>
+    </footer>
+  </div>
+
+</body>
+</html>
