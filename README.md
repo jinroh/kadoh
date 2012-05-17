@@ -8,7 +8,7 @@ KadOH abstract many different transport protocols to provide P2P connections. In
 
 ---
 
-*Acknowledgments* — We would like to thank [Dr. Tudor Dumitraş](http://ece.cmu.edu/~tdumitra/), who gave us the honor to work with him during our project and always made available his support.
+*Acknowledgments* — We would like to thank [Dr. Tudor Dumitraş](http://www.ece.cmu.edu/~tdumitra/), who gave us the honor to work with him during our project and always made available his support.
 
 **Alexandre Lachèze** and **Pierre Guilleminot**
 
