@@ -1,204 +1,92 @@
-```
-                                                       
-    _/    _/                  _/    _/_/    _/    _/   
-   _/  _/      _/_/_/    _/_/_/  _/    _/  _/    _/    
-  _/_/      _/    _/  _/    _/  _/    _/  _/_/_/_/     
- _/  _/    _/    _/  _/    _/  _/    _/  _/    _/      
-_/    _/    _/_/_/    _/_/_/    _/_/    _/    _/      
-```
+# KadOH - Javascript P2P framework
 
-[![Build Status](https://secure.travis-ci.org/jinroh/kadoh.png?branch=experimental)](https://secure.travis-ci.org/jinroh/kadoh?branch=experimental)
+**KadOH** is a framework to build P2P applications for browsers and node.js. By implementing the basis of the [Kademlia DHT](http://en.wikipedia.org/wiki/Kademlia), KadOH lets you build **distributed web applications** for mobile and desktop devices. With its flexible and extensible design, you can easily adapt KadOH to fit your needs. 
 
-# Description
+KadOH abstract many different transport protocols to provide P2P connections. In the browser we support [XMPP over Bosh](http://xmpp.org/extensions/xep-0206.html) and [Socket.io](http://socket.io/), and you can go for UDP and native XMPP in a node.js application. We plan to support **[WebRTC](http://www.webrtc.org/)** soon !
 
-The aim of this project is to write an implementation of the Kad system running in a browser environnement and especially in a mobile browser.
+[See the wiki](/jinroh/kadoh/wiki) for more informations ! Take also a look at [our report](http://jinroh.github.com/) and be aware that this document may be outdated.
 
-## Why is this challenging ?
+---
 
-### P2P need P2P communication
+*Acknowledgments* — We would like to thank [Dr. Tudor Dumitraş](http://ece.cmu.edu/~tdumitra/), who gave us the honor to work with him during our project and always made available his support.
 
-Kad is a _peer to peer_ system. That means that nodes (or peers) need to communicate directly to each other. The browser is not at all originally ready for P2P communications : it's based on a _server-client_ communication scheme. As client, the browser can retrieve information from the server, but the reverse path is not easy.
+**Alexandre Lachèze** and **Pierre Guilleminot**
 
-One of our challenge is to find a mean to enable a communicaton as direct as possible between mobile nodes.
+## See it in action
 
-_Hints_ : AJAX long-polling, WebSocket, Socket.io and XMPP over BOSH..
+**[Live demo](http://kadoh.fr.nf/)** running on Amazon EC2.
 
-### Large scale-testing
+### Run it yourself
 
-To test our implementation we need some instance nodes of it - actually, quite a lot of nodes. Indeed, Kademlia is designed to be scalable and all the magic happens when it works with a huge amount of nodes.
-
-One of our challenge is to test our system at large-scale.
-
-_Hints_ : bots, proxy to existing DHTs..
-
-# Install
-
-To run KadOH you need __[node.js]__ (>= v0.4) and __[npm]__ \(node's packet manager\) to be installed.
-
-## Clone the repository
-
-```bash
-$ git clone https://github.com/jinroh/kadoh.git
-$ cd kadoh
-```
-
-## Install dependencies
-
-You will need to install `libexpat` development package on Linux environments (should not be necessary on Mac OSX with XCode). For instance, on a Ubuntu machine, you'd have to run the folowing `apt-get` :
-
-```bash
-$ sudo apt-get install libexpat-dev
-```
-
-Then enter the `git` repository and install the package dependencies using `npm`.
-
-```bash
-$ npm install
-```
-    
-## Build the source tree
-
-To build the source you can use :
+First you can start a little DHT using this command :
 
 ```
-$ jake build
+bin/dht udp.default
 ```
 
-This will build the main program in the `/dist` directory.
+Then in an other terminal, start the server using the following Jake command and go to `localhost:8080` :
 
-## Testing
+```sh
+jake run:udp
+```
 
-We use [jasmine-node] and [jasmine-runner] for our testing on `node` and directly in the browser.
+See the wiki for more informations on how to [launch your own DHT](/jinroh/kadoh/wiki) from scratch and on different environments.
 
-You can launch the test using the jake task `jake test:node` or `jake test:browser` which launch a HTTP server on `localhost:8124`.
+## Installation
 
-## Launching you own DHT for testing
+### Install KadOH
 
-To launch you own DHT, you can use our built in scripts. The `dht` executable from the `bin/` directory is made for you. You can start different kind of DHT by writing a little configuration file in `json`. Examples can be found from the `lib/config` directory.
+The only required dependency is [node.js](http://nodejs.org/). Take a look at the [official manual](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) to install node on your system.
 
-Here is an explanation of such configurations (be aware that comments are not allowed in JSON files) :
+Then run :
+
+```sh
+npm install kadoh
+# or: git clone https://github.com/jinroh/kadoh.git
+cd kadoh
+npm install
+```
+
+You may also want to install the Jake module globally :
+
+```
+npm install -g jake
+```
+
+*For Linux users*, if the installation of KadOH's dependencies fails, you may need to install the `libexpat-dev` package. For Ubuntu/Debian users, run the following command :
+
+```sh
+sudo apt-get install libexpat-dev
+```
+
+### Build and go
+
+#### Browser
+
+To build the source inside the `dist` folder run one of the following Jake command :
+
+```sh
+jake build
+```
+
+This will build two versions of KadOH supporting different transports :
+
+  - SimUDP using Socket.io
+  - XMPP using Strophe.js for XMPP over Bosh
+
+#### Node.js
+
+If you need to use KadOH in a node.js application, just add `kadoh` in your package dependencies and use :
 
 ```javascript
-{
-  // transport type (xmpp or udp)
-  "botType"  : "xmpp",
-  // total size of the DHT
-  "size"     : 100,
-  // size of each pool
-  "poolSize" : 30,
-  // how many peers per seconds are launched
-  "speed"    : 1,
-  // activity per minutes per bots
-  // no activity when set to false
-  "activity" : 50,
-  // number of values published by the bots on the DHT
-  "values"   : 100,
-  // when of type xmpp, you have to give the jid and passwords to launch multiple bots
-  // here for instance the jids "kadoh0@jabber.org" .. "kadoh99@jabber.org"
-  // with the password "azerty" will be used to connect the bots
-  // if you remove the `%d', all bots will have the same address but will connect with different resources
-  "jids"     : ["kadoh%d@jabber.org", "azerty"],
-  // set to true if you want that this DHT launch the bootstraps processes
-  "starter"  : true,
-  // specify the bootstraps that will be launched (if starter) and used
-  "bootstraps" : [
-    ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
-    ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],
-    ["kadohbootstrap2@jabber.org", "kadoh", "azerty"]
-  ]
-}
-
+var kadoh = require('kadoh');
 ```
 
-Any parameters added through the CLI will overwrite the one from the config files.
+## Tests
 
-```bash
-$ ./bin/dht --config udp.default.json --size=1000 --speed=4
-```
-
-After running this script, you should see each pool running after the other until all bots are launched.
-
-To connect from the browser to the launched DHT, you can start a little HTTP server from our `apps` directory. For instance, if you have launched a UDP DHT, start the server as follow :
-
-```bash
-$ node apps/proxy/udp/app.js
-```
-
-You can connect then the DHT from you browser by going to `localhost:8080` and clicking on join.
-
-If you have started a XMPP DHT, you should start the `apps/xmpp/app.js` HTTP server. Be aware that you might need to change the bootstraps from the `apps/xmpp/index.html` file to match your xmpp bootstraps.
-
-## Mainline Proxy
-
-You can test our implementation of the iterativeFindNode algorithm by launching a proxy server to the Mainline DHT.
-
-Run with Node :
-
-```bash
-$ node apps/proxy/mainline/app.js
-```
-
-Then, in your browser go to `localhost:8080` and click on the `join` button. You can explore the iterativeFindNode algorithm steps with the buttons `prev`and `next`.
-
-# @Done/@TODO
+[![Build Status](https://secure.travis-ci.org/jinroh/kadoh.png?branch=master)](https://secure.travis-ci.org/jinroh/kadoh?branch=master)
 
 ```
-Kademlia client
-  - utils
-
-      - crypto/distance             [x]
-      - Peer object                 [x]
-      - PeerArray object            [x]
-      - SortedPeerArray object      [x]
-
-  - Routing Table                   [x]
-
-      - K-Bucket object             [x]
-      - find closest peer method    [x]
-      - refresh                     [x]
-
-  - Value Management                [x]
-  
-      - persistent stor.(Lawnchair) [x]
-      - session recover             [x]
-      - expiration                  [x]
-
-  - Node                            [x]
-
-      - iterativeFindNode           [x]
-      - iterativeFindValue          [x]
-      - iterativeStore              [x]
-
-  - RPC Reactor                     [x]
-
-      - routing in/out RPC          [x]
-
-      - outgoing RPC 
-          - 'PING'                  [x]
-          - 'FIND_NODE'             [x]
-          - 'FIND_VALUE'            [x]
-          - 'STORE'                 [x]
-
-      - incoming RPC
-          - 'PING'                  [x]
-          - 'FIND_NODE'             [x]
-          - 'FIND_VALUE'            [x]
-          - 'STORE'                 [x]
-
-      - RPC protocol
-          - JSON-RPC2               [x]
-          - XML-RPC                 [x]
-
-      - P2P transport
-          - SimUDP                  [x]
-          - XMPP over BOSH          [x]
-          - raw XMPP in Node        [x]
-          - raw UDP in Node         [x]
-
+jake test:node
+jake test:browser
 ```
-
-
-[node.js]:https://github.com/joyent/node
-[npm]:https://github.com/isaacs/npm
-[jasmine-runner]:https://github.com/jamescarr/jasmine-tool
-[jasmine-node]:https://github.com/mhevery/jasmine-node
