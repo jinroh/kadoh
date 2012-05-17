@@ -6,11 +6,14 @@ var colors = require('colors');
 var multi  = require('multimeter')(process);
 var charm  = multi.charm;
 var path   = require('path');
+var fs     = require('fs');
 var spawn  = require('child_process').spawn;
 var fork   = require('child_process').fork;
 
 var BBIN = __dirname + "/bootstrap";
 var PBIN = __dirname + "/pool";
+
+var DEFAULTS = __dirname + "/config/default.json"
 
 charm.setMaxListeners(100);
 charm.reset();
@@ -19,50 +22,50 @@ charm.on('^C', function() {
   process.exit();
 });
 
-var defaults = {
-  botType  : 'xmpp',
-  speed    : 1,
-  poolSize : 30,
-  size     : 10,
-  activity : 50,
-  values   : 100,
-  jids     : ["kadoh%d@jabber.org", "azerty"],
-  starter  : true,
-  reporter : false,
-  bootstraps : [
-    ["kadohbootstrap0@jabber.org", "kadoh", "azerty"],
-    ["kadohbootstrap1@jabber.org", "kadoh", "azerty"],
-    ["kadohbootstrap2@jabber.org", "kadoh", "azerty"]
-  ]
-};
-
+var defaults = JSON.parse(fs.readFileSync(DEFAULTS));
 var procs = [];
+
 var config = configuration();
 process.env.KADOH_TRANSPORT = (config.botType === 'udp' ? 'udp' : 'xmpp');
 (config.starter === false) ? launchPools() : launchBootstraps();
 
 function configuration() {
   var configFile;
-  if (process.argv.length === 0) {
-
-  } else {
+  if (process.argv.length > 0) {
     // load arguments
     nconf.argv();
-    // load file
-    if (argv.config) {
-      configFile = path.resolve(argv.config);
-      if (!path.existsSync(configFile)) {
-        configFile = path.resolve(__dirname + "/config/" + argv.config);
-        if (!path.existsSync(configFile)) {
-          console.error("config file doesn't exist");
-          process.exit(1);
-        }
-      }
-      nconf.file({ file : configFile });
-    }
-    // apply default
-    nconf.defaults(defaults);
   }
+
+  if (process.argv.length === 3 && !argv.config) {
+    argv.config = process.argv[2];
+  };
+
+  // load file
+  if (argv.config) {
+    var files = [
+      argv.config,
+      argv.config + ".json",
+      __dirname + "/config/" + argv.config,
+      __dirname + "/config/" + argv.config + ".json"
+    ];
+
+    for (var i = 0; i < files.length; i++) {
+      if (path.existsSync(path.resolve(files[i]))) {
+        configFile = path.resolve(files[i]);
+        break;
+      }
+    }
+    
+    if (!configFile) {
+      console.error("config file doesn't exist");
+      process.exit(1);
+    }
+
+    nconf.file({ file : configFile });
+  }
+
+  // apply default
+  nconf.defaults(defaults);
 
   var config = nconf.load();
   config.activity /= config.size;
@@ -88,8 +91,8 @@ function poolParams(id) {
       reactor : {
         protocol  : protocol, 
         transport : {
-          jid       : config.jids[0],
-          password  : config.jids[1],
+          jid       : config.jids ? config.jids[0] : null,
+          password  : config.jids ? config.jids[1] : null,
           port      : config.port,
           reconnect : true
         }
