@@ -14,17 +14,17 @@ KadOH abstract many different transport protocols to provide P2P connections. In
 
 ## See it in action
 
-**[Live demo](http://kadoh.fr.nf/)** running on Amazon EC2.
+**[Live demo](http://kadoh.fr.nf/)** based on XMPP transport running on Amazon EC2.
 
 ### Run it yourself
 
-First you can start a little DHT using this command :
+First you can start a little DHT based on UDP transport using this command :
 
 ```
 bin/dht udp.default
 ```
 
-Then in an other terminal, start the server using the following Jake command and go to `localhost:8080` :
+Then in an other terminal, start the web-based [debug UI](/jinroh/kadoh/wiki/Debug-UI) using the following Jake command and go to `localhost:8080` :
 
 ```sh
 jake run:udp
