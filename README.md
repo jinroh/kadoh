@@ -99,6 +99,8 @@ KadOH is built on top of many open-source libraries and projects:
 
 [![Build Status](https://secure.travis-ci.org/jinroh/kadoh.png?branch=master)](https://secure.travis-ci.org/jinroh/kadoh?branch=master)
 
+*For the moment, tests are not running anymore.. But we hope that will be fixed as soon as we migrate to Mocha.*
+
 ```
 jake test:node
 jake test:browser
