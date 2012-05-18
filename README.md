@@ -88,6 +88,7 @@ KadOH is built on top of many open-source libraries and projects:
 
   - [Strophe.js](http://strophe.im/strophejs/)
   - [node-xmpp](https://github.com/astro/node-xmpp)
+  - [cube](https://github.com/square/cube)
   - [klass](https://github.com/ded/klass)
   - [bncode](https://github.com/a2800276/bencode.js)
   - [socket.io](http://socket.io/)
