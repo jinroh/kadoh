@@ -4,7 +4,7 @@
 
 KadOH abstract many different transport protocols to provide P2P connections. In the browser we support [XMPP over Bosh](http://xmpp.org/extensions/xep-0206.html) and [Socket.io](http://socket.io/), and you can go for UDP and native XMPP in a node.js application. We plan to support **[WebRTC](http://www.webrtc.org/)** soon !
 
-[See the wiki](/jinroh/kadoh/wiki) for more informations ! Also take look at [our report](http://jinroh.github.com/) and be aware that this document may be outdated.
+[See the wiki](/jinroh/kadoh/wiki) for more informations ! Also take look at [our report](http://jinroh.github.com/kadoh) and be aware that this document may be outdated.
 
 ---
 
