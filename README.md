@@ -36,7 +36,7 @@ See the wiki for more informations on how to [launch your own DHT](/jinroh/kadoh
 
 ### Install KadOH
 
-The only required dependency is [node.js](http://nodejs.org/). Take a look at the [official manual](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) to install node on your system.
+The only required dependency is [node.js](http://nodejs.org/) (version >= 0.6, but you clould try below..). Take a look at the [official manual](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) to install node on your system.
 
 Then run :
 
