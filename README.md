@@ -1,6 +1,6 @@
 # KadOH - Javascript P2P framework
 
-**KadOH** is a framework to build P2P applications for browsers and node.js. By implementing the basis of the [Kademlia DHT](http://en.wikipedia.org/wiki/Kademlia), KadOH lets you build **distributed web applications** for mobile and desktop devices. With its flexible and extensible design, you can easily adapt KadOH to fit your needs. 
+**KadOH** is a framework to build P2P applications for browsers and node.js. By implementing the basis of the [Kademlia DHT](http://en.wikipedia.org/wiki/Kademlia), KadOH lets you build **distributed web applications** for mobile and desktop devices. With its flexible and extensible design, you can easily adapt KadOH to fit your needs. KadOH is available under the MIT License. 
 
 KadOH abstract many different transport protocols to provide P2P connections. In the browser we support [XMPP over Bosh](http://xmpp.org/extensions/xep-0206.html) and [Socket.io](http://socket.io/), and you can go for UDP and native XMPP in a node.js application. We plan to support **[WebRTC](http://www.webrtc.org/)** soon !
 
@@ -81,6 +81,18 @@ If you need to use KadOH in a node.js application, just add `kadoh` in your pack
 ```javascript
 var kadoh = require('kadoh');
 ```
+
+## Thanks
+
+KadOH is built on top of many open-source libraries and projects:
+
+  - [Strophe.js](http://strophe.im/strophejs/)
+  - [node-xmpp](https://github.com/astro/node-xmpp)
+  - [klass](https://github.com/ded/klass)
+  - [bncode](https://github.com/a2800276/bencode.js)
+  - [socket.io](http://socket.io/)
+  - [express](http://expressjs.com/)
+  - [browserify](https://github.com/substack/node-browserify)
 
 ## Tests
 
