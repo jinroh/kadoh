@@ -99,7 +99,7 @@ KadOHui.Node.prototype = {
                   '<tr>'+
                     '<td>'+s+'s '+elaps+'ms</td>'+
                     '<td>'+iterfind._alreadyMaped.length+'</td>'+
-                    '<td>'+iterfind._currentReduceResult.heardOf.size()+' peers</td>'+
+                    '<td>'+iterfind._currentReduceResult.size()+' peers</td>'+
                   '</tr>'+
                 '</tbody>'+
              '</table>';
