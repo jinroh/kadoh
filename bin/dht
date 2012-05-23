@@ -13,7 +13,7 @@ var fork   = require('child_process').fork;
 var BBIN = __dirname + "/bootstrap";
 var PBIN = __dirname + "/pool";
 
-var DEFAULTS = __dirname + "/config/default.json"
+var DEFAULTS = __dirname + "/config/udp.default.json"
 
 charm.setMaxListeners(100);
 charm.reset();
