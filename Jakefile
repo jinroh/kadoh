@@ -48,21 +48,9 @@ task('default', [], function() {
 namespace('test', function() {
   desc('Testing in node');
   task('node', ['default'], function() {
-    jake.Task['build:node'].execute();
-
-    var jasmine = PROC.spawn('jasmine-node', ['spec']);
-
-    jasmine.stdout.on('data', function (data) {
-      process.stdout.write(String(data));
-    });
-
-    jasmine.stderr.on('data', function (data) {
-      process.stderr.write(data);
-    });
-
-    jasmine.on('exit', function (code) {
-      process.exit(code);
-    });
+    var mocha = PROC.spawn('mocha', ['--colors']);
+    mocha.stdout.pipe(process.stdout, { end: false });
+    mocha.stderr.pipe(process.stderr, { end: false });
   }, true);
 
   desc('Testing in the browser');
