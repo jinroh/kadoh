@@ -2,9 +2,9 @@ notifications:
   email: false
 
 branches:
-  except:
+  only:
     - master
 
 language: node_js
 node_js:
-  - 0.4
+  - 0.6

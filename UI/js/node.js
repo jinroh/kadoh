@@ -10,60 +10,83 @@ KadOHui.Node = function(node, el, modal_pool) {
   this.iterID = 0;
 
   this.node.on({
-    'iterativeFind started' : this.handle
+    'iterativeFindNode'  : this.handleFindNode,
+    'iterativeFindValue' : this.handleFindValue
   }, this);
 };
 
 KadOHui.Node.prototype = {
-  handle: function(iterfind, peers) {
+  handle: function(iterfind, type, target, init, success, failure) {
     this.iterID ++;
-    var start = (new Date().getTime());
 
-    var el = $(this.template(this.iterID, iterfind._target, iterfind._targetType, peers));
+    var el = $(this.template(this.iterID, target, type, init));
 
     if(this.table.children().length > this.MAX)
       this.table.children().last().remove();
 
     this.table.prepend(el);
 
+    function resolved(html) {
+      el.find('.state')
+        .removeClass('label-warning')
+        .addClass('label-success')
+        .text('resolved')
+        .attr('rel', 'popover')
+        .attr('data-original-title', 'Resolved')
+        .attr('data-placement', 'bottom')
+        .attr('data-content', html);
+    }
+
+    function rejected(html) {
+      el.find('.state')
+        .removeClass('label-warning')
+        .addClass('label-important')
+        .text('rejected')
+        .attr('rel', 'popover')
+        .attr('data-original-title', 'Rejected')
+        .attr('data-placement', 'bottom')
+        .attr('data-content', html);
+    }
+
+    var that = this;
     iterfind.then(
-      function(res, reached) {
-        var html = "";
+      function() { resolved(success.apply(that, arguments)); },
+      function() { rejected(failure.apply(that, arguments)); }
+    );
+  },
 
-        //sometimes iterfind NODE are abusively resolved, typically when guys respond ourselves to a findnode
-        if(iterfind._targetType !== 'NODE') {
-          html =[
-          '<ul>',
-              '<li><b>Value : </b><code>'+KadOHui.util.escapeHTML(res.value)+'</code></li>',
-              '<li><b>Expiration : </b>',
-                  (!res.exp || res.exp<0) ?
-                  '<i>never</i>':
-                  '<time rel=\'tooltip\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'bottom\'>'+(new Date(res.exp).toString())+'</time>',
-              '</li>',
-            '</ul>'].join('\n');
-        }
+  handleFindNode: function(iterfind, init) {
+    var start = new Date().getTime();
 
-          html += this.iterfindInfo(iterfind, peers, start);
+    function always(reached) {
+      return this.iterfindInfo(iterfind, reached, start);
+    }
 
-        el.find('.state').removeClass('label-warning')
-                         .addClass('label-success')
-                         .text('resolved')
-                         .attr('rel', 'popover')
-                         .attr('data-original-title', 'Resolved')
-                         .attr('data-placement', 'bottom')
-                         .attr('data-content', html);
-      },
-      function(peers) {
-        var html = this.iterfindInfo(iterfind, peers, start);
+    this.handle(iterfind, 'NODE', iterfind._target, init, always, always);
+  },
 
-        el.find('.state').removeClass('label-warning')
-                         .addClass('label-important')
-                         .text('rejected')
-                         .attr('rel', 'popover')
-                         .attr('data-original-title', 'Rejected')
-                         .attr('data-placement', 'bottom')
-                         .attr('data-content', html);
-    },this);
+  handleFindValue: function(iterfind, init) {
+    var start = new Date().getTime();
+
+    function sucess(res, reached) {
+      var html =[
+        '<ul>',
+          '<li><b>Value : </b><code>'+KadOHui.util.escapeHTML(res.value)+'</code></li>',
+          '<li><b>Expiration : </b>',
+              (!res.exp || res.exp<0) ?
+              '<i>never</i>':
+              '<time rel=\'tooltip\' datetime=\''+(new Date(res.exp)).toISOString()+'\' data-placement=\'bottom\'>'+(new Date(res.exp).toString())+'</time>',
+          '</li>',
+        '</ul>'].join('\n');
+      html += this.iterfindInfo(iterfind, reached, start);
+      return html;
+    }
+
+    function failure(reached) {
+      return this.iterfindInfo(iterfind, reached, start);
+    }
+
+    this.handle(iterfind, 'VALUE', iterfind._target, init, sucess, failure);
   },
 
   template: function(id, target, target_type, start_peers) {
@@ -98,8 +121,8 @@ KadOHui.Node.prototype = {
                 '<tbody>'+
                   '<tr>'+
                     '<td>'+s+'s '+elaps+'ms</td>'+
-                    '<td>'+iterfind.Queried.size()+'</td>'+
-                    '<td>'+iterfind.HeardOf.size()+' peers</td>'+
+                    '<td>'+iterfind._mapped.length+'</td>'+
+                    '<td>'+iterfind._currentReduceResult.size()+' peers</td>'+
                   '</tr>'+
                 '</tbody>'+
              '</table>';
