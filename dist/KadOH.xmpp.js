@@ -1036,7 +1036,7 @@ require.define("/node_modules/klass/klass.js", function (require, module, export
     context.klass = old
     return this
   }
-  //context.klass = klass
+  context.klass = klass
 
   return klass
 });
@@ -1840,7 +1840,7 @@ Strophe = {
      *  The version of the Strophe library. Unreleased builds will have
      *  a version of head-HASH where HASH is a partial revision.
      */
-    VERSION: "42cc694",
+    VERSION: "746aa31",
 
     /** Constants: XMPP Namespace Constants
      *  Common namespace constants from the XMPP RFCs and XEPs.
@@ -7508,6 +7508,12 @@ var Node = module.exports = Peer.extend({
 
     // instantiate a reactor and listen to it
     this._reactor = new Reactor(this, config.reactor);
+    this._reactor.register({
+      PING       : PingRPC,
+      FIND_NODE  : FindNodeRPC,
+      FIND_VALUE : FindValueRPC,
+      STORE      : StoreRPC
+    });
     this._reactor.on(this.reactorEvents, this);
 
     this.setState('initialized');
@@ -8934,12 +8940,6 @@ var StateEventEmitter = require('../util/state-eventemitter'),
     protocol          = require('./protocol'),
     Transport         = require('./transport'),
  
-    PingRPC           = require('./rpc/ping'),
-    FindNodeRPC       = require('./rpc/findnode'),
-    FindValueRPC      = require('./rpc/findvalue'),
-    StoreRPC          = require('./rpc/store'),
-    RPC               = require('./rpc/rpc'),
-
     log = require('../logging').ns('Reactor');
   
 var Reactor = module.exports = StateEventEmitter.extend({
@@ -8980,14 +8980,32 @@ var Reactor = module.exports = StateEventEmitter.extend({
 
     // associate RPC object to RPC methods
     this.RPCObject = {
-      PING       : PingRPC.extend(     {reactor : this}),
-      FIND_NODE  : FindNodeRPC.extend( {reactor : this}),
-      FIND_VALUE : FindValueRPC.extend({reactor : this}),
-      STORE      : StoreRPC.extend(    {reactor : this}),
       __default  : undefined
     };
 
     this.setState('disconnected');
+  },
+
+  /**
+   * Register RPC objects to associate with RPC method names.
+   * 
+   * @example
+   * reactor.register({
+   *   'PING'  : PingRPC,
+   *   'STORE' : StoreRPC
+   * });
+   * 
+   * Special method name '__default' : object use when method
+   * names not associated to any RPCObject.
+   * 
+   * @param  {Object} rpcs - hash of RPCS to register
+   */
+  register: function(rpcs) {
+    //TODO suppress reference to reactor
+    for(var i in rpcs) {
+      this.RPCObject[i] = rpcs[i].extend({reactor : this});
+    }
+    return this;
   },
 
   /**
