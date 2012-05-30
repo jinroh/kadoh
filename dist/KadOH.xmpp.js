@@ -9183,7 +9183,7 @@ var Reactor = module.exports = StateEventEmitter.extend({
     //handler could have rejected the query
     if (!rpc.isRejected()) {
       this.emit('reached', rpc.getQuerying());
-      log.debug( 'received query', rpc.getMethod(), from, query);
+      log.debug('received query', rpc.getMethod(), from, query);
       this.emit('queried', rpc);
     }
   },
@@ -9198,10 +9198,11 @@ var Reactor = module.exports = StateEventEmitter.extend({
     var rpc = this._getRequestByID(response.id);
 
     if (!rpc) {
-      log.warn( 'response matches no request', from, response);
+      log.warn('response matches no request', from, response);
     } else {
-      log.debug( 'received response', rpc.getMethod(), from, response);
+      log.debug('received response', rpc.getMethod(), from, response);
       rpc.handleNormalizedResponse(response, from);
+      this.addRTT(rpc.getRTT());
     }
     return this;
   },
@@ -9289,17 +9290,17 @@ var Reactor = module.exports = StateEventEmitter.extend({
   adaptive: {
     size : 3000,
     tolerance : 0.75,
-    max : 1000,
-    min : 10 * 1000,
-    deflt : globals.TIMEOUT_RPC
+    max : 10 * 1000,
+    min : 1000,
+    deflt : globals.TIMEOUT_RPC,
+    running : false
   },
 
-  _running : false,
-
   addRTT: function(rtt) {
+    if (rtt <= 0) return;
     this._rtts.push(rtt);
-    if (!this._running) {
-      this._running = true;
+    if (!this.adaptive.running) {
+      this.adaptive.running = true;
       if (this.config.adaptiveTimeout) {
         var self = this;
         setTimeout(function() {
@@ -9890,7 +9891,7 @@ var _parseResponseMessage = function(iq) {
 var parseRPCMessage = function(iq) {
   if (typeof iq === 'string') {
     try {
-      var parser = DOMParser();
+      var parser = new DOMParser();
       var doc    = parser.parseFromString(iq, 'text/xml');
       _removeWhiteSpace(doc);
       iq = doc.documentElement;
@@ -10228,7 +10229,7 @@ var RPC = module.exports = Deferred.extend({
    * Send method for this RPC.
    */
   sendQuery : function() {
-    this._sent = new Date().getTime();
+    this._sendTime = new Date().getTime();
     this._setTimeout();
     this.reactor.sendRPCQuery(this);
     return this;
@@ -10322,8 +10323,7 @@ var RPC = module.exports = Deferred.extend({
    * @param  {Function}     [specific_handler]  Specific handler
    */
   handleNormalizedResponse: function(response, from) {
-    this._rtt = new Date().getTime() - this._sent;
-    this.reactor.addRTT(this._rtt);
+    this._rtt = new Date().getTime() - this._sendTime;
 
     if (this.isResolved() || this.isRejected()) {
       log.warn('received response to an already completed query', from, response);
