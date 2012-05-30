@@ -32,7 +32,7 @@ describe('Value Store', function() {
 
   describe('when i instanciate one (no recover)', function() {
 
-    describe('and when I\' ve stored a value', function() {
+    describe('and when I\'ve stored a value', function() {
 
       var key = randomSHA1();
 
@@ -55,7 +55,7 @@ describe('Value Store', function() {
       });
     });
 
-    describe('and when I\' ve stored a value with an expiration time', function() {
+    describe('and when I\'ve stored a value with an expiration time', function() {
 
       var key = randomSHA1(),
           ttl = 250, exp;
@@ -83,7 +83,7 @@ describe('Value Store', function() {
       });
     });
 
-    describe('when I\' ve stored a value (and manuelly dropped down the republish time to test it)', function() {
+    describe('when I\'ve stored a value (and manuelly dropped down the republish time to test it)', function() {
 
       var key = randomSHA1(),
           ttl = 250;

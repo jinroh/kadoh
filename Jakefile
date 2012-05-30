@@ -47,8 +47,9 @@ task('default', [], function() {
 // ------------ TESTS ------------
 namespace('test', function() {
   desc('Testing in node');
-  task('node', ['default'], function() {
-    var mocha = PROC.spawn('mocha', ['--colors']);
+  task('node', ['default'], function(reporter) {
+    reporter = reporter || 'dot'
+    var mocha = PROC.spawn('mocha', ['--colors', '--reporter', reporter]);
     mocha.stdout.pipe(process.stdout, { end: false });
     mocha.stderr.pipe(process.stderr, { end: false });
   }, true);
