@@ -34,6 +34,7 @@
    "devDependencies": {
         "mocha"          : "~1.0"
       , "chai"           : "~1.0"
+      , "chai-spies"     : "~0.2"
       , "optimist"       : "~0.3"
       , "nconf"          : "~0.5"
       , "multimeter"     : "~0.1"
