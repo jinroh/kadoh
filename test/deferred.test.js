@@ -1,48 +1,54 @@
+var chai = require('chai'),
+    sinonChai = require('sinon-chai'),
+    sinon = require('sinon'),
+    expect = chai.expect;
+
+chai.use(sinonChai);
+
 describe('Deferred', function() {
 
-  var Deferred, def, success, failure;
+  var Deferred = require('../lib/util/deferred'),
+      def, success, failure, progress;
 
   beforeEach(function() {
-    Deferred = KadOH.core.Deferred;
     def = new Deferred();
-    success = jasmine.createSpy();
-    failure = jasmine.createSpy();
   });
 
   it('should be a function', function() {
-    expect(Deferred).toBeFunction();
-    expect(def).toBeObject();
-    expect(def.then).toBeFunction();
+    expect(Deferred).to.be.a('function');
+    expect(def).to.be.a('object');
+    expect(def.then).to.be.a('function');
   });
 
   describe('in a resolve state', function() {
 
     beforeEach(function() {
+      success = sinon.spy();
+      failure = sinon.spy();
       def.addCallback(success);
-      expect(def.isResolved()).toBeFalsy();
+      expect(def.isResolved()).to.be.false;
     });
 
     it('should resolve with the good arguments', function() {
       def.resolve('foo', 'bar');
-      expect(def.isResolved()).toBeTruthy();
-      expect(success).toHaveBeenCalledWith('foo', 'bar');
+      expect(def.isResolved()).to.be.true;
+      expect(success).to.have.been.calledWith('foo', 'bar');
     });
 
     it('should be possible to get passed arguments', function(){
       def.resolve('foo', 'bar');
-      expect(def.getResolvePassedArgs()).toEqual(['foo', 'bar']);
+      expect(def.getResolvePassedArgs()).to.eql(['foo', 'bar']);
     });
     
-    it('should not be resolve twice', function() {
-      def.resolve().resolve();
-      expect(success).toHaveBeenCalled();
-      expect(success.callCount).toBe(1);
+    it('should not be resolved twice', function() {
+      def.resolve('foo', 'bar').resolve('foo', 'bar');
+      expect(success).to.have.been.calledOnce;
     });
 
     it('should execute callbacks event after being resolved', function() {
-      def.resolve();
+      def.resolve('foo', 'bar');
       def.addCallback(success);
-      expect(success).toHaveBeenCalled();
+      expect(success).to.have.been.calledWith('foo', 'bar');
     });
 
     it('should properly cancel', function() {
@@ -50,8 +56,8 @@ describe('Deferred', function() {
       def.cancel();
       def.addCallback(failure);
       def.resolve();
-      expect(success).not.toHaveBeenCalled();
-      expect(failure).not.toHaveBeenCalled();
+      expect(success).to.not.have.been.called;
+      expect(failure).to.not.have.been.called;
     });
 
   });
@@ -59,66 +65,70 @@ describe('Deferred', function() {
   describe('in a reject state', function() {
     
     beforeEach(function() {
+      failure = sinon.spy();
       def.addErrback(failure);
-      expect(def.isRejected()).toBeFalsy();
+      expect(def.isRejected()).to.be.false;
     });
 
     it('should reject with the good arguments', function() {
       def.reject('foo', 'bar');
-      expect(def.isRejected()).toBeTruthy();
-      expect(failure).toHaveBeenCalledWith('foo', 'bar');
+      expect(def.isRejected()).to.be.true;
+      expect(failure).to.have.been.calledWith('foo', 'bar');
     });
 
     it('should be possible to get passed arguments', function(){
       def.reject('foo', 'bar');
-      expect(def.getRejectPassedArgs()).toEqual(['foo', 'bar']);
+      expect(def.getRejectPassedArgs()).to.eql(['foo', 'bar']);
     });
 
     it('should not be reject twice', function() {
-      def.reject().reject();
-      expect(failure).toHaveBeenCalled();
-      expect(failure.callCount).toBe(1);
+      def.reject('foo', 'bar').reject('foo', 'bar');
+      expect(failure).to.have.been.calledOnce;
     });
 
     it('should execute callbacks event after being rejected', function() {
-      def.reject();
+      def.reject('foo', 'bar');
       def.addErrback(failure);
-      expect(failure).toHaveBeenCalled();
+      expect(failure).to.have.been.calledWith('foo', 'bar');
     });
 
     it('should properly cancel', function() {
       def.addErrback(success);
       def.cancel();
       def.addErrback(failure);
-      def.resolve();
-      expect(success).not.toHaveBeenCalled();
-      expect(failure).not.toHaveBeenCalled();
+      def.resolve('foo', 'bar');
+      expect(success).to.not.have.been.called;
+      expect(failure).to.not.have.been.called;
     });
 
   });
 
   describe('context of execution', function() {
+
+    var that = {};
     
+    beforeEach(function() {
+      success = sinon.spy();
+      failure = sinon.spy();
+      progress = sinon.spy();
+    });
+
     it('should resolve in the good context', function() {
-      var that = {};
       def.then(success, failure, that);
       def.resolve();
-      expect(success.mostRecentCall.object).toBe(that);
+      expect(success).to.have.been.calledOn(that)
     });
 
     it('should reject in the good context', function() {
-      var that = {};
       def.then(success, failure, that);
       def.reject();
-      expect(failure.mostRecentCall.object).toBe(that);
+      expect(failure).to.have.been.calledOn(that)
     });
 
     it('should progress in the good context', function() {
-      var that = {};
-      var progress = jasmine.createSpy();
       def.then(success, failure, progress, that);
       def.progress();
-      expect(progress.mostRecentCall.object).toBe(that);
+      expect(progress).to.have.been.calledOn(that)
     });
 
   });
@@ -151,18 +161,18 @@ describe('Deferred', function() {
         test.push('qux');
       });
 
-      expect(test).toEqual(['foo', 'bar', 'baz', 'qux', 'quux']);
+      expect(test).to.eql(['foo', 'bar', 'baz', 'qux', 'quux']);
     });
 
     it('should cancel properly', function() {
-      success.andCallFake(function() {
+      success = sinon.spy(function() {
         def.then(failure);
         def.cancel();
-      });
+      })
       def.then(success);
       def.resolve();
-      expect(success).toHaveBeenCalled();
-      expect(failure).not.toHaveBeenCalled();
+      expect(success).to.have.been.called;
+      expect(failure).to.not.have.been.called;
     });
 
   });
@@ -170,7 +180,7 @@ describe('Deferred', function() {
   describe('pipe', function() {
     
     it('should pipe deferred', function() {
-      KadOH.log.addLogger('ConsoleLogger');
+      success = sinon.spy();
       var pipe1 = new Deferred();
       var pipe2 = new Deferred();
       def.pipe(function(value) {
@@ -182,7 +192,7 @@ describe('Deferred', function() {
       });
       pipe2.addCallback(success);
       def.resolve(10);
-      expect(success).toHaveBeenCalledWith(12);
+      expect(success).to.have.been.calledWith(12);
     });
 
   });
@@ -200,30 +210,31 @@ describe('Deferred', function() {
     });
 
     it('should test if it is a value or a promise', function() {
-      expect(Deferred.isPromise('value')).toBeFalsy();
-      expect(Deferred.isPromise(def)).toBeTruthy();
+      expect(Deferred.isPromise('value')).to.be.false;
+      expect(Deferred.isPromise(def)).to.be.true;
     });
 
     it('should return a promise', function() {
       var promise  = Deferred.when('foo');
       var deferred = Deferred.when(def);
-      expect(promise.then).toBeFunction();
-      expect(promise.isResolved()).toBeTruthy();
-      expect(deferred).toBe(def);
+      expect(promise.then).to.be.a('function');
+      expect(promise.isResolved()).to.be.true;
+      expect(deferred).to.equal(def);
     });
 
     describe('whenAll', function() {
       
       it('should be resolved when all are resolved', function() {
+        success = sinon.spy();
         var all = Deferred.whenAll(promises).then(success, failure);
-        expect(all.isResolved()).toBeFalsy();
+        expect(all.isResolved()).to.be.false;
         promises[0].resolve('foo');
-        expect(success).not.toHaveBeenCalled();
+        expect(success).to.not.have.been.called;
         promises[1].resolve('bar');
-        expect(success).not.toHaveBeenCalled();
+        expect(success).to.not.have.been.called;
         promises[2].resolve('baz');
-        expect(success).toHaveBeenCalledWith(['foo'], ['bar'], ['baz']);
-        expect(all.isResolved()).toBeTruthy();
+        expect(success).to.have.been.calledWith(['foo'], ['bar'], ['baz']);
+        expect(all.isResolved()).to.be.true;
       });
 
     });
@@ -231,13 +242,14 @@ describe('Deferred', function() {
     describe('whenSome', function() {
       
       it('should be resolved when some are resolved', function() {
+        success = sinon.spy();
         var some = Deferred.whenSome(promises, 2).then(success, failure);
-        expect(some.isResolved()).toBeFalsy();
+        expect(some.isResolved()).to.be.false;
         promises[0].resolve('foo');
-        expect(success).not.toHaveBeenCalled();
+        expect(success).to.not.have.been.called;
         promises[2].resolve('baz');
-        expect(success).toHaveBeenCalledWith(['foo'], undefined, ['baz']);
-        expect(some.isResolved()).toBeTruthy();
+        expect(success).to.have.been.calledWith(['foo'], undefined, ['baz']);
+        expect(some.isResolved()).to.be.true;
       });
 
     });
@@ -247,27 +259,29 @@ describe('Deferred', function() {
       var atl;
 
       beforeEach(function() {
+        success = sinon.spy();
+        failure = sinon.spy();
         atl = Deferred.whenAtLeast(promises).then(success, failure);
-        expect(atl.isResolved()).toBeFalsy();
+        expect(atl.isResolved()).to.be.false;
       });
 
       it('should resolve if at least one has resolved when they are all completed', function() {
         promises[0].reject();
-        expect(success).not.toHaveBeenCalled();
+        expect(success).to.not.have.been.called;
         promises[2].resolve('bar');
-        expect(success).not.toHaveBeenCalled();
+        expect(success).to.not.have.been.called;
         promises[1].reject();
-        expect(success).toHaveBeenCalledWith([promises[2]], [promises[0], promises[1]]);
-        expect(atl.isResolved()).toBeTruthy();
+        expect(success).to.have.been.calledWith([promises[2]], [promises[0], promises[1]]);
+        expect(atl.isResolved()).to.be.true;
       });
 
       it('should reject when all have rejected', function() {
         promises[0].reject();
         promises[1].reject();
         promises[2].reject();
-        expect(failure).toHaveBeenCalled();
-        expect(success).not.toHaveBeenCalledWith([], [promises[0], promises[1], promises[2]]);
-        expect(atl.isRejected()).toBeTruthy();
+        expect(failure).to.have.been.called;
+        expect(success).to.not.have.been.called;
+        expect(atl.isRejected()).to.be.true;
       });
 
     });
@@ -277,6 +291,7 @@ describe('Deferred', function() {
       var map;
 
       beforeEach(function() {
+        success = sinon.spy();
         map = Deferred.whenMap(promises, function(value) {
           return value + '_bar';
         }).then(success);
@@ -286,7 +301,7 @@ describe('Deferred', function() {
         promises[0].resolve('foo1');
         promises[1].resolve('foo2');
         promises[2].resolve('foo3');
-        expect(success).toHaveBeenCalledWith(['foo1_bar', 'foo2_bar', 'foo3_bar']);
+        expect(success).to.have.been.calledWith(['foo1_bar', 'foo2_bar', 'foo3_bar']);
       });
     });
 
