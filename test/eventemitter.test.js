@@ -1,9 +1,10 @@
-var chai = require('chai');
+var chai = require('chai'),
     helpers = require('./helpers'),
-    spies = require('chai-spies'),
+    sinonChai = require('sinon-chai'),
+    sinon = require('sinon'),
     expect = chai.expect;
 
-chai.use(spies);
+chai.use(sinonChai);
 
 describe('EventEmitter', function() {
 
@@ -12,7 +13,7 @@ describe('EventEmitter', function() {
 
   beforeEach(function() {
     ee = new EventEmitter();
-    spy = chai.spy();
+    spy = sinon.spy();
   });
 
   it('should be defined and be a function', function() {
@@ -30,13 +31,10 @@ describe('EventEmitter', function() {
     });
 
     describe('and when I fire the associated event with arguments', function() {
-      it('should have been called with the right arguments', function(done) {
-        ee.on('foo', function(arg1, arg2) {
-          expect(arg1).to.equal('arg1');
-          expect(arg2).to.be.false;
-          done();
-        });
+      it('should have been called with the right arguments', function() {
+        ee.on('foo', spy);
         ee.emit('foo', 'arg1', false);
+        expect(spy).to.have.been.calledWith('arg1', false);
       });
     });
 
@@ -52,7 +50,7 @@ describe('EventEmitter', function() {
     it('the listener should have been called only one time', function() {
       ee.once('foo', spy);
       ee.emit('foo').emit('foo');
-      expect(spy).to.have.been.called.once;
+      expect(spy).to.have.been.calledOnce;
     });
   });
 
@@ -61,12 +59,9 @@ describe('EventEmitter', function() {
     var that = {};
 
     it('should have bee called with the appropriate scope', function() {
-      spy = chai.spy(function() {
-        expect(this).to.equal(that);
-      })
       ee.once('foo', spy, that);
       ee.emit('foo');
-      expect(spy).to.have.been.called;
+      expect(spy).to.have.been.calledOn(that);
     });
   });
 
@@ -79,13 +74,13 @@ describe('EventEmitter', function() {
     });
 
     it('should be possible to subscribe', function() {
-      expect(spy).to.have.been.called.twice;
+      expect(spy).to.have.been.calledTwice;
     });
 
     it('should be possible to unsubscribe', function() {
       ee.unsubscribe(spy);
       ee.emit('empty');
-      expect(spy).to.have.been.called.twice;
+      expect(spy).to.have.been.calledTwice;
     });
 
   });
@@ -95,17 +90,19 @@ describe('EventEmitter', function() {
     var that = {};
 
     it('should be possible to add chain of events', function() {
-      var fooSpy = chai.spy();
-      var barSpy = chai.spy();
+      var fooSpy = sinon.spy();
+      var barSpy = sinon.spy();
       var chain = {
         foo: fooSpy,
         bar: barSpy
       };
       ee.on(chain, that);
       ee.emit('foo');
-      expect(fooSpy).to.have.been.called.once;
+      expect(fooSpy).to.have.been.calledOnce;
+      expect(fooSpy).to.have.been.calledOn(that);
       ee.emit('bar');
-      expect(barSpy).to.have.been.called.once;
+      expect(barSpy).to.have.been.calledOnce;
+      expect(barSpy).to.have.been.calledOn(that);
     });
 
   });

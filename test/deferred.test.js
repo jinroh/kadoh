@@ -1,8 +1,9 @@
 var chai = require('chai'),
-    spies = require('chai-spies'),
+    sinonChai = require('sinon-chai'),
+    sinon = require('sinon'),
     expect = chai.expect;
 
-chai.use(spies);
+chai.use(sinonChai);
 
 describe('Deferred', function() {
 
@@ -22,10 +23,8 @@ describe('Deferred', function() {
   describe('in a resolve state', function() {
 
     beforeEach(function() {
-      success = chai.spy(function(foo, bar) {
-        expect(foo).to.eql('foo');
-        expect(bar).to.eql('bar');
-      });
+      success = sinon.spy();
+      failure = sinon.spy();
       def.addCallback(success);
       expect(def.isResolved()).to.be.false;
     });
@@ -33,7 +32,7 @@ describe('Deferred', function() {
     it('should resolve with the good arguments', function() {
       def.resolve('foo', 'bar');
       expect(def.isResolved()).to.be.true;
-      expect(success).to.have.been.called;
+      expect(success).to.have.been.calledWith('foo', 'bar');
     });
 
     it('should be possible to get passed arguments', function(){
@@ -43,13 +42,13 @@ describe('Deferred', function() {
     
     it('should not be resolved twice', function() {
       def.resolve('foo', 'bar').resolve('foo', 'bar');
-      expect(success).to.have.been.called.once;
+      expect(success).to.have.been.calledOnce;
     });
 
     it('should execute callbacks event after being resolved', function() {
       def.resolve('foo', 'bar');
       def.addCallback(success);
-      expect(success).to.have.been.called;
+      expect(success).to.have.been.calledWith('foo', 'bar');
     });
 
     it('should properly cancel', function() {
@@ -66,10 +65,7 @@ describe('Deferred', function() {
   describe('in a reject state', function() {
     
     beforeEach(function() {
-      failure = chai.spy(function(foo, bar) {
-        expect(foo).to.eql('foo');
-        expect(bar).to.eql('bar');
-      });
+      failure = sinon.spy();
       def.addErrback(failure);
       expect(def.isRejected()).to.be.false;
     });
@@ -77,7 +73,7 @@ describe('Deferred', function() {
     it('should reject with the good arguments', function() {
       def.reject('foo', 'bar');
       expect(def.isRejected()).to.be.true;
-      expect(failure).to.have.been.called;
+      expect(failure).to.have.been.calledWith('foo', 'bar');
     });
 
     it('should be possible to get passed arguments', function(){
@@ -87,13 +83,13 @@ describe('Deferred', function() {
 
     it('should not be reject twice', function() {
       def.reject('foo', 'bar').reject('foo', 'bar');
-      expect(failure).to.have.been.called.once;
+      expect(failure).to.have.been.calledOnce;
     });
 
     it('should execute callbacks event after being rejected', function() {
       def.reject('foo', 'bar');
       def.addErrback(failure);
-      expect(failure).to.have.been.called;
+      expect(failure).to.have.been.calledWith('foo', 'bar');
     });
 
     it('should properly cancel', function() {
@@ -112,27 +108,27 @@ describe('Deferred', function() {
     var that = {};
     
     beforeEach(function() {
-      var checkContext = function() {
-        expect(this).to.equal(that);
-      }
-      success = chai.spy(checkContext);
-      failure = chai.spy(checkContext);
-      progress = chai.spy(checkContext);
+      success = sinon.spy();
+      failure = sinon.spy();
+      progress = sinon.spy();
     });
 
     it('should resolve in the good context', function() {
       def.then(success, failure, that);
       def.resolve();
+      expect(success).to.have.been.calledOn(that)
     });
 
     it('should reject in the good context', function() {
       def.then(success, failure, that);
       def.reject();
+      expect(failure).to.have.been.calledOn(that)
     });
 
     it('should progress in the good context', function() {
       def.then(success, failure, progress, that);
       def.progress();
+      expect(progress).to.have.been.calledOn(that)
     });
 
   });
@@ -169,7 +165,7 @@ describe('Deferred', function() {
     });
 
     it('should cancel properly', function() {
-      success = chai.spy(function() {
+      success = sinon.spy(function() {
         def.then(failure);
         def.cancel();
       })
@@ -184,9 +180,7 @@ describe('Deferred', function() {
   describe('pipe', function() {
     
     it('should pipe deferred', function() {
-      success = chai.spy(function(value) {
-        expect(value).to.equal(12);
-      });
+      success = sinon.spy();
       var pipe1 = new Deferred();
       var pipe2 = new Deferred();
       def.pipe(function(value) {
@@ -198,7 +192,7 @@ describe('Deferred', function() {
       });
       pipe2.addCallback(success);
       def.resolve(10);
-      expect(success).to.have.been.called;
+      expect(success).to.have.been.calledWith(12);
     });
 
   });
@@ -231,9 +225,7 @@ describe('Deferred', function() {
     describe('whenAll', function() {
       
       it('should be resolved when all are resolved', function() {
-        success = chai.spy(function() {
-          expect(arguments).to.eql([['foo'], ['bar'], ['baz']]);
-        })
+        success = sinon.spy();
         var all = Deferred.whenAll(promises).then(success, failure);
         expect(all.isResolved()).to.be.false;
         promises[0].resolve('foo');
@@ -241,6 +233,7 @@ describe('Deferred', function() {
         promises[1].resolve('bar');
         expect(success).to.not.have.been.called;
         promises[2].resolve('baz');
+        expect(success).to.have.been.calledWith(['foo'], ['bar'], ['baz']);
         expect(all.isResolved()).to.be.true;
       });
 
@@ -249,15 +242,13 @@ describe('Deferred', function() {
     describe('whenSome', function() {
       
       it('should be resolved when some are resolved', function() {
-        success = chai.spy(function() {
-          expect(arguments).to.eql([['foo'], undefined, ['baz']]);
-        })
+        success = sinon.spy();
         var some = Deferred.whenSome(promises, 2).then(success, failure);
         expect(some.isResolved()).to.be.false;
         promises[0].resolve('foo');
         expect(success).to.not.have.been.called;
         promises[2].resolve('baz');
-        expect(success).to.have.been.called;
+        expect(success).to.have.been.calledWith(['foo'], undefined, ['baz']);
         expect(some.isResolved()).to.be.true;
       });
 
@@ -268,10 +259,8 @@ describe('Deferred', function() {
       var atl;
 
       beforeEach(function() {
-        success = chai.spy(function() {
-          expect(arguments).to.eql([[promises[2]], [promises[0], promises[1]]]);
-        });
-        failure = chai.spy();
+        success = sinon.spy();
+        failure = sinon.spy();
         atl = Deferred.whenAtLeast(promises).then(success, failure);
         expect(atl.isResolved()).to.be.false;
       });
@@ -282,7 +271,7 @@ describe('Deferred', function() {
         promises[2].resolve('bar');
         expect(success).to.not.have.been.called;
         promises[1].reject();
-        expect(success).to.have.been.called;
+        expect(success).to.have.been.calledWith([promises[2]], [promises[0], promises[1]]);
         expect(atl.isResolved()).to.be.true;
       });
 
@@ -302,9 +291,7 @@ describe('Deferred', function() {
       var map;
 
       beforeEach(function() {
-        success = chai.spy(function() {
-          expect(arguments).to.eql([['foo1_bar', 'foo2_bar', 'foo3_bar']])
-        });
+        success = sinon.spy();
         map = Deferred.whenMap(promises, function(value) {
           return value + '_bar';
         }).then(success);
@@ -314,7 +301,7 @@ describe('Deferred', function() {
         promises[0].resolve('foo1');
         promises[1].resolve('foo2');
         promises[2].resolve('foo3');
-        expect(success).to.have.been.called;
+        expect(success).to.have.been.calledWith(['foo1_bar', 'foo2_bar', 'foo3_bar']);
       });
     });
 
