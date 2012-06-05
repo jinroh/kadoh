@@ -25,7 +25,7 @@
       , "socket.io-client" : "https://github.com/substack/socket.io-client/tarball/master"
       , "mustache"         : "~0.4"
       , "browserify"       : "https://github.com/alexstrat/node-browserify/tarball/for-kadoh"
-      , "ignorify"         : "*"
+      , "tagify"           : "*"
       , "Strophe.js"       : "https://github.com/alexstrat/strophejs/tarball/for-kadoh"
     },
     "scripts": {
