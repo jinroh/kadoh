@@ -13,7 +13,13 @@ var app = connect.createServer()
 
 var server = exports.server = http.createServer(app);
 
-proxy = require('../../lib/server/udpproxy').listen(server);
+proxy = require('dgram-browserify').listen(server, {
+  port_range : [8000, 8010],
+  'socket.io' : {
+    'log level' : 1,
+    transports : ['xhr-polling']
+  }
+});
 
 if(require.main === module) {
   server.listen(8080);
