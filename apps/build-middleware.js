@@ -1,9 +1,8 @@
-var build = require('./build.js'),
-    browserify = require('browserify'),
+var browserify = require('browserify'),
     tagify = require('tagify'),
     url   = require('url');
 
-var lib = require('path').resolve(__dirname,'..');
+var lib = require('path').resolve(__dirname,'../lib');
 
 module.exports = function(options) {
   options = options || {};

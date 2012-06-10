@@ -1,7 +1,7 @@
 var connect = require('connect'),
     http    = require('http'),
     path    = require('path'),
-    KadOH   = require('../../lib/server/build-middleware.js');
+    KadOH   = require('../build-middleware.js');
 
 var app = connect.createServer()
                  .use('/'      , connect.static(__dirname))
