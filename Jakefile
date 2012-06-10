@@ -109,20 +109,22 @@ namespace('build', function() {
 
   function build(type, debug) {
     return function() {
+      var browserify = require('browserify');
+      var tagify = require('tagify');
+
       process.stdout.write('Building '+type);
 
-      var builder = require('./lib/server/build.js')({
-        debug : debug || false,
-        transport : type
-      });
+      var build = browserify({debug : debug});
+      build.use(tagify.flags([type, 'lawnchair']));
+      build.addEntry(LIB_DIR+'index-browserify.js');
 
       fs.writeFileSync(
         DIST_DIR+'KadOH.'+type+'.js',
-        builder.bundle()
+        build.bundle()
       );
 
       process.stdout.write(checked);
-    }
+    };
   }
 
   desc('Building the brower-side code with xmpp configuration');
