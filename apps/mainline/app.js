@@ -9,7 +9,6 @@ var app = connect.createServer()
                               transport : 'simudp',
                               storage   : 'basic'
                             }))
-                 .use('/jquery', connect.static(path.join(__dirname, '../..', 'lib/ext/jquery')))
                  .use('/UI'    , connect.static(path.join(__dirname, '../..', 'UI')));
 
 var server = exports.server = http.createServer(app);

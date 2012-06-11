@@ -8,7 +8,6 @@ var app = connect.createServer()
                  .use(KadOH({
                               transport : 'simudp'
                             }))
-                 .use('/jquery', connect.static(path.join(__dirname, '../..', 'lib/ext/jquery')))
                  .use('/UI'    , connect.static(path.join(__dirname, '../..', 'UI')));
 
 var server = exports.server = http.createServer(app);
