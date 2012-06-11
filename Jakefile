@@ -4,8 +4,6 @@ var DIST_DIR    = __dirname + '/dist/';
 var JsDoc3_CONF = __dirname + '/doc/JsDocConf.json';
 var JsDoc3_EXEC = __dirname + '/doc/jsdoc3/jsdoc';
 
-var BUILD_CONF_FILE = __dirname + '/build.json';
-
 var UI_FILES = {
   mainline : {
     conf  : __dirname + '/apps/mainline/conf.json',
