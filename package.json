@@ -1,5 +1,5 @@
 {
-    "name": "KadOH"
+    "name": "kadoh"
   , "version": "0.1.0"
   , "description": "Kademlia over HTTP in Javascript"
   , "keywords":["p2p", "kad", "kademlia", "dht", "mainline", "bittorrent", "http", "xmpp", "bosh", "udp", "socket.io"]
@@ -11,6 +11,8 @@
         "type": "git"
       , "url": "https://github.com/jinroh/kadoh.git"
     }
+  , "main" : "./lib/index.js"
+  , "browserify" : "./lib/index-browserify.js"
   , "dependencies": {
         "colors"           : "~0.6"
       , "connect"          : "~2.0"
