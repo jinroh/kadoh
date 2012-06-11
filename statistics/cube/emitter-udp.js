@@ -1,6 +1,6 @@
 var util = require("util"),
     dgram = require("dgram"),
-    log = require("../../logging").ns("cube-udp");
+    log = require("../../lib/logging").ns("cube-udp");
 
 module.exports = function(protocol, host, port) {
   var emitter = {},

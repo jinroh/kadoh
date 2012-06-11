@@ -1,7 +1,7 @@
 var HEARTBEAT_INTERVAL = 55 * 1000;
 
 var emitter  = require('./emitter')('collector.kadoh.fr.nf');
-var distance = require('../../util/crypto').distance;
+var distance = require('../../lib/util/crypto').distance;
 
 var events = {
   node : {
