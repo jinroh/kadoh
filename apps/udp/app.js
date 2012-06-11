@@ -1,14 +1,13 @@
 var connect = require('connect'),
     http    = require('http'),
     path    = require('path'),
-    KadOH   = require('../../lib/server/build-middleware.js');
+    KadOH   = require('../build-middleware.js');
 
 var app = connect.createServer()
                  .use('/'      , connect.static(__dirname))
                  .use(KadOH({
                               transport : 'simudp'
                             }))
-                 .use('/jquery', connect.static(path.join(__dirname, '../..', 'lib/ext/jquery')))
                  .use('/UI'    , connect.static(path.join(__dirname, '../..', 'UI')));
 
 var server = exports.server = http.createServer(app);

@@ -9,13 +9,11 @@ describe('Value Store', function() {
 
   var VS = require('../lib/data/value-store'),
       globals = require('../lib/globals'),
-      randomSHA1 = require('../lib/util/crypto').digest.randomSHA1;
-
-  var node = new Peer('foo@bar', '8ba5c4acf388e17a1a8a5364b14ee48c2cb29b01'),
+      randomSHA1 = require('../lib/util/crypto').digest.randomSHA1,
       v;
   
   beforeEach(function(){
-    v = new VS(node, {recover : false, delayedRep : false});
+    v = new VS('store_name', {recover : false, delayedRep : false});
   });
 
   afterEach(function(){

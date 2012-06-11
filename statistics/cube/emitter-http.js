@@ -1,6 +1,6 @@
 var util = require("util"),
     http = require("http"),
-    log = require("../../logging").ns("cube-http");
+    log = require("../../lib/logging").ns("cube-http");
 
 module.exports = function(protocol, host, port) {
   var emitter = {},
