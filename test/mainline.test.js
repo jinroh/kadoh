@@ -21,13 +21,13 @@ describe('mainline protocol', function() {
 
     it('should encode a ping request', function() {
       var encoded = mainline.encode(ping.request);
-      expect(encoded.toString('hex')).to.be.equal(ping_req);
+      expect(mainline.decode(encoded)).to.be.deep.equal(ping.request);
     });
 
     it('should encode a ping response', function() {
       var encoded = mainline.encode(ping.response);
-      expect(encoded.toString('hex')).to.be.deep.equal(ping_res);
-      });
+      expect(mainline.decode(encoded)).to.be.deep.equal(ping.response);
+    });
     
     it('should decode a ping request', function() {
       var decoded = mainline.decode(new Buffer(ping_req, 'hex'));
@@ -56,12 +56,12 @@ describe('mainline protocol', function() {
 
     it('should encode a findnode request', function() {
       var encoded = mainline.encode(findnode.request);
-      expect(encoded.toString('hex')).to.be.equal(findnode_req);
+      expect(mainline.decode(encoded)).to.be.deep.equal(findnode.request);
     });
 
     it('should encode a findnode response', function() {
       var encoded = mainline.encode(findnode.response);
-      expect(encoded.toString('hex')).to.be.equal(findnode_res);
+      expect(mainline.decode(encoded)).to.be.deep.equal(findnode.response);
     });
     
     it('should decode a findnode request', function() {
