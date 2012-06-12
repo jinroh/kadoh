@@ -195,6 +195,14 @@ describe('Deferred', function() {
       expect(success).to.have.been.calledWith(12);
     });
 
+    it('should implicitely pipe arguments when no err/call-back', function() {
+      var implicit = sinon.spy();
+      var noop = function() {};
+      def.pipe(noop)
+         .addErrback(implicit);
+      def.reject(12);
+      expect(implicit).to.have.been.calledWith(12);
+    });
   });
 
   describe('when', function() {
