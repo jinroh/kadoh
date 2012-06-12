@@ -195,6 +195,29 @@ describe('Deferred', function() {
       expect(success).to.have.been.calledWith(12);
     });
 
+    it('should fall back to resolved chain', function(done) {
+      var def = new Deferred();
+      def.pipe(function() {}, function(error) {
+        return 1;
+      }).then(function(value) {
+        expect(value).to.equal(1);
+        done();
+      });
+      def.reject(new Error());
+    });
+
+    it('should stay in the rejected chain', function(done) {
+      var def = new Deferred();
+      var exception = new Error();
+      def.pipe(function() {}, function(error) {
+        return error;
+      }).then(function() {}, function(error) {
+        expect(error).to.eql(exception);
+        done();
+      });
+      def.reject(exception);
+    });
+
     it('should implicitely pipe arguments when no err/call-back', function() {
       var implicit = sinon.spy();
       var noop = function() {};
