@@ -133,16 +133,17 @@ KadOHui.Reactor.prototype = {
           html = [
           '<ul>',
             '<i>FOUND</i><br>',
-            '<li><b>Value : </b><code>'+args[0].value+'</code></li>',
+            '<li><b>Value : </b><code>'+args[1].value+'</code></li>',
             '<li><b>Expiration : </b>',
-                (args[0].exp<0) ?
+                (args[1].exp<0) ?
                 '<i>never</i>':
-                '<time rel=\'tooltip\' datetime=\''+(new Date(args[0].exp)).toISOString()+'\' data-placement=\'bottom\'>'+(new Date(args[0].exp).toString())+'</time>',
+                '<time rel=\'tooltip\' datetime=\''+(new Date(args[1].exp)).toISOString()+'\' data-placement=\'bottom\'>'+(new Date(args[1].exp).toString())+'</time>',
             '</li>',
           '</ul>'].join('\n');
         } else{
-          html = '<i>NOT FOUND</i><br>'+KadOHui.helper.peerTable(args[0], rpc.getTarget());
+          html = '<i>NOT FOUND</i>';
         }
+        html = html + '<br>' + KadOHui.helper.peerTable(args[0], rpc.getTarget())
         break;
       case 'STORE' : break;
       default: break;
