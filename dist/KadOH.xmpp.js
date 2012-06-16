@@ -124,13 +124,12 @@ require.alias = function (from, to) {
     
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
-  //    if (key.slice(0, basedir.length + 1) === basedir + '/') {
-  //        var f = key.slice(basedir.length);
-  //        require.modules[to + f] = require.modules[basedir + f];
-  //    }
-  //    else 
-        if (key === res) {
-            require.modules[to] = require.modules[res];
+        if (key.slice(0, basedir.length + 1) === basedir + '/') {
+            var f = key.slice(basedir.length);
+            require.modules[to + f] = require.modules[basedir + f];
+        }
+        else if (key === basedir) {
+            require.modules[to] = require.modules[basedir];
         }
     }
 };
@@ -345,194 +344,587 @@ exports.extname = function(path) {
 
 });
 
-require.define("/network/transport/strophe.js", function (require, module, exports, __dirname, __filename) {
-var StateEventEmitter = require('../../util/state-eventemitter'),
-    globals           = require('../../globals');
+require.define("/lib/node.js", function (require, module, exports, __dirname, __filename) {
+var StateEventEmitter  = require('./util/state-eventemitter'),
+    Deferred           = require('./util/deferred'),
+    Crypto             = require('./util/crypto'),
+    PeerArray          = require('./util/peerarray'),
+    XORSortedPeerArray = require('./util/xorsorted-peerarray'),
+    IterativeDeferred  = require('./util/iterative-deferred'),
+ 
+    globals            = require('./globals.js'),
 
-require('Strophe.js'); //available as Strophe global variable
-require('./strophe.disco.js');
-require('./strophe.rpc.js');
+    RoutingTable       = require('./dht/routing-table'),
+    Peer               = require('./dht/peer'),
+    BootstrapPeer      = require('./dht/bootstrap-peer'),
 
-var log = require('../../logging').ns('Transport');
+    Reactor            = require('./network/reactor'),
+    PingRPC            = require('./network/rpc/ping'),
+    FindNodeRPC        = require('./network/rpc/findnode'),
+    FindValueRPC       = require('./network/rpc/findvalue'),
+    StoreRPC           = require('./network/rpc/store'),
 
-Strophe.log = function(level, message) {
-  switch (level) {
-    case Strophe.LogLevel.WARN:
-      log.warn(message);
-      break;
-    case Strophe.LogLevel.ERROR:
-      log.error(message);
-      break;
-    case Strophe.LogLevel.FATAL:
-      log.fatal(message);
-      break;
-    default:
-      // log.debug(message);
-      break;
-  }
-};
+    ValueManagement    = require('./data/value-store');
+ 
 
-var $msg  = function(attrs) { return new Strophe.Builder('message',  attrs); };
-var $pres = function(attrs) { return new Strophe.Builder('presence', attrs); };
+var Node = module.exports = Peer.extend({
+  /**
+   * TODO : explicit the options..
+   *
+   *
+   * @param  {[type]} id      [description]
+   * @param  {[type]} options [description]
+   * @return {[type]}
+   */
+  initialize: function(id, options) {
+    // extends Peer
+    this.supr('non-defined', id || Crypto.digest.randomSHA1());
 
-var StropheTransport = module.exports = StateEventEmitter.extend({
+    //implements StateEventEmitter
+    for (var fn in StateEventEmitter.prototype) {
+      if (fn !== 'initialize') this[fn] = StateEventEmitter.prototype[fn];
+    }
+    StateEventEmitter.prototype.initialize.call(this);
 
-  initialize: function(host, options) {
-    this.supr();
+    this.setState('initializing');
 
-    this._host       = host || globals.BOSH_SERVER;
-    this._jid        = Strophe.getBareJidFromJid(options.jid) + '/' +
-                       (options.resource || globals.JID_RESOURCE);
-    this._password   = options.password;
-    this._connection = null;
+    // store config
+    var config = this.config = {};
+    for (var option in options) {
+      config[option] = options[option];
+    }
 
-    this.setState('disconnected');
-    if (!this._jid || !this._password)
-      throw new Error('No JID or password to connect');
+    // extracts bootstraps from the config object
+    if (!Array.isArray(config.bootstraps) || config.bootstraps.length === 0) {
+      throw new Error('no bootstrap to join the network');
+    } else {
+      this._bootstraps = config.bootstraps.map(function(address) {
+        return new BootstrapPeer(address);
+      });
+    }
+
+    // instantiate a routing table and listen to it
+    this._routingTable = new RoutingTable(this, config.routing_table);
+    this._routingTable.on(this.routingTableEvents, this);
+
+    // instantiate a reactor and listen to it
+    this._reactor = new Reactor(this, config.reactor);
+    this._reactor.register({
+      PING       : PingRPC,
+      FIND_NODE  : FindNodeRPC,
+      FIND_VALUE : FindValueRPC,
+      STORE      : StoreRPC
+    });
+    this._reactor.on(this.reactorEvents, this);
+
+    this.setState('initialized');
+  },
+  
+  /**
+   * Connect method : make the reactor connect.
+   * @public
+   *
+   * @param  {Function} [callback] - callback to be called when connected
+   * @param  {Object}   [context = this] - context of the callback
+   * @return {self}
+   */
+  connect: function(callback, context) {
+    if (this.stateIsNot('connected')) {
+      if (callback) {
+        this.once('connected', callback, context || this);
+      }
+      this._reactor.connectTransport();
+    }
+    return this;
   },
 
-  // @TODO: Using `attach()` instead of `connect()` when we can
-  // by storing the RID and SID in the localStorage for security
-  // and performance reasons...since it would be possible to have
-  // session persistence
-  // @see: Professional XMPP p.377
-  connect: function() {
-    var self = this;
-    this.setState('connecting', this._host, this._jid);
-
-    this._connection = new Strophe.Connection(this._host);
-
-    this._connection.rawInput = function(data) {
-      self.emit('data-in', data);
-    };
-
-    this._connection.rawOutput = function(data) {
-      self.emit('data-out', data);
-    };
-
-    var onConnect = function(status, error) {
-      switch (status) {
-        case Strophe.Status.CONNECTED:
-        case Strophe.Status.ATTACHED:
-          self._jid = self._connection.jid;
-          self._setConnCookies();
-          self._connection._notifyIncrementRid = function(rid) {
-            self._setConnCookies();
-          };
-          self.setState('connected', self._connection.jid);
-          break;
-        case Strophe.Status.DISCONNECTING:
-          self.setState('disconnecting');
-          break;
-        case Strophe.Status.DISCONNECTED:
-          self._deleteConnCookies();
-          self.setState('disconnected');
-          break;
-        case Strophe.Status.AUTHFAIL:
-        case Strophe.Status.CONNFAIL:
-          self._deleteConnCookies();
-          self.setState('failed', error);
-          break;
-        case Strophe.Status.ERROR:
-          throw error;
-        default:
-          return;
+  /**
+   * Disconnect method : make the reactor disconnect.
+   * @public
+   *
+   * @param  {Function} [callback] - callback to be called when connected
+   * @param  {Object}   [context = this] - context of the callback
+   * @return {self}
+   */
+  disconnect: function(callback, context) {
+    if (this.stateIsNot('disconnected')) {
+      if (callback) {
+        this.once('disconnected', callback, context || this);
       }
+      this._routingTable.stop();
+      this._reactor.disconnectTransport();
+    }
+    return this;
+  },
+
+  /**
+   * Joining process : do an iterative find node on our own ID,
+   * startying by contacting the peers passed as bootstraps.
+   * @public
+   *
+   * TODO : expose a public API.
+   *
+   * @param  {Function} callback   - called when bootstraps process ends
+   * @param  {Object}   context    - context of the callback
+   *
+   * @return {self} this
+   */
+  join: function(callback, context) {
+    // lookup process
+    var startLookup = function() {
+      this.emit('joining');
+      return this.iterativeFindNode(this);
     };
+    var noBootstrap = function() {
+      return new Error('no bootstrap');
+    };
+
+    // joining result
+    var success = function() {
+      this.emit('joined');
+    };
+    var failure = function() {
+      this.emit('join failed');
+    };
+
+    //ping the bootstraps
+    var pings = this._bootstraps.map(function(peer) {
+      return new PingRPC(peer);
+    });
+    this._reactor.sendRPC(pings);
+
+    context = context || this;
+    Deferred.whenAtLeast(pings)
+            .pipe(startLookup, noBootstrap, this)
+            .then(success, failure, this)
+            .then(callback, callback, context);
     
-    var prev_session = this._getConnCookies();
+    return this;
+  },
 
-    if(prev_session.sid !== null && prev_session.rid !== null) {
-      log.info('try connection attach');
-
-      this._connection.attach(this._jid, prev_session.sid, prev_session.rid,
-        function(status, error) {
-          if(status === Strophe.Status.ATTACHED) {
-            self._connection.send($pres().tree());
-
-            setTimeout(function() {
-              if(!self._connection.connected) {
-                log.info('Attach failed : trying normal connect');
-
-                self._connection.connect(self._jid, self._password, function(status, error) {
-                  if(status === Strophe.Status.CONNECTED) {
-                    self._connection.send($pres().tree());
-                  }
-                  onConnect(status, error);
-                });
-              }
-            }, 4000);
-            //self._connection.connect(self._jid, self._password, onConnect);
-          }
-          onConnect(status, error);
+  /**
+   * Get a value on the DHT providing the associated key.
+   *
+   * @public
+   * Public wrapper around #iterativeFindValue.
+   *
+   * Provided callback will be called with the found value
+   * or with null if not found.
+   *
+   * @param {String}   key       - key to find
+   * @param {Function} callback  - function to be called at end
+   * @param {Object}   [context] - context of callback
+   * @return {self}
+   */
+  get: function(key, callback, context) {
+    context = context || this;
+    this.iterativeFindValue(key).then(
+      function(kv) {
+        callback.call(context, kv.value);
+      }, function() {
+        callback.call(context, null);
       });
-    } else {
-      this._connection.connect(this._jid, this._password, function(status, error) {
-        if(status === Strophe.Status.CONNECTED) {
-          self._connection.send($pres().tree());
-        }
-        onConnect(status, error);
-      });
+    return this;
+  },
+
+  /**
+   * Put a given value on the DHT associated to the given key and
+   * with the given expiration time.
+   *
+   * @public
+   * Public wrapper around #iterativeStore.
+   *
+   * If the given key is `null` the associated key is set to the SHA1 of
+   * the value. Expiration time is not mandatory and set to infinite
+   * by default.
+   *
+   * An optional callback (with a context) can be provided and will be
+   * called with :
+   *   - 1st parameter : key associated to the value on the DHT
+   *   - 2nd parameter : number of peers that successfully stored the
+   *        value. If 0, the process has failed.
+   *
+   * @param {String || null}  key        - key or null if value by default SHA1(value)
+   * @param {*}               value      - value to store on the DHT
+   * @param {Date || Number}  [key]      - date of expiration of the key/value
+   * @param {Function}        [callback] - callback when the store process ends
+   * @param {Object}          [context]  - context of callback
+   * @return {self}
+   */
+  put: function(key, value, exp, callback, context) {
+    // if no exp, arguments sliding
+    if (typeof exp == 'function') {
+      exp = undefined;
+      callback = exp;
+      context = callback;
+    }
+
+    // default values
+    key = key || Crypto.digest.SHA1(String(value));
+    exp = exp || -1;
+    context = context || this;
+
+    this.iterativeStore(key, value, exp)
+        .then(function(key, peers) {
+          if (callback) callback.call(context, key, peers.size());
+        }, function() {
+          if (callback) callback.call(context, null, 0);
+        });
+    return this;
+  },
+  
+ //# INTERNAL EVENTS HANDLING
+
+  /**
+   * Reactions to events coming from the reactor.
+   * @type {Object}
+   */
+  reactorEvents : {
+
+    /**
+     * On `connected` event :
+     *   - save our address on the network
+     *   - state is `connected`
+     *
+     * @param  {String} address - Address of the node on the network
+     */
+    connected: function(address) {
+      this.setAddress(address);
+      if (typeof this._store == 'undefined') {
+        var store_name = ['KadOH', this.getID(), this.getAddress()].join('|');
+        this._store = new ValueManagement(store_name, this.config.value_management);
+        this._store.on(this.VMEvents, this);
+      }
+      this.setState('connected');
+    },
+
+    /**
+     * On `disconnected`, state becomes `disconnected`.
+     */
+    disconnected: function() {
+      this.setState('disconnected');
+    },
+
+    /**
+     * On `reached` peer, add it to routing table.
+     *
+     * @param  {Peer} peer - Peer that had been reached.
+     */
+    reached: function(peer) {
+      peer.touch();
+      this._routingTable.addPeer(peer);
+    },
+
+    /**
+     * On `queried` (means we received a RPC request), call
+     * the appopriate method to fullfill the RPC.
+     * @see #handle+`method_name`
+     *
+     * @param  {RPC} rpc - The received rpc
+     */
+    queried: function(rpc) {
+      if (!rpc.inProgress())
+        return;
+      this['handle' + rpc.getMethod()].call(this, rpc);
+    },
+
+    /**
+     * On `outdated` (means we received a response from a peer
+     * which ID seems to be different from the one in the routing table),
+     * update the ID in the routing table.
+     *
+     * @param  {Peer} peer - outdated peer
+     * @param  {String} id - new id
+     */
+    outdated: function(peer, id) {
+      this._routingTable.removePeer(peer);
+      peer.setID(id);
+      this._routingTable.addPeer(peer);
     }
   },
 
-  disconnect: function() {
-    this._connection.disconnect();
+  /**
+   * Handle an incoming PING RPC request :
+   * simply respond to it.
+   *
+   * @param  {PingRPC} rpc - the incoming RPC object
+   */
+  handlePING: function(rpc) {
+    rpc.resolve();
   },
 
-  send: function(to, message) {
-    if (this.stateIsNot('connected'))
-      throw new Error('XMPP transport layer not connected');
-    
-    this._connection.rpc.sendXMLElement(
-      message.getRPCID(),
-      to,
-      message.isRequest() ? 'set' : 'result',
-      message.stringify()
-    );
+  /**
+   * Handle an incoming FIND_NODE RPC request :
+   * fetch from the routing table the BETA closest
+   * peers (except the querying peer) to the
+   * targeted ID and respond to the rpc.
+   *
+   * @param  {FindNodeRPC} rpc - the inconming rpc object
+   */
+  handleFIND_NODE: function(rpc) {
+    rpc.resolve(this._routingTable.getClosePeers(rpc.getTarget(), globals.BETA, rpc.getQuerying()));
   },
 
-  listen: function(fn, context) {
-    if (this.stateIsNot('connected'))
-      throw new Error('XMPP transport layer not connected');
+  /**
+   * Handle an incoming FIND_VALUE request:
+   * - if we got the value, respond it.
+   * - if not, fetch the BETA closest peer, respond them.
+   *
+   * @param  {FindValueRPC} rpc - the incoming rpc oject
+   */
+  handleFIND_VALUE: function(rpc) {
+    var nodes = this._routingTable.getClosePeers(rpc.getTarget(), globals.BETA, rpc.getQuerying());
+    this._store.retrieve(rpc.getTarget())
+        .then(function(value, exp) {
+          rpc.resolve(nodes, {value : value, exp : exp});
+        }, function() {
+          rpc.resolve(nodes, null);
+        });
+  },
+
+  /**
+   * Handle an incoming STORE request :
+   * store the value in ValueManagement and respond.
+   *
+   * @param  {StoreRPC} rpc - the incoming rpc object.
+   */
+  handleSTORE: function(rpc) {
+    this._store.save(rpc.getKey(), rpc.getValue(), rpc.getExpiration())
+               .then(rpc.resolve, rpc.reject, rpc);
+  },
+
+  /**
+   * Reactions to events comming from the routing table.
+   * @type {Object}
+   */
+  routingTableEvents : {
+
+    /**
+     * On `refresh` (means a kbucket has not seen any fresh
+     * peers for a REFRESH_TIMEOUT time), do an titerative find node
+     * on a random ID in the KBucket range.
+     *
+     * @param  {KBucket} kbucket - Kbucket needing to be refreshed
+     */
+    refresh: function(kbucket) {
+      var random_sha = Crypto.digest.randomSHA1(this.getID(), kbucket.getRange());
+      this.iterativeFindNode(random_sha);
+    }
+  },
+
+  /**
+   * Reactions to event coming from the value management.
+   * @type {Object}
+   */
+  VMEvents : {
+
+    /**
+     * On `republish` (means a key-value needs to be republished
+     * on the network) : do an iterative store on it.
+     *
+     * @param  {String} key   - key
+     * @param  {Object} value - value
+     * @param  {Date | Number} exp   - expiration date
+     */
+    republish: function(key, value, exp) {
+      this.iterativeStore(key, value, exp);
+    }
+  },
+
+ //# ITERATIVE PROCESSES
+
+  /**
+   * Launch an iterative find node process.
+   *
+   * Return a deffered object :
+   *   - resolve :
+   *       {Peer}      peer  - peer found that have the targeted ID
+   *       {PeerArray} peers - reached peers during the iterative process
+   *   - reject :
+   *       {PeerArray} peers - reached peers during the iterative process
+   *
+   * @param  {Peer | String} peer - Peer or Node ID to find.
+   * @return {Deferred}
+   */
+  iterativeFindNode: function(target) {
+    target = (target instanceof Peer) ? target.getID() : target;
+
+    var send   = this.send(),
+        close  = this._routingTable.getClosePeers(target, globals.K),
+        init   = new XORSortedPeerArray(close, target),
+        lookup = new IterativeDeferred(init),
+        staled = false;
+
+    function map(peer) {
+      var rpc = new FindNodeRPC(peer, target);
+      send(rpc);
+      return rpc;
+    }
+
+    function reduce(peers, newPeers, map) {
+      peers.add(newPeers);
+      if (peers.newClosestIndex() >= 0 && peers.newClosestIndex() < globals.ALPHA) {
+        peers.first(globals.ALPHA, map);
+      }
+      return peers;
+    }
+
+    function end(peers, map, reached) {
+      if (staled) {
+        lookup.reject(new XORSortedPeerArray(reached, target));
+        return;
+      }
+
+      if (reached.length <= globals.ALPHA && peers.size() > 0) {
+        staled = true;
+        peers.first(globals.K, map);
+      } else {
+        lookup.resolve(new XORSortedPeerArray(reached, target));
+      }
+    }
+
+    // -- UI HACK
+    lookup._target = target;
+    this.emit('iterativeFindNode', lookup, close);
+
+    return lookup
+      .map(map)
+      .reduce(reduce, init)
+      .end(end);
+  },
+
+  /**
+   * Launch an iterative find value process.
+   *
+   * If succeed, it STOREs the value to the
+   * closest reached peer which didn't responded
+   * the value.
+   *
+   * Return a deffered object :
+   *   - resolve :
+   *       {Object}    keyValue - properties :
+   *                                `value` - the retrieved value
+   *                                `exp`   - the expiration date
+   *       {PeerArray} peers    - reached peers during the iterative process
+   *   - reject
+   *       {PeerArray} peers - reached peers during the iterative process
+   *
+   * @param  {String} key - targeted ID
+   * @return {Deferred}
+   */
+  iterativeFindValue: function(key) {
+    if (!globals.REGEX_NODE_ID.test(key)) {
+      throw new TypeError('non valid key');
+    }
+
+    var send   = this.send(),
+        close  = this._routingTable.getClosePeers(key, globals.K),
+        init   = new XORSortedPeerArray(close, key),
+        lookup = new IterativeDeferred(init),
+        staled = false;
+
+    function map(peer) {
+      var rpc = new FindValueRPC(peer, key);
+      send(rpc);
+      return rpc;
+    }
+
+    function reduce(peers, nodes, result, map, queried, reached) {
+      peers.add(nodes);
+      if (result) {
+        var index = (peers.newClosestIndex() > 0) ? 0 : 1;
+        var rpc = new StoreRPC(peers.getPeer(index), key, result.value, result.exp);
+        send(rpc);
+        lookup.resolve(result, new XORSortedPeerArray(reached, key));
+      } else {
+        if(peers.newClosestIndex() >= 0 && peers.newClosestIndex() < globals.ALPHA) {
+          peers.first(globals.ALPHA, map);
+        }
+      }
+      return peers;
+    }
+
+    function end(peers, map, reached) {
+      lookup.reject(new XORSortedPeerArray(reached, key));
+    }
+
+    // -- UI HACK
+    lookup._target = key;
+    this.emit('iterativeFindValue', lookup, close);
+
+    return lookup
+      .map(map)
+      .reduce(reduce, init)
+      .end(end);
+  },
+
+  /**
+   * Launch an iterative store process :
+   *   do an iterative find node on the key,
+   *   and send STORE RPCsto the K closest
+   *   reached peers.
+   *
+   * Return a deferred object that is resolved when
+   * at least one of the store RPC is resolved :
+   *   - resolve :
+   *       {String}    key   - key with wihich the value was stored
+   *       {PeerArray} peers - peers that resolved the store RPC
+   *       {PeerArray} peers_not - peers that did not resolved the store RPC
+   *   - reject
+   *       {PeerArray} peers_not - peers that did not resolved the store RPC
+   *
+   * @param  {String} key - key
+   * @param  {*} value - value to store on the network
+   * @param  {Date | Integer} [exp = never] - experiation date of the value
+   * @return {Deferred}
+   */
+  iterativeStore: function(key, value, exp) {
+    if (!globals.REGEX_NODE_ID.test(key)) {
+      throw new TypeError('non valid key');
+    }
     
-    context = context || this;
-    var handler = function(iq) {
-      fn.call(context, {
-        dst: iq.getAttribute('to'),
-        src: iq.getAttribute('from'),
-        msg: iq
+    function querieds(rpcs) {
+      return new PeerArray(rpcs.map(function(rpc) {
+        return rpc.getQueried();
+      }));
+    }
+
+    var def = new Deferred(),
+        send = this.send();
+
+    var stores = function(peers) {
+      var targets = peers.first(globals.K);
+      var rpcs = targets.map(function(peer) {
+        return send(new StoreRPC(peer, key, value, exp));
       });
-      return true;
+      Deferred.whenAtLeast(rpcs, 1)
+              .then(function(stored, notStored) {
+                def.resolve(key, querieds(stored), querieds(notStored));
+              }, function(stored, notStored) {
+                def.reject(querieds(notStored));
+              });
     };
-    this._connection.rpc.addXMLHandler(handler, context);
+
+    this.iterativeFindNode(key)
+        .then(stores, function() { def.reject(new PeerArray()); });
+
+    return def;
   },
 
-  _setConnCookies: function() {
-    var exp = (new Date((Date.now()+90*1000))).toGMTString();
-    document.cookie = '_strophe_sid_'+this._jid+'='+String(this._connection.sid)+'; expires='+exp;
-    document.cookie = '_strophe_rid_'+this._jid+'='+String(this._connection.rid)+'; expires='+exp;
-  },
-
-  _deleteConnCookies : function() {
-    document.cookie = '_strophe_sid_'+this._jid+'='+'foo'+'; expires=Thu, 01-Jan-1970 00:00:01 GMT';
-    document.cookie = '_strophe_rid_'+this._jid+'='+'bar'+'; expires=Thu, 01-Jan-1970 00:00:01 GMT';
-  },
-
-  _getConnCookies: function() {
-    var sid_match = (new RegExp('_strophe_sid_'+this._jid+"=([^;]*)", "g")).exec(document.cookie);
-    var rid_match = (new RegExp('_strophe_rid_'+this._jid+"=([^;]*)", "g")).exec(document.cookie);
-
-    return {
-      sid : (sid_match !== null) ? sid_match[1] : null,
-      rid : (rid_match !== null) ? rid_match[1] : null
+  /**
+   * Closure to proxy the reactor send method
+   */
+  send: function() {
+    var reactor = this._reactor;
+    return function() {
+      return reactor.sendRPC.apply(reactor, arguments);
     };
   }
 
 });
 });
 
-require.define("/util/state-eventemitter.js", function (require, module, exports, __dirname, __filename) {
+require.define("/lib/util/state-eventemitter.js", function (require, module, exports, __dirname, __filename) {
 var EventEmitter = require('./eventemitter');
 
 var StateEventEmitter = module.exports = EventEmitter.extend({
@@ -619,7 +1011,7 @@ var StateEventEmitter = module.exports = EventEmitter.extend({
 });
 });
 
-require.define("/util/eventemitter.js", function (require, module, exports, __dirname, __filename) {
+require.define("/lib/util/eventemitter.js", function (require, module, exports, __dirname, __filename) {
 var klass = require('klass');
 
 var Event = function(options) {
@@ -1036,13 +1428,977 @@ require.define("/node_modules/klass/klass.js", function (require, module, export
     context.klass = old
     return this
   }
-  context.klass = klass
+  //context.klass = klass
 
   return klass
 });
 });
 
-require.define("/globals.js", function (require, module, exports, __dirname, __filename) {
+require.define("/lib/util/deferred.js", function (require, module, exports, __dirname, __filename) {
+var StateEventEmitter = require('./state-eventemitter');
+
+
+//
+// Optimized event with memory for Deferreds
+//
+var DeferredEvent = function() {
+  this.callbacks = [];
+  this.args      = undefined;
+  this.disabled  = false;
+};
+
+DeferredEvent.prototype.addListener = function(listener, scope) {
+  if (this.fired()) {
+    listener.apply(scope, this.args);
+  } else {
+    this.callbacks.push({
+      listener : listener,
+      scope    : scope
+    });
+  }
+};
+
+DeferredEvent.prototype.removeListener = function(listener) {
+  var i = this.callbacks.length - 1;
+  for (; i >= 0; i--) {
+    if (this.callbacks[i].listener === listener) {
+      this.callbacks.splice(i, 1);
+    }
+  }
+};
+
+DeferredEvent.prototype.removeAllListeners = function() {
+  this.callbacks = [];
+};
+
+DeferredEvent.prototype.disable = function() {
+  this.addListener = this.removeListener = this.fire = function() {};
+  this.callbacks   = undefined;
+  this.disabled    = true;
+};
+
+DeferredEvent.prototype.fired = function() {
+  return (typeof this.args !== 'undefined');
+};
+
+DeferredEvent.prototype.fire = function(args) {
+  this.fire = function() {};
+  this.args = args;
+  var i = 0,
+      l = this.callbacks.length;
+  for (; i < l; i++) {
+    var callback = this.callbacks[i];
+    callback.listener.apply(callback.scope, args);
+  }
+  this.callbacks = undefined;
+};
+
+var Deferred = module.exports = StateEventEmitter.extend({
+  
+  initialize: function() {
+    this.supr();
+
+    this.addEvent('rejected', DeferredEvent);
+    this.addEvent('resolved', DeferredEvent);
+    this.addEvent('progress');
+    this.setStateSilently('progress');
+
+    if (arguments.length > 0) {
+      this.then.apply(this, arguments);
+    }
+  },
+
+  //
+  // Callbacks functions
+  //
+
+  then: function(callback, errback, progress) {
+    var context = arguments[arguments.length - 1];
+
+    if (typeof context === 'function')
+      context = this;
+
+    this.addCallback(callback, context)
+        .addErrback(errback,   context)
+        .addProgress(progress, context);
+
+    return this;
+  },
+
+  pipe: function() {
+    var deferred  = new Deferred(),
+        callbacks = arguments,
+        context   = arguments[arguments.length - 1];
+
+    if (typeof context === 'function')
+      context = this;
+
+    var pipes = ['resolve', 'reject', 'progress'].map(function(action, index) {
+      return (typeof callbacks[index] === 'function') ? function() {
+        var returned = callbacks[index].apply(context, arguments);
+        if (typeof returned === 'undefined') {
+          deferred[action]();
+        } else if (Deferred.isPromise(returned)) {
+          returned.then(deferred.resolve, deferred.reject, deferred.progress, deferred);
+        } else if (action !== 'progress') {
+          if (returned instanceof Error) {
+            deferred.reject(returned);
+          } else {
+            deferred.resolve(returned);
+          }
+        } else {
+          deferred[action](returned);
+        }
+      } : function() {
+        deferred[action].apply(deferred, arguments);
+      }
+      ;
+    });
+
+    this.then.apply(this, pipes);
+    return deferred;
+  },
+
+  always: function() {
+    this.addCallback.apply(this, arguments)
+        .addErrback.apply(this, arguments);
+
+    return this;
+  },
+
+  addCallback: function(callback, context) {
+    if (typeof callback === 'function')
+      this.on('resolved', callback, context || this);
+    return this;
+  },
+
+  addErrback: function(errback, context) {
+    if (typeof errback === 'function')
+      this.on('rejected', errback, context || this);
+    return this;
+  },
+
+  addProgress: function(progress, context) {
+    if (typeof progress === 'function')
+      this.on('progress', progress, context || this);
+    return this;
+  },
+
+  //
+  // Firing functions
+  //
+
+  resolve: function() {
+    this.disable('rejected');
+    this._complete('resolved', arguments);
+    return this;
+  },
+
+  reject: function() {
+    this.disable('resolved');
+    this._complete('rejected', arguments);
+    return this;
+  },
+
+  _complete: function(state, args) {
+    // Deactivate firing functions
+    var self = this;
+    this.resolve = this.reject = this.progress = function() {
+      return self;
+    };
+
+    // Free the progress event
+    this.disable('progress');
+    
+    // Fire the event chain
+    args = Array.prototype.slice.call(args);
+    args.unshift(state);
+    this.setState.apply(this, args);
+  },
+
+  progress: function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift('progress');
+    this.emit.apply(this, args);
+    return this;
+  },
+
+  //
+  // Helpers
+  //
+
+  getResolvePassedArgs: function() {
+    if (!this.isResolved()) {
+      throw new Error('not resolved');
+    } else {
+      return this._events.resolved.args;
+    }
+  },
+
+  getRejectPassedArgs: function() {
+    if (!this.isRejected()) {
+      throw new Error('not rejected');
+    } else {
+      return this._events.rejected.args;
+    }
+  },
+
+  isCompleted: function() {
+    return (
+      this.fired('resolved') ||
+      this.fired('rejected')
+    );
+  },
+
+  isResolved: function() {
+    return this.stateIs('resolved');
+  },
+
+  isRejected: function() {
+    return this.stateIs('rejected');
+  },
+
+  inProgress: function() {
+    return this.stateIs('progress');
+  },
+
+  cancel: function() {
+    this.disable('resolved');
+    this.disable('rejected');
+  }
+
+}).statics({
+  
+  /**
+   * Static function which accepts a promise object
+   * or any kind of object and returns a promise.
+   * If the given object is a promise, it simply returns
+   * the same object, if it's a value it returns a
+   * new resolved deferred object
+   *
+   * @param  {Object} promise Promise or value
+   * @return {Deferred}
+   */
+  when: function(promise) {
+    if (this.isPromise(promise))
+      return promise;
+
+    return new Deferred().resolve(promise);
+  },
+
+  //
+  // Inspired by when.js from Brian Cavalier
+  //
+  whenAtLeast: function(promises, toResolve) {
+    toResolve    = Math.max(1, Math.min(toResolve || 1, promises.length));
+
+    var deferred = new Deferred(),
+        promisesLeft = promises.length,
+        resolved = [],
+        rejected = [];
+
+    var finish = function() {
+      if (--promisesLeft === 0) {
+        if (resolved.length >= toResolve) {
+          deferred.resolve(resolved, rejected);
+        } else {
+          deferred.reject(resolved, rejected);
+        }
+      }
+    };
+
+    var failure = function() {
+      rejected.push(this);
+      finish();
+    };
+
+    var success = function() {
+      resolved.push(this);
+      finish();
+    };
+
+    for (var i = 0; i < promises.length; i++) {
+      Deferred.when(promises[i])
+              .then(success.bind(promises[i]), failure.bind(promises[i]), deferred.progress);
+    }
+    return deferred;
+  },
+  
+  whenAll: function(promises) {
+    return Deferred.whenSome(promises, promises.length);
+  },
+
+  whenSome: function(promises, toResolve) {
+    var results  = [],
+        deferred = new Deferred();
+
+    toResolve = Math.max(0, Math.min(toResolve, promises.length));
+    var success = function() {
+      var index = promises.indexOf(this);
+      results[index] = Array.prototype.slice.call(arguments);
+      if (--toResolve === 0) {
+        deferred.resolve.apply(deferred, results);
+      }
+    };
+
+    if (toResolve === 0) {
+      deferred.resolve.apply(deferred, results);
+    } else {
+      for (var i = 0; i < promises.length; i++) {
+        Deferred.when(promises[i])
+                .then(success.bind(promises[i]), deferred.reject, deferred.progress);
+      }
+    }
+    return deferred;
+  },
+
+  whenMap: function(promises, map) {
+    var results  = [],
+        deferred = new Deferred(),
+        total    = promises.length,
+        success;
+        
+    success = function() {
+      var index = promises.indexOf(this);
+      results[index] = map.apply(this, arguments);
+      if (--total === 0) {
+        deferred.resolve(results);
+      }
+    };
+
+    for (var i = 0, l = promises.length; i < l; i++) {
+      Deferred.when(promises[i])
+              .then(success.bind(promises[i]), deferred.reject, deferred.progress);
+    }
+    return deferred;
+  },
+
+  isPromise: function(promise) {
+    return promise && typeof promise.then === 'function';
+  }
+
+});
+});
+
+require.define("/lib/util/crypto.js", function (require, module, exports, __dirname, __filename) {
+/*
+ * Crypto-JS v2.5.3
+ * http://code.google.com/p/crypto-js/
+ * Copyright (c) 2011, Jeff Mott. All rights reserved.
+ * http://code.google.com/p/crypto-js/wiki/License
+ */
+
+var Crypto = module.exports = {
+  // Bit-wise rotate left
+  rotl: function (n, b) {
+    return (n << b) | (n >>> (32 - b));
+  },
+
+  // Bit-wise rotate right
+  rotr: function (n, b) {
+    return (n << (32 - b)) | (n >>> b);
+  },
+
+  // Swap big-endian to little-endian and vice versa
+  endian: function (n) {
+    // If number given, swap endian
+    if (n.constructor == Number) {
+      return Crypto.rotl(n, 8) & 0x00FF00FF | Crypto.rotl(n, 24) & 0xFF00FF00;
+    }
+
+    // Else, assume array and swap all items
+    for (var i = 0; i < n.length; i++)
+      n[i] = Crypto.endian(n[i]);
+    return n;
+  },
+
+  // Generate an array of any length of random bytes
+  randomBytes: function (n) {
+    for (var bytes = []; n > 0; n--)
+      bytes.push(Math.floor(Math.random() * 256));
+    return bytes;
+  },
+
+  // Convert a byte array to big-endian 32-bit words
+  bytesToWords: function (bytes) {
+    for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
+      words[b >>> 5] |= bytes[i] << (24 - b % 32);
+    return words;
+  },
+
+  // Convert big-endian 32-bit words to a byte array
+  wordsToBytes: function (words) {
+    for (var bytes = [], b = 0; b < words.length * 32; b += 8)
+      bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
+    return bytes;
+  },
+
+  // Convert a byte array to a hex string
+  bytesToHex: function (bytes) {
+    for (var hex = [], i = 0; i < bytes.length; i++) {
+      hex.push((bytes[i] >>> 4).toString(16));
+      hex.push((bytes[i] & 0xF).toString(16));
+    }
+    return hex.join("");
+  },
+
+  // Convert a hex string to a byte array
+  hexToBytes: function (hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+      bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+  },
+
+  /**
+   * Compares two bytes array and tell which
+   * one is greater than the other.
+   * It is possible to use this function with
+   * `Array.prototype.sort`
+   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort
+   *
+   * @param  {Array} a Bytes array
+   * @param  {Array} b Bytes array
+   * @return {-1|0|1}
+   */
+  compareBytes: function(a, b, xor) {
+    var i, l,
+        byte_a, byte_b;
+    if (typeof xor !== 'undefined') {
+      for (i = 0, l = a.length; i < l; i++) {
+        byte_a = a[i] ^ xor[i];
+        byte_b = b[i] ^ xor[i];
+        if (byte_a[i] > byte_b[i])      return 1;
+        else if (byte_a[i] < byte_b[i]) return -1;
+      }
+    } else {
+      for (i = 0, l = a.length; i < l; i++) {
+        if (a[i] > b[i])      return 1;
+        else if (a[i] < b[i]) return -1;
+      }
+    }
+    return 0;
+  },
+
+  compareHex: function(a, b, xor) {
+    var c, l,
+        byte_a, byte_b, byte_x;
+    if (typeof xor !== 'undefined') {
+      for (c = 0, l = a.length; c < l; c += 2) {
+        byte_x = parseInt(xor.substr(c, 2), 16);
+        byte_a = parseInt(a.substr(c, 2), 16) ^ byte_x;
+        byte_b = parseInt(b.substr(c, 2), 16) ^ byte_x;
+        if (byte_a > byte_b)      return 1;
+        else if (byte_a < byte_b) return -1;
+      }
+    } else {
+      for (c = 0, l = a.length; c < l; c += 2) {
+        byte_a = parseInt(a.substr(c, 2), 16);
+        byte_b = parseInt(b.substr(c, 2), 16);
+        if (byte_a > byte_b)      return 1;
+        else if (byte_a < byte_b) return -1;
+      }
+    }
+    return 0;
+  },
+
+  /**
+   * Return the position of the first different bit
+   * between two hexadecimal strings
+   *
+   * @param {String} hex1 the first hexadecimal string
+   * @param {String} hex2 the second hexadecimal string
+   * @return {Integer} the position of the bit
+   * @see http://jsperf.com/integral-binary-logarithm/3
+   */
+  distance: function(hex1, hex2, bytes) {
+    if (bytes === true) {
+      hex1 = Crypto.bytesToHex(hex1);
+      hex2 = Crypto.bytesToHex(hex2);
+    }
+
+    if (hex1 === hex2) {
+      return 0;
+    }
+
+    var length = hex1.length,
+        diff   = 0;
+    if (hex2.length !== length) {
+      throw new TypeError('different length string', hex1, hex2);
+    }
+
+    for (var c = 0; c < length; c+=2) {
+      diff = parseInt(hex1.substr(c, 2), 16) ^ parseInt(hex2.substr(c, 2), 16);
+      if (diff > 0)
+        return 4*(length - c) + Math.floor(Math.log(diff) / Math.LN2) - 7;
+    }
+    return 0;
+  }
+};
+
+
+Crypto.charenc = {};
+Crypto.charenc.Binary = {
+
+  // Convert a string to a byte array
+  stringToBytes: function (str) {
+    for (var bytes = [], i = 0; i < str.length; i++)
+    bytes.push(str.charCodeAt(i) & 0xFF);
+    return bytes;
+  },
+
+  // Convert a byte array to a string
+  bytesToString: function (bytes) {
+    for (var str = [], i = 0; i < bytes.length; i++)
+    str.push(String.fromCharCode(bytes[i]));
+    return str.join("");
+  }
+
+};
+
+Crypto.charenc.UTF8 = {
+
+  // Convert a string to a byte array
+  stringToBytes: function (str) {
+    return Crypto.charenc.Binary.stringToBytes(unescape(encodeURIComponent(str)));
+  },
+
+  // Convert a byte array to a string
+  bytesToString: function (bytes) {
+    return decodeURIComponent(escape(Crypto.charenc.Binary.bytesToString(bytes)));
+  }
+
+};
+
+// Digest (SHA1)
+
+Crypto.digest = {
+
+  SHA1: function(message) {
+    var digestbytes = Crypto.wordsToBytes(Crypto.digest._sha1(message));
+    return Crypto.bytesToHex(digestbytes);
+  },
+
+  randomSHA1: function(id, range) {
+    var bytes = [];
+    var index = 0;
+
+    if (id) {
+      var distance;
+      if (typeof range.min === 'number' &&
+          typeof range.max === 'number') {
+        distance = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+      }
+      else if (typeof range === 'number') {
+        distance = range;
+      }
+
+      if (distance && distance > 0) {
+        bytes = Crypto.hexToBytes(id);
+        index = Math.floor(20 - distance / 8);
+
+        var pow = (distance - 1) % 8;
+        var max = Math.pow(2, pow + 1) - 1;
+        var min = Math.pow(2, pow);
+        bytes[index] ^= Math.floor(Math.random() * (max - min + 1)) + min;
+        
+        index += 1;
+      }
+      else {
+        return id;
+      }
+    }
+
+    for (; index < 20; index++) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+    return Crypto.bytesToHex(bytes);
+  },
+
+  _sha1: function (message) {
+    // Convert to byte array
+    if (message.constructor == String) message = Crypto.charenc.UTF8.stringToBytes(message);
+
+    /* else, assume byte array already */
+    var m  = Crypto.bytesToWords(message),
+    l  = message.length * 8,
+    w  =  [],
+    H0 =  1732584193,
+    H1 = -271733879,
+    H2 = -1732584194,
+    H3 =  271733878,
+    H4 = -1009589776;
+
+    // Padding
+    m[l >> 5] |= 0x80 << (24 - l % 32);
+    m[((l + 64 >>> 9) << 4) + 15] = l;
+
+    for (var i = 0; i < m.length; i += 16) {
+
+      var a = H0,
+          b = H1,
+          c = H2,
+          d = H3,
+          e = H4;
+
+      for (var j = 0; j < 80; j++) {
+
+        if (j < 16) w[j] = m[i + j];
+        else {
+          var n = w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16];
+          w[j] = (n << 1) | (n >>> 31);
+        }
+
+        var t = ((H0 << 5) | (H0 >>> 27)) + H4 + (w[j] >>> 0) + (
+          j < 20 ? (H1 & H2 | ~H1 & H3) + 1518500249 :
+          j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
+          j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
+                   (H1 ^ H2 ^ H3) - 899497514);
+
+        H4 =  H3;
+        H3 =  H2;
+        H2 = (H1 << 30) | (H1 >>> 2);
+        H1 =  H0;
+        H0 =  t;
+
+      }
+
+      H0 += a;
+      H1 += b;
+      H2 += c;
+      H3 += d;
+      H4 += e;
+
+    }
+
+    return [H0, H1, H2, H3, H4];
+  }
+
+};
+});
+
+require.define("/lib/util/peerarray.js", function (require, module, exports, __dirname, __filename) {
+var klass   = require('klass'),
+    Peer    = require('../dht/peer');
+
+var PeerArray = module.exports = klass({
+
+  initialize: function(peers) {
+    this.array = [];
+    if (peers) {
+      this.add(peers);
+    }
+  },
+
+  //
+  // Mutator methods
+  //
+
+  add: function(peers) {
+    var that = this;
+    peers.forEach(function(peer) {
+      that.addPeer(peer);
+    });
+    return this;
+  },
+
+  addPeer: function(peer) {
+    peer = (peer instanceof Peer) ? peer : new Peer(peer);
+    if (!this.contains(peer)) {
+      this.array.push(peer);
+    }
+    return this;
+  },
+
+  remove: function(rmPeers) {
+    this.array = this.array.filter(function(peer) {
+      return rmPeers.every(function(rmPeer) {
+        return !(rmPeer.equals(peer));
+      });
+    });
+    return this;
+  },
+
+  removePeer: function (rmPeer) {
+    var index = this.find(rmPeer);
+    if (~index)
+      this.array.splice(index, 1);
+    
+    return this;
+  },
+
+  move: function(oldIndex, newIndex) {
+    if (newIndex < 0 || newIndex >= this.size())
+      throw new RangeError('new index out of range');
+
+    this.array.splice(newIndex, 0, this.array.splice(oldIndex, 1)[0]);
+    return this;
+  },
+
+  sort: function(compareFn) {
+    this.array.sort(compareFn);
+    return this;
+  },
+
+  //
+  // Accessor Methods
+  //
+
+  toArray: function() {
+    return this.array;
+  },
+
+  getTripleArray: function() {
+    return this.array.map(function(peer) {
+      return peer.getTriple();
+    });
+  },
+
+  getPeer: function(index) {
+    if (index instanceof Peer) {
+      index = this.find(index);
+      if (index === -1)
+        throw new ReferenceError('this peer does not exist');
+    } else {
+      if (index < 0 || index >= this.size())
+        throw new RangeError(index + ' out of range');
+    }
+    return this.array[index];
+  },
+
+  size: function() {
+    return this.array.length;
+  },
+
+  find: function(peer) {
+    var i = this.array.indexOf(peer);
+    if (~i) {
+      return i;
+    } else {
+      var l = this.size();
+      for (i = 0; i < l; i++)
+        if (peer.equals(this.array[i]))
+          return i;
+    }
+    return -1;
+  },
+
+  contains: function(sample) {
+    if (sample instanceof Peer) {
+      return (this.find(sample) !== -1);
+    }
+
+    var that = this;
+    return sample.every(function(samplePeer) {
+      return that.array.some(function(peer) {
+        return peer.equals(samplePeer);
+      });
+    });
+  },
+
+  equals: function(peers) {
+    peers = (peers instanceof PeerArray) ? peers : (new PeerArray(peers));
+    return this.contains(peers) && peers.contains(this);
+  },
+
+  empty: function() {
+    return this.array.length === 0;
+  },
+
+  join: function(separator) {
+    return this.array.join(separator);
+  },
+
+  clone: function(array) {
+    if (array || array === null) {
+      var clone = new this.constructor();
+      clone.array = array || [];
+      for (var prop in this) {
+        if (this.hasOwnProperty(prop) && !Array.isArray(this[prop]))
+          clone[prop] = this[prop];
+      }
+      return clone;
+    } else {
+      return this.clone(this.array.slice());
+    }
+  },
+
+  union: function(peers) {
+    return this.clone().add(peers);
+  },
+
+  difference: function(peers) {
+    var clone = this.clone();
+    if (peers instanceof Peer) {
+      clone.removePeer(peers);
+    } else {
+      clone.remove(peers);
+    }
+    return clone;
+  },
+
+  first: function(number, iterator) {
+    if (!number) {
+      number = 1;
+    } else if (typeof number === 'function') {
+      iterator = number;
+      number = 1;
+    }
+
+    if (iterator) {
+      var clone = this.clone(null),
+          i = 0, r = 0, l = this.size();
+      while (r < number && i < l) {
+        if (iterator.call(null, this.array[i]) === true) {
+          clone.addPeer(this.array[i]);
+          r++;
+        }
+        i++;
+      }
+      return clone;
+    } else {
+      return this.clone(this.array.slice(0, number));
+    }
+  },
+
+  //
+  // Iteration methods
+  //
+
+  forEach: function(iterator, context) {
+    this.array.forEach(iterator, context);
+    return this;
+  },
+
+  map: function(iterator, context) {
+    return this.array.map(iterator, context);
+  },
+
+  reduce: function(iterator, context) {
+    return this.array.reduce(iterator, context);
+  },
+
+  filter: function(iterator, context) {
+    return this.clone(this.array.filter(iterator, context));
+  },
+
+  some: function(iterator, context) {
+    return this.array.some(iterator, context);
+  },
+
+  every: function(iterator, context) {
+    return this.array.every(iterator, context);
+  },
+
+  // -- DEPRECATED --
+  sendThemFindRPC : function(iter_lookup) {
+    iter_lookup.sendFindRPC(this);
+    return this;
+  }
+
+});
+});
+
+require.define("/lib/dht/peer.js", function (require, module, exports, __dirname, __filename) {
+var klass   = require('klass'),
+    Crypto  = require('../util/crypto'),
+    globals = require('../globals');
+
+var Peer = module.exports = klass({
+
+  /**
+   * Peer constructor
+   *
+   * @param {String|Array} address Address of the Peer or tuple representation
+   * @param {String}       id      ID of the Peer
+   */
+  initialize: function() {
+    var args  = arguments;
+
+    if (Array.isArray(args[0])) {
+      args  = args[0];
+    }
+
+    this.touch();
+    this._distance = null;
+    this._address  = args[0];
+    this._id       = args[1];
+
+    if (!this._validateID(this._id)) {
+      throw new Error('non valid ID');
+    }
+  },
+
+  //
+  // Public
+  //
+
+  touch: function() {
+    this._lastSeen = new Date().getTime();
+    return this;
+  },
+
+  setID: function(id) {
+    this._id = id;
+  },
+
+  setAddress: function(address) {
+    this._address = address;
+  },
+
+  getLastSeen: function() {
+    return this._lastSeen;
+  },
+
+  getID: function() {
+    return this._id;
+  },
+
+  cacheDistance: function(id) {
+    this._distance = this._distance || this.getDistanceTo(id);
+    return this;
+  },
+
+  getDistance: function() {
+    return this._distance;
+  },
+
+  getDistanceTo: function(id) {
+     return Crypto.distance(this.getID(), id);
+  },
+
+  getAddress: function() {
+    return this._address;
+  },
+
+  getTriple: function() {
+    return [this._address, this._id];
+  },
+
+  equals: function(peer) {
+    return (this._id === peer.getID());
+  },
+
+  toString: function() {
+    return '<' + this._address + '#' + this._id + '>';
+  },
+
+  //
+  // Private
+  //
+
+  _validateID: function(id) {
+    return typeof id === 'string' && globals.REGEX_NODE_ID.test(id);
+  },
+
+  _generateID: function() {
+    //return globals.DIGEST(this._address);
+    return Crypto.digest.randomSHA1();
+  }
+
+});
+});
+
+require.define("/lib/globals.js", function (require, module, exports, __dirname, __filename) {
 module.exports = {
 
   // Maximum number of contacts in a k-bucket
@@ -1094,7 +2450,7 @@ module.exports = {
   // ...
   BOSH_SERVER: 'http://bosh.melo.fr.nf/http-bind',
 
-  // Default protocol: jsonrpc2, xmlrpc, ...
+  // Default protocol: jsonrpc2, xmlrpc, ...
   PROTOCOL: 'xmlrpc',
 
   // Interval for cleanup of the Reactor's RPCs in milliseconds
@@ -1110,6 +2466,2704 @@ module.exports = {
   JID_RESOURCE: 'kadoh'
 
 };
+});
+
+require.define("/lib/util/xorsorted-peerarray.js", function (require, module, exports, __dirname, __filename) {
+var SortedPeerArray = require('./sorted-peerarray'),
+    Crypto          = require('./crypto');
+    Peer            = require('../dht/peer')
+
+var XORSortedPeerArray = module.exports = SortedPeerArray.extend({
+  
+  initialize: function(peers, relative) {
+    if (relative) {
+      this.setRelative(relative);
+    }
+    this.supr(peers);
+  },
+
+  setRelative: function(relative) {
+    this._relative = (relative instanceof Peer) ? relative.getID() : relative;
+    return this;
+  },
+
+  _insertionSort: function(newPeer) {
+    if (!this._relative) throw new Error('no relative node id');
+    return this.supr(newPeer);
+  },
+
+  compareFn: function(a, b) {
+    if (!a && !b) return 0;
+    if (!a) return 1;
+    if (!b) return -1;
+    return Crypto.compareHex(a.getID(), b.getID(), this._relative);
+  }
+
+});
+});
+
+require.define("/lib/util/sorted-peerarray.js", function (require, module, exports, __dirname, __filename) {
+var PeerArray = require('./peerarray'),
+    Peer      = require('../dht/peer');
+
+var SortedPeerArray = module.exports = PeerArray.extend({
+  
+  initialize: function(peers) {
+    this._newClosestIndex = -1;
+    this.supr(peers);
+  },
+
+  add: function(peers) {
+    var newIndex = Infinity;
+    peers.forEach(function(peer) {
+      var index = this._insertionSort(peer);
+      if (index !== -1) {
+        newIndex = Math.min(newIndex, index);
+      }
+    }, this);
+    this._newClosestIndex = isFinite(newIndex) ? newIndex : -1;
+    return this;
+  },
+
+  addPeer: function(peer) {
+    this._newClosestIndex = this._insertionSort(peer);
+    return this;
+  },
+
+  sort: function() {
+    this.supr(this.compareFn);
+  },
+
+  compare: function(compare) {
+    this.compareFn = compare;
+    return this;
+  },
+
+  newClosest: function() {
+    return this._newClosestIndex === 0;
+  },
+
+  newClosestIndex: function() {
+    return this._newClosestIndex;
+  },
+
+  _insertionSort: function(peer) {
+    if (!(peer instanceof Peer)) {
+      peer = new Peer(peer);
+    }
+    var i = -1, diff = 0, l = this.size();
+    do {
+      diff = this.compareFn(peer, this.array[++i]);
+      if (diff === 0) return -1;
+    } while (diff > 0 && i < l);
+
+    this.array.splice(i, 0, peer);
+    return i;
+  },
+
+  compareFn: function(a, b) {
+    return a - b;
+  }
+
+});
+});
+
+require.define("/lib/util/iterative-deferred.js", function (require, module, exports, __dirname, __filename) {
+var Deferred  = require('./deferred');
+
+var IterativeDeferred = module.exports = Deferred.extend({
+  initialize: function(to_map) {
+    this.supr();
+    this.to_map = to_map;
+    this._started = false;
+
+    this._onFly = 0;
+    this._mapped = [];
+    this._resolved = [];
+    this._rejected = [];
+    this._reduceBuffer = [];
+    this._endShouldBeLaunched = false;
+  },
+
+  /**
+   * Functional programming: easy setter for the map function.
+   *
+   *   | The map function, to be defined: should map a key to a deferred object.
+   *   | Should return a deferred object that will be registered: the iterative
+   *   | process won't stop until all registered deferred are completed or a
+   *   | manual intervention.
+   *   |
+   *   | If the key has already been mapped, the mapping will be ignored. To test
+   *   | equality between key, @see #equalTestFn.
+   *   |
+   *   | @param  {object} key - key to map to a Deferred
+   *   | @return {undefined | Deferred} mapped Deferred
+   *
+   * @param  {Function} mapFn [description]
+   */
+  map: function(mapFn) {
+    this.mapFn = mapFn;
+
+    //directly start if anything to map
+    if (this.to_map)
+      this.start();
+    return this;
+  },
+
+  /**
+   * Set itinial reduce value.
+   *
+   * @param  {*} init_value
+   */
+  init: function(init_value) {
+    this._currentReduceResult = init_value;
+    return this;
+  },
+
+  /**
+   * Functional programming: easy setter for the reduce function:
+   *
+   *   | The reduce function, to be defined: should combine resolved result from
+   *   | mapped deferred and the previous reduce result. It can feed the mapping
+   *   | process with keys to map, by calling the map argument function.
+   *   | If the deferred resolved multiple arguments, the additional arguments are
+   *   | present.
+   *   | At any moment the iterative process can be stopped manually just by
+   *   | completing the working process as deferred: simply call `this.resolve` or
+   *   | `this.reject`.
+   *   | The end arguments key, resolved and rejected are if needed to decide the
+   *   | reduce process.
+   *   | @param  {*}     previous - previously returned by the reduce function
+   *   | @param  {*}       result - the result resolved by the mapped Deferred
+   *   | @param  {*} [additional] - if the resolve callback was called with multiple
+   *   |                            arguments, additional arguments are present
+   *   | @param  {function}   map - use this function to feed the mapping process with
+   *   |                            new keys
+   *   | @param  {object}     key - original mapping key whose deferred produced the
+   *   |                            given resolved result
+   *   | @param  {array} resolved - array of keys which mapped Deferred have been resolved
+   *   | @param  {array} rejected - array of keys which mapped Deferred have been rejected
+   *   | @return {*} reduce result
+   *
+   * @param {function} reduceFn -  see above
+   * @param {*}    initialValue - initial reduce value
+   */
+  reduce: function(reduceFn, initialValue) {
+    this.reduceFn = reduceFn;
+
+    if (initialValue)
+      this.init(initialValue);
+
+    //if waiting reduces in buffer, empty it :
+    while (this._reduceBuffer.length >0) {
+      var args = this._reduceBuffer.shift();
+      this._launchReduce.apply(this, args);
+    }
+
+    return this;
+  },
+
+  /**
+   * Functionnal programming: easy setter for the end function.
+   *
+   *   | The end function, will be called when the iterative process ends, ie. there
+   *   | is no more uncompleted mapped Deferred and all reduce processes are finished.
+   *   |
+   *   | The end function should complete the process by calling `this.resolve` or
+   *   | `this.reject`. If this is not done, the process will be automatically resolved.
+   *   |
+   *   | @param {*} reduce_result - what finally came out the reduce process
+   *   | @param {function}    map - use this function to feed the mapping process with
+   *   |                            new keys if you want to relaunch the process again
+   *   | @param {array}  resolved - array of keys which mapped Deferred have been resolved
+   *   | @param {array}  rejected - array of keys which mapped Deferred have been rejected
+   *
+   * @param  {function} endFn [description]
+   */
+  end: function(endFn) {
+    this.endFn = endFn;
+
+    //it's over : launch immediatly end
+    if (this._endShouldBeLaunched)
+      this._launchEnd();
+
+    return this;
+  },
+
+  /**
+   * Start the iterative map/reduce given the this array of
+   * map consumable.
+   *
+   * @param  {Array<key>} array [description]
+   */
+  start: function(array) {
+    if (this._started)
+      return this;
+    this._started = true;
+
+    if (array)
+      this.to_map = array;
+
+    var to_map = this.to_map;
+    var length = to_map.length || to_map.size();
+    if (length !== 0) {
+      //go !
+      this.to_map.forEach(function(key) {
+        this._launchMap(key);
+      }, this);
+    } else {
+      this._launchEnd();
+    }
+    return this;
+  },
+
+  /**
+   * Test the equality of 2 keys.
+   *
+   * Used to determine if a key has already been mapped. Use an #equals method if
+   * present. Else use the result of `===`.
+   *
+   * @param  {*} key1
+   * @param  {*} key2
+   * @return {boolean} result
+   */
+  equalTestFn: function(key1, key2) {
+    return (typeof key1.equals === 'function') ?
+            key1.equals(key2)
+          : key1 === key2;
+  },
+
+  _launchMap: function(key) {
+
+    //if the key has alreday been mapped
+    var already = this._mapped.some(function(key2) {
+      return this.equalTestFn(key, key2);
+    }, this);
+
+    if (already) {
+      return false;
+    }
+
+    this._mapped.push(key);
+
+    //call the map function and get the deferred
+    var def = this.mapFn(key);
+
+    if (!def) return true;
+    def = Deferred.when(def);
+
+    //we've got a new deferred on the fly
+    this._onFly ++;
+
+    function callback() {
+      this._onFly --;
+      if (!this.isCompleted()) {
+        //add to resolved
+        this._resolved.push(key);
+        //reduce result
+        this._launchReduce(key, arguments);
+      }
+    }
+
+    function errback() {
+      this._onFly --; 
+      if (!this.isCompleted()) {
+        //add to rejected
+        this._rejected.push(key);
+        //end ?
+        this._checkFinish();
+      }
+    }
+
+    //on deferred resolve or reject, decrement
+    def.then(callback, errback, this);
+    return true;
+  },
+
+  _launchReduce: function(key, result) {
+    //if the reduce function is not yet defined, put in a buffer for later
+    if (!this.reduceFn) {
+      this._reduceBuffer.push(arguments);
+      return;
+    }
+
+    var reduce_args = [],
+        i, l, that = this;
+
+    //add previous reduce result
+    reduce_args.push(this._currentReduceResult);
+    //add resolve result of the mapped deferred
+    for (i = 0, l = result.length; i < l; i++) { reduce_args.push(result[i]); }
+    reduce_args.push(function map(key) {
+      return that._launchMap(key);
+    });
+    //add the key that produced result
+    reduce_args.push(key);
+    //add current resolved key
+    reduce_args.push(this._resolved);
+    //add current rejected key
+    reduce_args.push(this._rejected);
+
+    //call reduce
+    this._currentReduceResult = this.reduceFn.apply(this, reduce_args);
+
+    //end ?
+    this._checkFinish();
+  },
+
+  _launchEnd: function() {
+    this._endShouldBeLaunched = true;
+
+    if (this.endFn) {
+      var toMap = [];
+      var map = function(key) { toMap.push(key); };
+      this.endFn(this._currentReduceResult, map, this._resolved, this._rejected);
+
+      // if we have to relaunch a mapping
+      if (toMap.length) {
+        for (var i = 0, l = toMap.length; i < l; i++) {
+          this._launchMap(toMap[i]);
+        }
+      } else if (!this.isCompleted()) {
+        //force the completion of the process if endFn didn't do it
+        this.resolve(this._currentReduceResult);
+      }
+      
+    }
+  },
+
+  _checkFinish: function() {
+    if (this._onFly === 0 && this._reduceBuffer.length === 0 && !this.isCompleted()) {
+      this._launchEnd();
+    }
+  }
+});
+});
+
+require.define("/lib/dht/routing-table.js", function (require, module, exports, __dirname, __filename) {
+var EventEmitter      = require('../util/eventemitter'),
+    Crypto            = require('../util/crypto'),
+    globals           = require('../globals.js'),
+    
+    KBucket           = require('./kbucket'),
+    Peer              = require('./peer'),
+    PeerArray         = require('../util/peerarray'),
+
+    log               = require('../logging').ns('RoutingTable');
+
+
+/**
+ * Represents the routing table of a {@link Node}.
+ * @name RoutingTable
+ * @augments EventEmitter
+ * @class
+ */
+var RoutingTable = module.exports = EventEmitter.extend(
+  /** @lends RoutingTable# */
+  {
+  /**
+   * Construct an instance of a {@link RoutingTable} associated to the instance of {@link Node} passed as parameter.
+   * @xclass Represents the routing table of a {@link Node}.
+   * @xaugments EventEmitter
+   * @constructs
+   * @param {Node} node - Associated node.
+   */
+  initialize: function(node) {
+    this.supr();
+    this._node = node;
+    this._parentID = ('string' === typeof node) ? node : node.getID();
+    this._kbuckets = [new KBucket(this)];
+  },
+
+  // Public
+
+  /**
+   * Start the routing table engine :
+   *   - start all refreshTimeouts for KBuckets
+   * @return {this}
+   */
+  start: function() {
+    this.stop();
+    for (var i = 0, l = this._kbuckets.length; i < l; i++) {
+      this._kbuckets[i].setRefreshTimeout();
+    }
+  },
+  
+  /**
+   * Stop the routing table engine :
+   *   - stop all refreshTimout for KBuckets
+   * @return {this}
+   */
+  stop: function() {
+    for (var i = 0, l = this._kbuckets.length; i < l; i++) {
+      this._kbuckets[i].stopRefreshTimeout();
+    }
+    return this;
+  },
+
+  /**
+   * Calculates the distance from 0 to B-1 between the parent `id` and the given `key`.
+   * These keys are SHA1 hashes as hexadecimal `String`
+   * @see {@link Crypto#distance}
+   *
+   * @param {String} key
+   * @return {String} distance between the two keys
+   * @public
+   */
+  distance: function(peer) {
+    var dist;
+    if (peer instanceof Peer) {
+      dist = peer.getDistance();
+      if (!dist) {
+        peer.cacheDistance(this._parentID);
+        dist = peer.getDistance();
+      }
+    } else {
+      dist = Crypto.distance(this._parentID, peer);
+    }
+    return dist;
+  },
+
+  /**
+   * Add multiple peers to the routing table
+   *
+   * @param {Peer[]} peers List of peers to add to the table
+   */
+  add: function(peers) {
+    peers.forEach(function(peer) {
+      this.addPeer(peer);
+    }, this);
+    return this;
+  },
+
+  /**
+   * Add a peer to the routing table or update it if its already in.
+   *
+   * @param {Peer} peer object to add
+   * @return {Void}
+   * @public
+   */
+  addPeer: function(peer) {
+    if (peer.getID() === this._parentID) {
+      return;
+    }
+
+    peer.cacheDistance(this._parentID);
+
+    var index   = this._kbucketIndexFor(peer),
+        kbucket = this._kbuckets[index];
+
+    // find the kbucket for the peer
+    try {
+      kbucket.addPeer(peer);
+      log.debug( 'add peer', peer.getAddress(), peer.getID());
+      this.emit('added', peer);
+    } catch(e) {
+      // if the kbucket is full and splittable
+      if (e === 'split') {
+        var range = kbucket.getRange();
+        this._kbuckets.push(kbucket.split());
+        this.emit('splitted');
+        log.debug('split kbucket', range, kbucket.getRange());
+        this.addPeer(peer);
+      } else {
+        throw e;
+      }
+    }
+    return this;
+  },
+
+  /**
+   * Get the `number` closest peers from a given `id`
+   * but ignore the specified ones in an Array
+   *
+   * @param {String} id
+   * @param {Number} [number = {@link globals.ALPHA}] The number of peers you want
+   * @param {String[] | Peer[]} exclude Array of ids or peers to exclude
+   */
+  getClosePeers: function(id, number, exclude) {
+    if (typeof number !== 'number') {
+      number = globals.BETA;
+    }
+    
+    // get the default kbucket for this id
+    var index         = this._kbucketIndexFor(id),
+        kbuckets_left = this.howManyKBuckets() - 1,
+        peers         = new PeerArray();
+
+    peers.add(this._kbuckets[index].getPeers(number, exclude));
+
+    // if we don't have enough peers in the default kbucket
+    // try to find other ones in the closest kbuckets
+    if (peers.size() < number && kbuckets_left > 0) {
+      var indexes_path = [],
+          i;
+
+      // build an array which values are the kbuckets index
+      // sorted by their distance with the default kbucket
+      for (i = 0; i < this.howManyKBuckets(); i++) {
+        if (i !== index) {
+          indexes_path.push(i);
+        }
+      }
+
+      if (index > 1) {
+        indexes_path.sort(function(a, b) {
+          var diff = Math.abs(a - index) - Math.abs(b - index);
+          if (diff < 0)
+            return -1;
+          else if (diff > 0)
+            return 1;
+          return 0;
+        });
+      }
+
+      // read through the sorted kbuckets and retrieve the closest peers
+      // until we get the good amount
+      i = 0;
+      while (peers.size() < number && (index = indexes_path[i++])) {
+        peers.add(this._kbuckets[index].getPeers(number - peers.size(), exclude));
+      }
+    }
+    
+    return peers;
+  },
+
+  getPeer: function(peer) {
+    peer = this._kbucketFor(peer).getPeer(peer);
+    if (peer) {
+      return peer;
+    }
+    return false;
+  },
+
+  removePeer: function(peer) {
+    return this._kbucketFor(peer).removePeer(peer);
+  },
+
+  getKBuckets: function() {
+    return this._kbuckets;
+  },
+
+  howManyKBuckets: function() {
+    return this._kbuckets.length;
+  },
+
+  howManyPeers: function() {
+    return this._kbuckets.reduce(function(sum, kbucket) {
+      return sum + kbucket.size();
+    }, 0);
+  },
+
+  getParentID: function() {
+    return this._parentID;
+  },
+
+  // Private
+
+  /**
+   * Find the appropriate KBucket index for a given key
+   *
+   * @param {String} key SHA1 hash
+   * @return {Integer} index for the `_kbuckets`
+   * @private
+   */
+  _kbucketIndexFor: function(peer) {
+    var dist = this.distance(peer);
+    // if the id is our id, return the splittable kbucket
+    if (dist === 0) {
+      return this._kbuckets.length - 1;
+    }
+    // find the kbucket with the distance in range
+    for (var i = 0; i < this._kbuckets.length; i++) {
+      if (this._kbuckets[i].distanceInRange(dist)) {
+        return i;
+      }
+    }
+    return -1;
+  },
+
+  _kbucketFor: function(peer) {
+    var index = this._kbucketIndexFor(peer);
+    if (index !== -1)
+      return this._kbuckets[index];
+    return false;
+  },
+
+  /**
+   * Exports the routing table to a serializable object
+   *
+   * @param {Object}  [options] options hash
+   * @param {Boolean} [options.include_lastseen] If true the last_seen
+   * paramter will be included in peer triple array
+   *
+   * @param {Boolean} [options.include_distance] If true the distance
+   * paramter will be included in peer triple array
+   *
+   * @return {Object}
+   */
+  exports: function(options) {
+    var refresh  = Infinity;
+    var kbuckets = this._kbuckets.map(function(kbucket) {
+      var object = kbucket.exports(options);
+      refresh = Math.min(refresh, object.refresh);
+      return object;
+    });
+    return {
+      id       : this._parentID,
+      kbuckets : kbuckets,
+      refresh  : refresh
+    };
+  },
+
+  /**
+   * Imports a previously exported routing table
+   * and returns true if the process succeeded
+   *
+   * @param  {Object} routing_table
+   * @return {Boolean}
+   */
+  imports: function(routing_table) {
+    if (routing_table.id !== this._parentID) {
+      return false;
+    }
+    var now = new Date().getTime();
+    if (routing_table.refresh < now) {
+      return false;
+    }
+
+    try {
+      var kbuckets = routing_table.kbuckets;
+      for (var i = 0, l = kbuckets.length; i < l; i++) {
+        var kbucket = new KBucket();
+        if (!kbucket.imports(kbuckets[i])) {
+          throw new Error();
+        }
+        this._kbuckets[i] = kbucket;
+      }
+      return true;
+    } catch(e) {
+      log.fatal( 'failed to import', routing_table);
+      return false;
+    }
+  }
+
+});
+});
+
+require.define("/lib/dht/kbucket.js", function (require, module, exports, __dirname, __filename) {
+var PeerArray = require('../util/peerarray'),
+    globals   = require('../globals'),
+    Crypto    = require('../util/crypto');
+
+
+var KBucket = module.exports = PeerArray.extend(
+  /** @lends KBucket# */
+  {
+  /**
+   *
+   * @class Namespace : KadOH.KBucket </br> Represents a KBucket.
+   * @constructs
+   * @param  {Node|String} node - Node instance or parent node ID
+   * @param  {Number} [min=0] - Min limit of this KBucket (expressed as bit position)
+   * @param  {Number} [max=globals.B] - Max limit of this KBucket (expressed as bit position)
+   */
+  initialize: function(rt, min, max) {
+    this.supr();
+    if (arguments.length > 0) {
+      this._routingTable = rt;
+      this._parentID     = (typeof rt.getParentID === 'function') ? rt.getParentID() : rt;
+      this._min          = min || 0;
+      this._max          = max || globals.B;
+      this._timeoutID    = undefined;
+      this.touch();
+    }
+  },
+
+  // Public
+
+  /**
+   * Add then given Peer to the KBucket
+   * If the Peer is already in the KBucket, it will be updated
+   *
+   * @param {Peer} peer - The peer to add or update
+   * @return {KBucket} self to allow chaining
+   */
+  addPeer: function(peer) {
+    var index = this.find(peer);
+    if (~index) {
+      this.getPeer(index).touch();
+      this.move(index, 0);
+      this.touch();
+    } else {
+      if (!this.isFull()) {
+        peer.cacheDistance(this._parentID);
+        if (!this.peerInRange(peer)) {
+          throw new Error(peer + ' is not in range for ' + this);
+        }
+        this.array.unshift(peer);
+        this.touch();
+      }
+      else {
+        if (!this.isSplittable()) {
+          var oldest = this.getOldestPeer();
+          if (oldest) {
+            this.removePeer(oldest);
+            this.addPeer(peer);
+            this.touch();
+          }
+        } else {
+          throw 'split';
+        }
+      }
+    }
+    return this;
+  },
+
+  /**
+   * Get the latest seen Peer.
+   *
+   * @return {Peer}
+   */
+  getNewestPeer: function() {
+    return this.getPeer(0);
+  },
+  
+  /**
+   * Get the least recent Peer.
+   *
+   * @return {Peer}
+   */
+  getOldestPeer: function() {
+    return this.getPeer(this.size() - 1);
+  },
+  
+  /**
+   * Get all the peers from the KBucket
+   *
+   * @param {Integer} number - fix the number of peers to get
+   * @param {Peer|Peer[]} [exclude] - the {@link Peer}s to exclude
+   * @return {Array}
+   */
+  getPeers: function(number, exclude) {
+    var clone = new PeerArray(this);
+    if (exclude)
+      clone = clone.difference(exclude);
+    if (number > 0)
+      clone = clone.first(number);
+    return clone;
+  },
+
+  peerInRange: function(peer) {
+    return this.distanceInRange(peer.getDistance());
+  },
+  
+  /**
+   * Check wether or not the given NodeID
+   * is in range of the KBucket
+   *
+   * @param {String} id - NodeID to check
+   * @return {Boolean} true if it is in range.
+   */
+  idInRange: function(id) {
+    return this.distanceInRange(Crypto.distance(id, this._parentID));
+  },
+  
+  /**
+   * Check wether or not a given distance is in range of the
+   *
+   * @param {String} distance - distance to check
+   * @return {Boolean}
+   */
+  distanceInRange: function(distance) {
+    return (this._min < distance) && (distance <= this._max);
+  },
+
+  /**
+   * Get an `Object` with the `min` and `max` values
+   * of the KBucket's range (expressed as bit position).
+   *
+   * @return {Object} range - range object
+   * @return {Integer} range.min - minimum bit position
+   * @return {Integer} renage.max - maximum bit position
+   */
+  getRange: function() {
+    return {
+      min: this._min,
+      max: this._max
+    };
+  },
+
+  /**
+   * Set the range of the KBucket (expressed as bit position)
+   *
+   * @param {Object} range - range object
+   * @param {Integer} range.min - minimum bit position
+   * @param {Integer} range.max - maximum bit position
+   * @return {KBucket} self to allow chaining
+   */
+  setRange: function(range) {
+    this._min = range.min;
+    this._max = range.max;
+    return this;
+  },
+
+  /**
+   * Set the range min of the KBucket (expressed as bit position)
+   *
+   * @param {Integer} min - minimum bit position
+   * @return {KBucket} self to allow chaining
+   */
+  setRangeMin: function(min) {
+    this._min = min;
+    return this;
+  },
+  
+  /**
+   * Set the range max of the KBucket (expressed as bit position)
+   *
+   * @param {Integer} max - max bit position
+   * @return {KBucket} self to allow chaining
+   */
+  setRangeMax: function(max) {
+    this._max = max;
+    return this;
+  },
+
+  /**
+   * Split the KBucket range in half (higher range)
+   * and return a new KBucket with the lower range
+   *
+   * @return {KBucket} The created KBucket
+   */
+  split: function() {
+    var split_value = this._max - 1;
+
+    var new_kbucket = new this.constructor(this._routingTable, this.min, split_value);
+    this.setRangeMin(split_value);
+
+    var i = this.size() - 1;
+    if (i > 0) {
+      var trash = [];
+      for (; i >= 0; i--) {
+        var peer = this.array[i];
+        if (new_kbucket.peerInRange(peer)) {
+          trash.push(peer);
+          new_kbucket.addPeer(peer);
+        }
+      }
+      this.remove(trash);
+    }
+    return new_kbucket;
+  },
+
+  /**
+   * Check wether or not the KBucket is splittable
+   *
+   * @return {Boolean} true if splittable
+   */
+  isSplittable: function() {
+    return (this._min === 0);
+  },
+
+  /**
+   * Check wether or not the KBucket is full
+   *
+   * @return {Boolean} true if full
+   */
+  isFull: function() {
+    return (this.size() == globals.K);
+  },
+
+  /**
+   * Initiates the refresh process
+   */
+  setRefreshTimeout: function() {
+    this._timeoutID = setTimeout(function(self) {
+      self._routingTable.emit('refresh', self);
+      self.touch();
+    }, (this._refreshTime - new Date().getTime()), this);
+    return this;
+  },
+
+  /**
+   * Stop refresh timeout
+   */
+  stopRefreshTimeout : function() {
+    if (this._timeoutID) {
+      clearTimeout(this._timeoutID);
+      this._timeoutID = undefined;
+    }
+    return this;
+  },
+
+  /**
+   * To be called whenever the KBucket is updated
+   * This function re-initiate de refresh process
+   */
+  touch: function() {
+    // if the refreshTime is in the past (the app wasn't running)
+    this._refreshTime = new Date().getTime() +
+                        Math.floor(globals.TIMEOUT_REFRESH*(1+(2*Math.random()-1)*globals.TIMEOUT_REFRESH_WINDOW));
+    return this.stopRefreshTimeout()
+               .setRefreshTimeout();
+  },
+
+  /**
+   * Represent the KBucket as a String
+   *
+   * @return {String} representation of the KBucket
+   */
+  toString: function() {
+    return '<' + this._min + ':' + this._max + '><#' + this.size() + '>';
+  },
+
+  //
+  // Export
+  //
+
+  exports: function(options) {
+    var peers = [];
+
+    if (options && (options.include_lastseen || options.include_distance)) {
+      this.forEach(function(peer) {
+        var ar = peer.getTriple();
+        if (options.include_lastseen) ar.push(peer.getLastSeen());
+        if (options.include_distance) ar.push(peer.getDistance());
+        peers.push(ar);
+      });
+    } else {
+      peers = this.getTripleArray();
+    }
+
+    return {
+      range   : this.getRange(),
+      peers   : peers,
+      refresh : this._refreshTime
+    };
+  },
+
+  imports: function(kbucket) {
+    try {
+      this.setRange(kbucket.range);
+      this.add(kbucket.peers);
+      this._refreshTime = kbucket.refresh;
+      this.stopRefreshTimeout()
+          .setRefreshTimeout();
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+
+});
+});
+
+require.define("/lib/logging.js", function (require, module, exports, __dirname, __filename) {
+var LogEmitter = require('./logger/logemitter');
+module.exports = new LogEmitter();
+});
+
+require.define("/lib/logger/logemitter.js", function (require, module, exports, __dirname, __filename) {
+var EventEmitter = require('../util/eventemitter');
+
+var LogEmitter = module.exports = EventEmitter.extend({
+
+/**
+ * Emit a debug level log event.
+ *
+ * @param  {String} ns   - namespace associated to this log = where does it come from ?
+ * @param  {Array}  args - array of arguments to log
+ * @param  {String} [event] - in case of the log comes from an event (@see #subscribeTo), specify the name of the event.
+ */
+  debug : function(ns, args, event) {
+    this.emit('debug', {
+      ns    : ns,
+      args  : args,
+      event : event
+    });
+    return this;
+  },
+
+/**
+ * @see #debug
+ */
+  info : function(ns, args, event) {
+    this.emit('info', {
+      ns    : ns,
+      args  : args,
+      event : event
+    });
+    return this;
+  },
+
+/**
+ * @see #debug
+ */
+  warn : function(ns, args, event) {
+    this.emit('warn', {
+      ns    : ns,
+      args  : args,
+      event : event
+    });
+    return this;
+  },
+
+/**
+ * @see #debug
+ */
+  error : function(ns, args, event) {
+    this.emit('error', {
+      ns    : ns,
+      args  : args,
+      event : event
+    });
+    return this;
+  },
+
+/**
+ * @see #debug
+ */
+  fatal : function(ns, args, event) {
+    this.emit('fatal', {
+      ns    : ns,
+      args  : args,
+      event : event
+    });
+    return this;
+  },
+
+ /**
+  * Subscribe to an EventEmitter object. All events emitted by this object will be re-emited as log-event.
+  *
+  * @param  {Object} eventemitter   - the EventEmitter object to subscibe to.
+  * @param  {[type]} [ns=null]      - namespace associate to these log events.
+  * @param  {[type]} [level=debug]  - log level
+  */
+  subscribeTo : function(eventemitter, ns, level) {
+      ns    = ns    || null ;
+      level = level || 'debug';
+
+      if (eventemitter instanceof EventEmitter ||
+          typeof eventemitter.subscribe == 'function') {
+        eventemitter.subscribe(function() {
+          var args = Array.prototype.slice.call(arguments);
+          var event = args.shift();
+          this[level].call(this, ns, args, event);
+        }, this);
+      }
+      return this;
+    },
+
+  /**
+   * Returns an already namespaced logger shim.
+   *
+   * The returned object got all the log methods from the
+   * logemiter (info, debug, warn, error, fatal) but already namespaced
+   * according to the namespace passed as arguments.
+   * The shimed methods, regular functions, can be called naturally.
+   *
+   * @example
+   * var reactor_log = log_emitter.ns('Reactor');
+   * reactor_log.debug('Does'nt work', 'why ?', 'don't know !');
+   *
+   * @param  {String} ns - the wanted namespace
+   * @return {Object} objecy with info, debug, warn, error, fatal functions.
+   */
+  ns : function(ns) {
+    ns = ns || null;
+    var log = {};
+    var emitter = this;
+
+    ['info', 'debug', 'warn', 'error', 'fatal'].forEach(function(i) {
+      log[i] = function() {
+        var args = Array.prototype.slice.call(arguments);
+        return emitter[i](ns, args);
+      };
+    });
+    return log;
+  }
+});
+
+});
+
+require.define("/lib/dht/bootstrap-peer.js", function (require, module, exports, __dirname, __filename) {
+var Peer = require('./peer');
+
+var BootstrapPeer = module.exports = Peer.extend({
+
+  initialize: function() {
+    var args  = arguments;
+
+    if (Array.isArray(args[0])) {
+      args  = args[0];
+    }
+
+    this.touch();
+    this._distance = null;
+    this._address  = args[0];
+    this._id       = null;
+  }
+
+});
+});
+
+require.define("/lib/network/reactor.js", function (require, module, exports, __dirname, __filename) {
+var StateEventEmitter = require('../util/state-eventemitter'),
+    globals           = require('../globals'),
+
+    protocol          = require('./protocol'),
+
+    //@browserify-alias[simudp] ./transport/simudp  --replace
+    //@browserify-alias[xmpp] ./transport/strophe --replace
+    Transport      = require('./transport/strophe'),
+ 
+    log = require('../logging').ns('Reactor');
+  
+var Reactor = module.exports = StateEventEmitter.extend({
+
+  /**
+   * TODO : explicit the options
+   *
+   * @param  {Node}   node    - the Node Instance to which this reactor is associated
+   * @param  {Object} options - options
+   */
+  initialize: function(node, options) {
+    this.supr();
+    this._node = node;
+
+    // load config
+    var config = this.config = {
+      protocol : globals.PROTOCOL,
+      cleanup  : globals.CLEANUP_INTERVAL,
+      adaptiveTimeout : globals.ADAPTIVE_TIMEOUT_INTERVAL
+    };
+    for (var option in options) {
+      this.config[option] = options[option];
+    }
+
+    if (typeof config.protocol === 'string' && !protocol.hasOwnProperty(config.protocol))
+      throw new Error('non defined protocol');
+
+    // instantiate the transport and protocol
+    this._protocol  = (typeof config.protocol === 'string') ? protocol[config.protocol] : config.protocol;
+    this._transport = (typeof config.transportInstance !== 'undefined')
+                    ? config.transportInstance
+                    : new Transport(
+                        config.host,
+                        config.transport
+                      );
+
+    // request table and ragular clean up the table
+    this._requests = {};
+    this._startCleanup();
+    this._rtts = [];
+
+    // associate RPC object to RPC methods
+    this.RPCObject = {
+      __default  : undefined
+    };
+
+    this.setState('disconnected');
+  },
+
+  /**
+   * Register RPC objects to associate with RPC method names.
+   * 
+   * @example
+   * reactor.register({
+   *   'PING'  : PingRPC,
+   *   'STORE' : StoreRPC
+   * });
+   * 
+   * Special method name '__default' : object use when method
+   * names not associated to any RPCObject.
+   * 
+   * @param  {Object} rpcs - hash of RPCS to register
+   */
+  register: function(rpcs) {
+    //TODO suppress reference to reactor
+    for(var i in rpcs) {
+      this.RPCObject[i] = rpcs[i].extend({reactor : this});
+    }
+    return this;
+  },
+
+  /**
+   * Stop the reactor:
+   * stop clean-up process and disconnect transport.
+   */
+  stop: function() {
+    this._stopCleanup();
+    this._stopAdaptiveTimeout();
+    this.disconnectTransport();
+  },
+
+  /**
+   * Return the node instance (also a Peer instance).
+   * @return {Object} node instance
+   */
+  getMeAsPeer: function() {
+    return this._node;
+  },
+
+  /**
+   * Connect the transport.
+   */
+  connectTransport: function() {
+    if (this._transport.stateIsNot('connected')) {
+      this._transport.once('connected', function(address) {
+        // main listen loop
+        this._transport.listen(this.handleRPCMessage, this);
+        this._startCleanup();
+        this.setState('connected', address);
+      }, this);
+      this._transport.connect();
+    }
+    return this;
+  },
+
+  /**
+   * Disconnect the transport.
+   * @return {[type]}
+   */
+  disconnectTransport: function() {
+    if (this._transport.stateIsNot('disconnected')) {
+      this._transport.once('disconnected', function() {
+        this.setState('disconnected');
+      }, this);
+      this._transport.disconnect();
+    }
+    return this;
+  },
+
+  /**
+   * Send a RPC query : add it to the requests table and pass it
+   * to #sendNormalizedQuery.
+   *
+   * @param  {RPC} rpc - rpc to send
+   */
+  sendRPCQuery: function(rpc) {
+    if (this.stateIsNot('connected')) {
+      rpc.reject('transport not connected');
+      log.error('send query : transport disconnected', rpc);
+    }
+    else {
+      this._storeRequest(rpc);
+      this.sendNormalizedQuery(rpc.normalizeQuery(), rpc.getQueried(), rpc);
+      log.debug('Reactor', 'send query', rpc.getMethod(), rpc.getQueried().getAddress(), rpc.normalizeQuery());
+    }
+    this.emit('querying', rpc);
+    return this;
+  },
+  
+  /**
+   * Encode a normalised query whith the appropriate protcol,
+   * and send it.
+   *
+   * @param  {Object} query    - normalized query
+   * @param  {Peer} dst_peer - destination peer
+   */
+  sendNormalizedQuery: function(query, dst_peer) {
+    var req = this._protocol.encode(query);
+    this._transport.send(dst_peer.getAddress(), req, query);
+  },
+
+  /**
+   * Send a RPC response.
+   * @param  {RPC} rpc - RPC object to send.
+   */
+  sendRPCResponse: function(rpc) {
+    if (this.stateIsNot('connected')) {
+      rpc.reject('transport not connected');
+      log.error('send response : transport disconnected', rpc);
+    } else {
+      this.sendNormalizedResponse(rpc.normalizeResponse(), rpc.getQuerying(), rpc);
+      log.debug('send response', rpc.getMethod(), rpc.getQuerying().getAddress(), rpc.normalizeResponse());
+    }
+    return this;
+  },
+
+  /**
+   * Encode a normalised query whith the appropriate protcol,
+   * and send it.
+   *
+   * @param  {Object} response    - normalized query
+   * @param  {Peer} dst_peer - destination peer
+   */
+  sendNormalizedResponse: function(response, dst_peer) {
+    var res  = this._protocol.encode(response);
+    this._transport.send(dst_peer.getAddress(), res, response);
+  },
+
+  /**
+   * Handle an incoming encoded RPC message :
+   * normalyse the message and pass it to the right handler.
+   *
+   * @param  {Object} data - raw data
+   */
+  handleRPCMessage: function(data) {
+    var message;
+    try {
+      message = this._protocol.decode(data.msg);
+    }
+    catch(RPCError) {
+      log.warn('received a broken RPC message', RPCError);
+      return;
+    }
+
+    switch(message.type) {
+      case 'request' :
+        this.handleNormalizedQuery(message, data.src)
+        break;
+      case 'error' :
+      case 'response' :
+        this.handleNormalizedResponse(message, data.src)
+        break;
+    }
+  },
+
+  /**
+   * Handle a normalized query : construct the associated RPC object,
+   * and emit `queried` wiht the object. Bind the resolve or reject for
+   * sending the response.
+   *
+   * @param  {Object} query - normalized query
+   * @param  {String} from  - address of the querying peer
+   */
+  handleNormalizedQuery: function(query, from) {
+    var method = (this.RPCObject.hasOwnProperty(query.method)) ? query.method : '__default';
+
+    if (!this.RPCObject[method]) {
+      log.warn( 'receive query with method "' + query.method + '" not available');
+      return;
+    }
+    
+    //crate the appropirate RPC object
+    var rpc = new this.RPCObject[method]();
+
+    rpc.handleNormalizedQuery(query, from);
+
+    //when resolved or rejected, send response
+    rpc.always(rpc.sendResponse);
+
+    //handler could have rejected the query
+    if (!rpc.isRejected()) {
+      this.emit('reached', rpc.getQuerying());
+      log.debug('received query', rpc.getMethod(), from, query);
+      this.emit('queried', rpc);
+    }
+  },
+
+  /**
+   * Handle a normalized response : find the associated RPC
+   * object (correspond to the rpc id) and pass to it.
+   * @param  {Object} response - normalized response
+   * @param  {String} from     - address of the peer that responded
+   */
+  handleNormalizedResponse: function(response, from) {
+    var rpc = this._getRequestByID(response.id);
+
+    if (!rpc) {
+      log.warn('response matches no request', from, response);
+    } else {
+      log.debug('received response', rpc.getMethod(), from, response);
+      rpc.handleNormalizedResponse(response, from);
+      this.addRTT(rpc.getRTT());
+    }
+    return this;
+  },
+
+  /**
+   * Find a request in the requests table given its rpc id.
+   * @param  {String} id - rpc id
+   */
+  _getRequestByID: function(id) {
+    return this._requests[id];
+  },
+
+  /**
+   * Store the request in he table.
+   * @param  {RPC} rpc - rpc to store
+   */
+  _storeRequest: function(rpc) {
+    this._requests[rpc.getID()] = rpc;
+  },
+
+  /**
+   * Periodicly remove the stored requests already completed.
+   */
+  _startCleanup: function() {
+    this._cleanupProcess = setInterval(function(self) {
+      var requests = self._requests;
+      for (var id in requests) {
+        if (requests.hasOwnProperty(id)) {
+          if (requests[id].isCompleted())
+            delete requests[id];
+        }
+      }
+    }, this.config.cleanup, this);
+  },
+
+  /**
+   * Stop the periodic cleanup.
+   */
+  _stopCleanup: function() {
+    clearInterval(this._cleanupProcess);
+  },
+
+  //helpers :
+  
+  /**
+   * kethod to send a rpc.
+   * 
+   * @param  {RPC | Array<RPC>} rpc - rpc to send
+   */
+  sendRPC: function(rpc) {
+
+    //an array of RPCs
+    if(Array.isArray(rpc)) {
+      for(var i  = 0; i < rpc.length; i++) {
+        this.sendRPC(rpc[i]);
+      }
+      return this;
+    }
+
+    //pass instace of reactor
+    rpc.reactor = this;
+    rpc.setQuerying(this.getMeAsPeer());
+    
+    var success = function() {
+      // emit the reach as the first event
+      this.emit('reached', rpc.getQueried());
+    };
+    var failure = function(type) {
+      if (type === 'outdated') {
+        // forward outdated events
+        this.emit.apply(this, arguments);
+      }
+    };
+
+    rpc.then(success, failure, this);
+    return rpc.sendQuery();
+  },
+
+  //
+  // Statistics
+  //
+
+  timeoutValue: globals.TIMEOUT_RPC,
+
+  adaptive: {
+    size : 3000,
+    tolerance : 0.75,
+    max : 10 * 1000,
+    min : 1000,
+    deflt : globals.TIMEOUT_RPC,
+    running : false
+  },
+
+  addRTT: function(rtt) {
+    if (rtt <= 0) return;
+    this._rtts.push(rtt);
+    if (!this.adaptive.running) {
+      this.adaptive.running = true;
+      if (this.config.adaptiveTimeout) {
+        var self = this;
+        setTimeout(function() {
+          self._adaptiveTimeout();
+        }, this.config.adaptiveTimeout);
+      }
+    }
+  },
+
+  /**
+   * Implements the algorithm to compute a
+   * long-term-adaptive-timeout value
+   */
+  _adaptiveTimeout: function() {
+    var adaptive = this.adaptive;
+    var rtts = this._rtts;
+
+    if (rtts.length > adaptive.size) {
+      this._rtts = rtts = rtts.slice(rtts.length - adaptive.size);
+    }
+
+    var timeout = this.adaptiveFn(rtts.slice(), adaptive);
+    if (timeout > adaptive.max) {
+      timeout = adaptive.max;
+    } else if (timeout < adaptive.min) {
+      timeout = adaptive.min;
+    }
+
+    this.timeoutValue = timeout;
+    adaptive.running = false;
+  },
+
+  /**
+   * Default adaptive function based on a fault tolerance
+   * adaptive timeout.
+   * This function can be overridden
+   */
+  adaptiveFn: function(distribution, adaptive) {
+    distribution.sort(function(a, b) { return a - b; });
+    var i = Math.round(distribution.length * adaptive.tolerance) - 1;
+    if (i < distribution.length - 1) {
+      return distribution[i];
+    }
+    return adaptive.deflt;
+  }
+
+});
+});
+
+require.define("/lib/network/protocol/index.js", function (require, module, exports, __dirname, __filename) {
+exports.jsonrpc2    = require('./jsonrpc2');
+exports.xmlrpc      = require('./xmlrpc');
+
+if(process.title !== 'browser') {
+  //@browserify-ignore
+  exports.node_xmlrpc = require('./node-xmlrpc');
+}
+
+});
+
+require.define("/lib/network/protocol/jsonrpc2.js", function (require, module, exports, __dirname, __filename) {
+var util = require('util');
+
+/**
+ * Decode a JSON-RPC-2.0 encoded rpc object or stringified object.
+ *
+ * @throws {RPCError} If eeor durning decoding rpc
+ *
+ * @param  {Object|String} raw - rpc encoded to decode
+ * @return {Object}   normalized rpc object
+ */
+exports.decode = function(raw) {
+  var obj = {};
+
+  if (typeof raw === 'string') {
+    raw = JSON.parse(raw);
+  }
+
+  if (typeof raw !== 'object')
+    throw new RPCError(-32600);
+
+  // ID
+  if (raw.id){
+    if (typeof raw.id === 'number') {
+      if (raw.id >>> 0 !== raw.id) //is a integer
+        throw new RPCError(-32600);
+    }
+    else if (typeof raw.id !== 'string' && typeof raw.id === 'boolean')
+      throw new RPCError(-32600);
+    //OK
+    obj.id = String(raw.id);
+  }
+  else {
+    obj.id = null;
+  }
+  
+  // jsonrpc version
+  if (raw.jsonrpc !== '2.0')
+    throw new RPCError(-32600, null, {id : obj.id});
+  
+  // Request
+  if (raw.method) {
+    if (raw.error || raw.result || typeof raw.method !== 'string')
+      throw new RPCError(-32600, null, {id : obj.id});
+    
+    var method = raw.method.toUpperCase();
+    obj.method = method;
+    obj.type = 'request';
+    
+    if (raw.params && !Array.isArray(raw.params))
+      throw new RPCError(-32602, null, {id : obj.id});
+    obj.params = raw.params || [];
+  }
+  
+  // Response
+  else if (raw.result) {
+    if (raw.error)
+      throw new RPCError(-32600, null, {id : obj.id});
+    obj.result = raw.result;
+    obj.type = 'response';
+
+  }
+  
+  // Errorresponse
+  else if (raw.error) {
+    obj.type = 'error';
+    obj.error = {
+      code    : raw.error.code,
+      message : raw.error.message,
+      data    : raw.error.data
+    };
+  }
+
+  else {
+    throw new RPCError(-32600, null, {id : obj.id});
+  }
+
+  return obj;
+};
+
+/**
+ * Encode the given normalized rpc object into a JSON-RPC-2.0
+ * encoded rpc object.
+ *
+ * @param  {Object} rpc - normalyzed rpc object
+ * @return {Object} ecoded rpc
+ */
+exports.encode = function(rpc) {
+  var obj = {};
+  obj.jsonrpc = '2.0';
+
+  switch(rpc.type) {
+    case 'request' :
+      obj.method = rpc.method;
+      obj.params = rpc.params;
+      obj.id = rpc.id;
+      break;
+    case 'response' :
+      obj.result = rpc.result;
+      obj.id = rpc.id;
+      break;
+    case 'error' :
+      obj.error = rpc.error;
+      if (rpc.id)
+        obj.id = rpc.id;
+      break;
+    default:
+      throw new Error('No rpc type during encoding');
+  }
+  return obj;
+};
+
+/**
+ * JSONRPC 2 error code significations.
+ */
+var JSONRPC_ERROR_STRINGS = {
+  "-32700" : "Parse error.",
+  "-32600" : "Invalid Request.",
+  "-32601" : "Method not found.",
+  "-32602" : "Invalid params.",
+  "-32603" : "Internal error."
+};
+
+/**
+ * RPC error object.
+ * In the data arguments object, it can be passed as property the ID of the related RPCMessage.
+ * @extends {Error}
+ *
+ * @param {Number} code    JSON RPC error code.
+ * @param {String} [message] Description of the error.
+ * @param {Object} [data]    Optionnal complementary data about error.
+ */
+var RPCError = function(code, message, data) {
+  message = message ? message : (JSONRPC_ERROR_STRINGS[code] ? JSONRPC_ERROR_STRINGS[code] : '');
+
+  Error.call(this,'['+code+'] '+ message);
+  this.code    = code;
+  this.message = message;
+
+  if (data)
+    this.data = data;
+};
+
+util.inherits(RPCError, Error);
+exports.RPCError = RPCError;
+});
+
+require.define("util", function (require, module, exports, __dirname, __filename) {
+var events = require('events');
+
+exports.print = function () {};
+exports.puts = function () {};
+exports.debug = function() {};
+
+exports.inspect = function(obj, showHidden, depth, colors) {
+  var seen = [];
+
+  var stylize = function(str, styleType) {
+    // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+    var styles =
+        { 'bold' : [1, 22],
+          'italic' : [3, 23],
+          'underline' : [4, 24],
+          'inverse' : [7, 27],
+          'white' : [37, 39],
+          'grey' : [90, 39],
+          'black' : [30, 39],
+          'blue' : [34, 39],
+          'cyan' : [36, 39],
+          'green' : [32, 39],
+          'magenta' : [35, 39],
+          'red' : [31, 39],
+          'yellow' : [33, 39] };
+
+    var style =
+        { 'special': 'cyan',
+          'number': 'blue',
+          'boolean': 'yellow',
+          'undefined': 'grey',
+          'null': 'bold',
+          'string': 'green',
+          'date': 'magenta',
+          // "name": intentionally not styling
+          'regexp': 'red' }[styleType];
+
+    if (style) {
+      return '\033[' + styles[style][0] + 'm' + str +
+             '\033[' + styles[style][1] + 'm';
+    } else {
+      return str;
+    }
+  };
+  if (! colors) {
+    stylize = function(str, styleType) { return str; };
+  }
+
+  function format(value, recurseTimes) {
+    // Provide a hook for user-specified inspect functions.
+    // Check that value is an object with an inspect function on it
+    if (value && typeof value.inspect === 'function' &&
+        // Filter out the util module, it's inspect function is special
+        value !== exports &&
+        // Also filter out any prototype objects using the circular check.
+        !(value.constructor && value.constructor.prototype === value)) {
+      return value.inspect(recurseTimes);
+    }
+
+    // Primitive types cannot have properties
+    switch (typeof value) {
+      case 'undefined':
+        return stylize('undefined', 'undefined');
+
+      case 'string':
+        var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                                 .replace(/'/g, "\\'")
+                                                 .replace(/\\"/g, '"') + '\'';
+        return stylize(simple, 'string');
+
+      case 'number':
+        return stylize('' + value, 'number');
+
+      case 'boolean':
+        return stylize('' + value, 'boolean');
+    }
+    // For some reason typeof null is "object", so special case here.
+    if (value === null) {
+      return stylize('null', 'null');
+    }
+
+    // Look up the keys of the object.
+    var visible_keys = Object_keys(value);
+    var keys = showHidden ? Object_getOwnPropertyNames(value) : visible_keys;
+
+    // Functions without properties can be shortcutted.
+    if (typeof value === 'function' && keys.length === 0) {
+      if (isRegExp(value)) {
+        return stylize('' + value, 'regexp');
+      } else {
+        var name = value.name ? ': ' + value.name : '';
+        return stylize('[Function' + name + ']', 'special');
+      }
+    }
+
+    // Dates without properties can be shortcutted
+    if (isDate(value) && keys.length === 0) {
+      return stylize(value.toUTCString(), 'date');
+    }
+
+    var base, type, braces;
+    // Determine the object type
+    if (isArray(value)) {
+      type = 'Array';
+      braces = ['[', ']'];
+    } else {
+      type = 'Object';
+      braces = ['{', '}'];
+    }
+
+    // Make functions say that they are functions
+    if (typeof value === 'function') {
+      var n = value.name ? ': ' + value.name : '';
+      base = (isRegExp(value)) ? ' ' + value : ' [Function' + n + ']';
+    } else {
+      base = '';
+    }
+
+    // Make dates with properties first say the date
+    if (isDate(value)) {
+      base = ' ' + value.toUTCString();
+    }
+
+    if (keys.length === 0) {
+      return braces[0] + base + braces[1];
+    }
+
+    if (recurseTimes < 0) {
+      if (isRegExp(value)) {
+        return stylize('' + value, 'regexp');
+      } else {
+        return stylize('[Object]', 'special');
+      }
+    }
+
+    seen.push(value);
+
+    var output = keys.map(function(key) {
+      var name, str;
+      if (value.__lookupGetter__) {
+        if (value.__lookupGetter__(key)) {
+          if (value.__lookupSetter__(key)) {
+            str = stylize('[Getter/Setter]', 'special');
+          } else {
+            str = stylize('[Getter]', 'special');
+          }
+        } else {
+          if (value.__lookupSetter__(key)) {
+            str = stylize('[Setter]', 'special');
+          }
+        }
+      }
+      if (visible_keys.indexOf(key) < 0) {
+        name = '[' + key + ']';
+      }
+      if (!str) {
+        if (seen.indexOf(value[key]) < 0) {
+          if (recurseTimes === null) {
+            str = format(value[key]);
+          } else {
+            str = format(value[key], recurseTimes - 1);
+          }
+          if (str.indexOf('\n') > -1) {
+            if (isArray(value)) {
+              str = str.split('\n').map(function(line) {
+                return '  ' + line;
+              }).join('\n').substr(2);
+            } else {
+              str = '\n' + str.split('\n').map(function(line) {
+                return '   ' + line;
+              }).join('\n');
+            }
+          }
+        } else {
+          str = stylize('[Circular]', 'special');
+        }
+      }
+      if (typeof name === 'undefined') {
+        if (type === 'Array' && key.match(/^\d+$/)) {
+          return str;
+        }
+        name = JSON.stringify('' + key);
+        if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+          name = name.substr(1, name.length - 2);
+          name = stylize(name, 'name');
+        } else {
+          name = name.replace(/'/g, "\\'")
+                     .replace(/\\"/g, '"')
+                     .replace(/(^"|"$)/g, "'");
+          name = stylize(name, 'string');
+        }
+      }
+
+      return name + ': ' + str;
+    });
+
+    seen.pop();
+
+    var numLinesEst = 0;
+    var length = output.reduce(function(prev, cur) {
+      numLinesEst++;
+      if (cur.indexOf('\n') >= 0) numLinesEst++;
+      return prev + cur.length + 1;
+    }, 0);
+
+    if (length > 50) {
+      output = braces[0] +
+               (base === '' ? '' : base + '\n ') +
+               ' ' +
+               output.join(',\n  ') +
+               ' ' +
+               braces[1];
+
+    } else {
+      output = braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+    }
+
+    return output;
+  }
+  return format(obj, (typeof depth === 'undefined' ? 2 : depth));
+};
+
+
+function isArray(ar) {
+  return ar instanceof Array ||
+         Array.isArray(ar) ||
+         (ar && ar !== Object.prototype && isArray(ar.__proto__));
+}
+
+
+function isRegExp(re) {
+  return re instanceof RegExp ||
+    (typeof re === 'object' && Object.prototype.toString.call(re) === '[object RegExp]');
+}
+
+
+function isDate(d) {
+  if (d instanceof Date) return true;
+  if (typeof d !== 'object') return false;
+  var properties = Date.prototype && Object_getOwnPropertyNames(Date.prototype);
+  var proto = d.__proto__ && Object_getOwnPropertyNames(d.__proto__);
+  return JSON.stringify(proto) === JSON.stringify(properties);
+}
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+exports.log = function (msg) {};
+
+exports.pump = null;
+
+var Object_keys = Object.keys || function (obj) {
+    var res = [];
+    for (var key in obj) res.push(key);
+    return res;
+};
+
+var Object_getOwnPropertyNames = Object.getOwnPropertyNames || function (obj) {
+    var res = [];
+    for (var key in obj) {
+        if (Object.hasOwnProperty.call(obj, key)) res.push(key);
+    }
+    return res;
+};
+
+var Object_create = Object.create || function (prototype, properties) {
+    // from es5-shim
+    var object;
+    if (prototype === null) {
+        object = { '__proto__' : null };
+    }
+    else {
+        if (typeof prototype !== 'object') {
+            throw new TypeError(
+                'typeof prototype[' + (typeof prototype) + '] != \'object\''
+            );
+        }
+        var Type = function () {};
+        Type.prototype = prototype;
+        object = new Type();
+        object.__proto__ = prototype;
+    }
+    if (typeof properties !== 'undefined' && Object.defineProperties) {
+        Object.defineProperties(object, properties);
+    }
+    return object;
+};
+
+exports.inherits = function(ctor, superCtor) {
+  ctor.super_ = superCtor;
+  ctor.prototype = Object_create(superCtor.prototype, {
+    constructor: {
+      value: ctor,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+};
+
+});
+
+require.define("events", function (require, module, exports, __dirname, __filename) {
+if (!process.EventEmitter) process.EventEmitter = function () {};
+
+var EventEmitter = exports.EventEmitter = process.EventEmitter;
+var isArray = typeof Array.isArray === 'function'
+    ? Array.isArray
+    : function (xs) {
+        return Object.prototype.toString.call(xs) === '[object Array]'
+    }
+;
+
+// By default EventEmitters will print a warning if more than
+// 10 listeners are added to it. This is a useful default which
+// helps finding memory leaks.
+//
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+var defaultMaxListeners = 10;
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!this._events) this._events = {};
+  this._events.maxListeners = n;
+};
+
+
+EventEmitter.prototype.emit = function(type) {
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events || !this._events.error ||
+        (isArray(this._events.error) && !this._events.error.length))
+    {
+      if (arguments[1] instanceof Error) {
+        throw arguments[1]; // Unhandled 'error' event
+      } else {
+        throw new Error("Uncaught, unspecified 'error' event.");
+      }
+      return false;
+    }
+  }
+
+  if (!this._events) return false;
+  var handler = this._events[type];
+  if (!handler) return false;
+
+  if (typeof handler == 'function') {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        var args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+    return true;
+
+  } else if (isArray(handler)) {
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    var listeners = handler.slice();
+    for (var i = 0, l = listeners.length; i < l; i++) {
+      listeners[i].apply(this, args);
+    }
+    return true;
+
+  } else {
+    return false;
+  }
+};
+
+// EventEmitter is defined in src/node_events.cc
+// EventEmitter.prototype.emit() is also defined there.
+EventEmitter.prototype.addListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('addListener only takes instances of Function');
+  }
+
+  if (!this._events) this._events = {};
+
+  // To avoid recursion in the case that type == "newListeners"! Before
+  // adding it to the listeners, first emit "newListeners".
+  this.emit('newListener', type, listener);
+
+  if (!this._events[type]) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  } else if (isArray(this._events[type])) {
+
+    // Check for listener leak
+    if (!this._events[type].warned) {
+      var m;
+      if (this._events.maxListeners !== undefined) {
+        m = this._events.maxListeners;
+      } else {
+        m = defaultMaxListeners;
+      }
+
+      if (m && m > 0 && this._events[type].length > m) {
+        this._events[type].warned = true;
+        console.error('(node) warning: possible EventEmitter memory ' +
+                      'leak detected. %d listeners added. ' +
+                      'Use emitter.setMaxListeners() to increase limit.',
+                      this._events[type].length);
+        console.trace();
+      }
+    }
+
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  } else {
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  var self = this;
+  self.on(type, function g() {
+    self.removeListener(type, g);
+    listener.apply(this, arguments);
+  });
+
+  return this;
+};
+
+EventEmitter.prototype.removeListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('removeListener only takes instances of Function');
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (!this._events || !this._events[type]) return this;
+
+  var list = this._events[type];
+
+  if (isArray(list)) {
+    var i = list.indexOf(listener);
+    if (i < 0) return this;
+    list.splice(i, 1);
+    if (list.length == 0)
+      delete this._events[type];
+  } else if (this._events[type] === listener) {
+    delete this._events[type];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (type && this._events && this._events[type]) this._events[type] = null;
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  if (!this._events) this._events = {};
+  if (!this._events[type]) this._events[type] = [];
+  if (!isArray(this._events[type])) {
+    this._events[type] = [this._events[type]];
+  }
+  return this._events[type];
+};
+
+});
+
+require.define("/lib/network/protocol/xmlrpc.js", function (require, module, exports, __dirname, __filename) {
+var util = require('util');
+
+// Greatly inspired from :
+// Some easier XML-RPC methods for Mozilla.
+// 12/7/2005, 26/12/2005, 6/1/2006 David Murray.
+// http://deepestsender.mozdev.org/
+// v0.3
+// @see http://code.google.com/p/qpanel/source/browse/trunk/src/client/lib/xmlrpc.js
+
+var _convertToXML = function(obj) {
+  var xml = document.implementation.createDocument('', 'value', null);
+  var findtype = new RegExp('function (.*?)\\(\\) \\{.*');
+  var value, numtype;
+  switch (findtype.exec(obj.constructor.toString())[1]) {
+    case 'Number':
+      // Numbers can only be sent as integers or doubles.
+      if (Math.floor(obj) !== obj) {
+        numtype = xml.createElement('double');
+      } else {
+        numtype = xml.createElement('i4');
+      }
+      var number = xml.documentElement.appendChild(numtype);
+      number.appendChild(xml.createTextNode(obj));
+      break;
+    case 'String':
+      var string = xml.documentElement.appendChild(xml.createElement('string'));
+      string.appendChild(xml.createTextNode(obj));
+      break;
+    case 'Boolean':
+      var bool = xml.documentElement.appendChild(xml.createElement('boolean'));
+      bool.appendChild(xml.createTextNode(obj * 1));
+      break;
+    case 'Object':
+      var struct = xml.documentElement.appendChild(xml.createElement('struct'));
+      for (var w in obj) {
+        if(obj[y] && typeof obj[y] === 'function')
+          continue;
+        var member = struct.appendChild(xml.createElement('member'));
+        member.appendChild(xml.createElement('name'))
+              .appendChild(xml.createTextNode(w));
+        member.appendChild(_convertToXML(obj[w]));
+      }
+      break;
+    case 'Date':
+      var datetext = obj.getFullYear() + _padNumber(obj.getMonth() + 1) + _padNumber(obj.getDate()) + 'T' + _padNumber(obj.getHours()) + ':' + _padNumber(obj.getMinutes()) + ':' + _padNumber(obj.getSeconds());
+      xml.documentElement.appendChild(xml.createElement('dateTime.iso8601'))
+         .appendChild(xml.createTextNode(datetext));
+      break;
+    case 'Array':
+      var array = xml.documentElement.appendChild(xml.createElement('array'));
+      var data = array.appendChild(xml.createElement('data'));
+      for (var y in obj) {
+        if(typeof obj[y] === 'function')
+          continue;
+        value = data.appendChild(xml.createElement('value'));
+        value.appendChild(_convertToXML(obj[y]));
+      }
+      break;
+    default:
+      // Hellishly awful binary encoding shit goes here.
+      // GZiped base64
+      // @TODO
+      break;
+  }
+  return xml.documentElement;
+};
+
+var _padNumber = function(num) {
+  if (num < 10) {
+    num = '0' + num;
+  }
+  return num;
+};
+
+var _removeWhiteSpace = function(node) {
+  var notWhitespace = /\S/;
+  for (var x = 0; x < node.childNodes.length; x++) {
+    var childNode = node.childNodes[x];
+    if ((childNode.nodeType === 3) && (!notWhitespace.test(childNode.textContent))) {
+      // that is, if it's a whitespace text node
+      node.removeChild(node.childNodes[x]);
+      x--;
+    }
+    if (childNode.nodeType === 1) {
+      // elements can have text child nodes of their own
+      _removeWhiteSpace(childNode);
+    }
+  }
+};
+
+var _convertFromXML = function(obj) {
+  if (!obj)
+    return null;
+
+  var data;
+  var tag = obj.tagName.toLowerCase();
+
+  try {
+    switch (tag) {
+      case "value":
+        return _convertFromXML(obj.firstChild);
+      case "double":
+      case "i4":
+      case "int":
+        var number = obj.textContent;
+        data = number * 1;
+        break;
+      case "boolean":
+        var bool = obj.textContent;
+        data = (bool === "1" || bool === "true") ? true : false;
+        break;
+      case "datetime.iso8601":
+        var date = obj.textContent;
+        data = new Date();
+        data.setFullYear(date.substring(0,4), date.substring(4,6) - 1, date.substring(6,8));
+        data.setHours(date.substring(9,11), date.substring(12,14), date.substring(15,17));
+        break;
+      case "array":
+        data = [];
+        var datatag = obj.firstChild;
+        for (var k = 0; k < datatag.childNodes.length; k++) {
+          var value = datatag.childNodes[k];
+          data.push(_convertFromXML(value.firstChild));
+        }
+        break;
+      case "struct":
+        data = {};
+        for (var j = 0; j < obj.childNodes.length; j++) {
+          var membername  = obj.childNodes[j].getElementsByTagName("name")[0].textContent;
+          var membervalue = obj.childNodes[j].getElementsByTagName("value")[0].firstChild;
+          data[membername] = membervalue ? _convertFromXML(membervalue) : null;
+        }
+        break;
+      case "string":
+        data = obj.textContent;
+        break;
+      default:
+        data = null;
+        break;
+    }
+  } catch(e) {
+    data = null;
+  }
+  return data;
+};
+
+ var _decodeRequestMessage = function(iq) {
+  var rpc = {};
+  rpc.id  = iq.getAttribute("id") || null;
+
+  // Method name
+  var method = iq.getElementsByTagName("methodName")[0];
+  rpc.method = method ? method.textContent : null;
+  rpc.type = 'request';
+
+  // Parameters
+  rpc.params = null;
+  try {
+    var params = iq.getElementsByTagName("params")[0]
+                   .childNodes;
+    if (params && params.length > 0) {
+      rpc.params = [];
+      for (var i = 0; i < params.length; i++) {
+        rpc.params.push(_convertFromXML(params[i].firstChild));
+      }
+    }
+  } catch(e) {
+    throw new RPCError(-32600, null, {id : rpc.id});
+  }
+  return rpc;
+};
+
+var _decodeResponseMessage = function(iq) {
+  var rpc = {};
+  rpc.id  = iq.getAttribute("id") || null;
+
+  try {
+    var result = iq.getElementsByTagName("methodResponse")[0].firstChild;
+
+    // Response
+    var tag = result.tagName;
+    if (tag === "params") {
+      rpc.type = 'response';
+      rpc.result = _convertFromXML(result.firstChild.firstChild);
+    }
+    // Error
+    else if (tag === "fault") {
+      rpc.type = 'error';
+      rpc.error  = _convertFromXML(result.firstChild);
+    }
+  } catch(e) {
+    throw new RPCError(-32600, null, {id : rpc.id});
+  }
+  return rpc;
+};
+
+/**
+ * Decode a XML-RPC encoded rpc.
+ *
+ * @param  {DomElement|String} iq
+ * @return {Object}   normalized rpc object
+ */
+exports.decode = function(iq) {
+  if (typeof iq === 'string') {
+    try {
+      var parser = new DOMParser();
+      var doc    = parser.parseFromString(iq, 'text/xml');
+      _removeWhiteSpace(doc);
+      iq = doc.documentElement;
+      if (iq.tagName == "parsererror") {
+        throw new RPCError(-32600, null, {});
+      }
+    } catch(e) {
+      throw new RPCError(-32600, null, {});
+    }
+  }
+  var type = iq.getAttribute('type');
+  if (type === 'set') {
+    return _decodeRequestMessage(iq);
+  } else if (type === 'result') {
+    return _decodeResponseMessage(iq);
+  } else {
+    throw new RPCError(-32600, null, {id : iq.getAttribute('id')});
+  }
+};
+
+/**
+ * Encode the given normalized rpc object into an XML-rpc
+ * encoded rpc object.
+ *
+ * @param  {Object} rpc - normalized rpc object
+ * @return {DomElement}   encoded rpc
+ */
+exports.encode = function(rpc) {
+  switch(rpc.type) {
+    case 'request' :
+      return _encodeRequest(rpc);
+    case 'response' :
+      return _encodeResponse(rpc);
+    case 'error' :
+      return _encodeError(rpc);
+    default:
+      throw new Error('No rpc type during encoding');
+  }
+};
+
+var _encodeRequest = function(rpc) {
+  var xml = document.implementation.createDocument('', 'methodCall', null);
+  xml.documentElement.appendChild(xml.createElement('methodName'))
+                     .appendChild(xml.createTextNode(rpc.method));
+  
+  var xmlparams = xml.documentElement.appendChild(xml.createElement('params'));
+  for (var i = 0; i < rpc.params.length; i++) {
+    xmlparams.appendChild(xml.createElement('param'))
+             .appendChild(_convertToXML(rpc.params[i]));
+  }
+  
+  return xml.documentElement;
+};
+
+var _encodeResponse = function(rpc) {
+  var xml = document.implementation.createDocument('', 'methodResponse', null);
+  xml.documentElement.appendChild(xml.createElement('params'))
+                     .appendChild(xml.createElement('param'))
+                     .appendChild(_convertToXML(rpc.result));
+
+  return xml.documentElement;
+};
+
+var _encodeError = function(rpc) {
+  var xml = document.implementation.createDocument('', 'methodResponse', null);
+  xml.documentElement.appendChild(xml.createElement('fault'))
+                     .appendChild(_convertToXML({
+                       faultCode: rpc.error.code,
+                       faultString: rpc.error.message
+                     }));
+
+  return  xml.documentElement;
+};
+
+var XMLRPC_ERROR_STRINGS = {
+  '-32700' : 'Parse error.',
+  '-32600' : 'Invalid Request.',
+  '-32601' : 'Method not found.',
+  '-32602' : 'Invalid params.',
+  '-32603' : 'Internal error.'
+};
+
+/**
+ * RPC error object.
+ * In the data arguments object, it can be passed as property the ID of the related RPCMessage.
+ * @extends {Error}
+ *
+ * @param {Number} code    JSON RPC error code.
+ * @param {String} [message] Description of the error.
+ * @param {Object} [data]    Optionnal complementary data about error.
+ */
+var RPCError = function(code, message, data) {
+  message = message ? message : (XMLRPC_ERROR_STRINGS[code] ? XMLRPC_ERROR_STRINGS[code] : '');
+
+  Error.call(this,'['+code+'] '+ message);
+  this.code    = code;
+  this.message = message;
+
+  if (data)
+    this.data = data;
+};
+
+util.inherits(RPCError, Error);
+exports.RPCError = RPCError;
+});
+
+require.define("/lib/network/transport/strophe.js", function (require, module, exports, __dirname, __filename) {
+var StateEventEmitter = require('../../util/state-eventemitter'),
+    globals           = require('../../globals');
+
+require('Strophe.js'); //available as Strophe global variable
+require('./strophe.disco.js');
+require('./strophe.rpc.js');
+
+var log = require('../../logging').ns('Transport');
+
+Strophe.log = function(level, message) {
+  switch (level) {
+    case Strophe.LogLevel.WARN:
+      log.warn(message);
+      break;
+    case Strophe.LogLevel.ERROR:
+      log.error(message);
+      break;
+    case Strophe.LogLevel.FATAL:
+      log.fatal(message);
+      break;
+    default:
+      // log.debug(message);
+      break;
+  }
+};
+
+var $msg  = function(attrs) { return new Strophe.Builder('message',  attrs); };
+var $pres = function(attrs) { return new Strophe.Builder('presence', attrs); };
+
+var StropheTransport = module.exports = StateEventEmitter.extend({
+
+  initialize: function(host, options) {
+    this.supr();
+
+    this._host       = host || globals.BOSH_SERVER;
+    this._jid        = Strophe.getBareJidFromJid(options.jid) + '/' +
+                       (options.resource || globals.JID_RESOURCE);
+    this._password   = options.password;
+    this._connection = null;
+
+    this.setState('disconnected');
+    if (!this._jid || !this._password)
+      throw new Error('No JID or password to connect');
+  },
+
+  // @TODO: Using `attach()` instead of `connect()` when we can
+  // by storing the RID and SID in the localStorage for security
+  // and performance reasons...since it would be possible to have
+  // session persistence
+  // @see: Professional XMPP p.377
+  connect: function() {
+    var self = this;
+    this.setState('connecting', this._host, this._jid);
+
+    this._connection = new Strophe.Connection(this._host);
+
+    this._connection.rawInput = function(data) {
+      self.emit('data-in', data);
+    };
+
+    this._connection.rawOutput = function(data) {
+      self.emit('data-out', data);
+    };
+
+    var onConnect = function(status, error) {
+      switch (status) {
+        case Strophe.Status.CONNECTED:
+        case Strophe.Status.ATTACHED:
+          self._jid = self._connection.jid;
+          self._setConnCookies();
+          self._connection._notifyIncrementRid = function(rid) {
+            self._setConnCookies();
+          };
+          self.setState('connected', self._connection.jid);
+          break;
+        case Strophe.Status.DISCONNECTING:
+          self.setState('disconnecting');
+          break;
+        case Strophe.Status.DISCONNECTED:
+          self._deleteConnCookies();
+          self.setState('disconnected');
+          break;
+        case Strophe.Status.AUTHFAIL:
+        case Strophe.Status.CONNFAIL:
+          self._deleteConnCookies();
+          self.setState('failed', error);
+          break;
+        case Strophe.Status.ERROR:
+          throw error;
+        default:
+          return;
+      }
+    };
+    
+    var prev_session = this._getConnCookies();
+
+    if(prev_session.sid !== null && prev_session.rid !== null) {
+      log.info('try connection attach');
+
+      this._connection.attach(this._jid, prev_session.sid, prev_session.rid,
+        function(status, error) {
+          if(status === Strophe.Status.ATTACHED) {
+            self._connection.send($pres().tree());
+
+            setTimeout(function() {
+              if(!self._connection.connected) {
+                log.info('Attach failed : trying normal connect');
+
+                self._connection.connect(self._jid, self._password, function(status, error) {
+                  if(status === Strophe.Status.CONNECTED) {
+                    self._connection.send($pres().tree());
+                  }
+                  onConnect(status, error);
+                });
+              }
+            }, 4000);
+            //self._connection.connect(self._jid, self._password, onConnect);
+          }
+          onConnect(status, error);
+      });
+    } else {
+      this._connection.connect(this._jid, this._password, function(status, error) {
+        if(status === Strophe.Status.CONNECTED) {
+          self._connection.send($pres().tree());
+        }
+        onConnect(status, error);
+      });
+    }
+  },
+
+  disconnect: function() {
+    this._connection.disconnect();
+  },
+
+  send: function(to, encoded, normalized) {
+    if (this.stateIsNot('connected'))
+      throw new Error('XMPP transport layer not connected');
+    
+    this._connection.rpc.sendXMLElement(
+      normalized.id,
+      to,
+      normalized.type === 'request' ? 'set' : 'result',
+      encoded
+    );
+  },
+
+  listen: function(fn, context) {
+    if (this.stateIsNot('connected'))
+      throw new Error('XMPP transport layer not connected');
+    
+    context = context || this;
+    var handler = function(iq) {
+      fn.call(context, {
+        dst: iq.getAttribute('to'),
+        src: iq.getAttribute('from'),
+        msg: iq
+      });
+      return true;
+    };
+    this._connection.rpc.addXMLHandler(handler, context);
+  },
+
+  _setConnCookies: function() {
+    var exp = (new Date((Date.now()+90*1000))).toGMTString();
+    document.cookie = '_strophe_sid_'+this._jid+'='+String(this._connection.sid)+'; expires='+exp;
+    document.cookie = '_strophe_rid_'+this._jid+'='+String(this._connection.rid)+'; expires='+exp;
+  },
+
+  _deleteConnCookies : function() {
+    document.cookie = '_strophe_sid_'+this._jid+'='+'foo'+'; expires=Thu, 01-Jan-1970 00:00:01 GMT';
+    document.cookie = '_strophe_rid_'+this._jid+'='+'bar'+'; expires=Thu, 01-Jan-1970 00:00:01 GMT';
+  },
+
+  _getConnCookies: function() {
+    var sid_match = (new RegExp('_strophe_sid_'+this._jid+"=([^;]*)", "g")).exec(document.cookie);
+    var rid_match = (new RegExp('_strophe_rid_'+this._jid+"=([^;]*)", "g")).exec(document.cookie);
+
+    return {
+      sid : (sid_match !== null) ? sid_match[1] : null,
+      rid : (rid_match !== null) ? rid_match[1] : null
+    };
+  }
+
+});
 });
 
 require.define("/node_modules/Strophe.js/package.json", function (require, module, exports, __dirname, __filename) {
@@ -1840,7 +5894,7 @@ Strophe = {
      *  The version of the Strophe library. Unreleased builds will have
      *  a version of head-HASH where HASH is a partial revision.
      */
-    VERSION: "746aa31",
+    VERSION: "42cc694",
 
     /** Constants: XMPP Namespace Constants
      *  Common namespace constants from the XMPP RFCs and XEPs.
@@ -5330,7 +9384,7 @@ if (callback) {
 
 });
 
-require.define("/network/transport/strophe.disco.js", function (require, module, exports, __dirname, __filename) {
+require.define("/lib/network/transport/strophe.disco.js", function (require, module, exports, __dirname, __filename) {
 /*
   Copyright 2010, François de Metz <francois@2metz.fr>
 */
@@ -5534,7 +9588,7 @@ Strophe.addConnectionPlugin('disco',
 });
 });
 
-require.define("/network/transport/strophe.rpc.js", function (require, module, exports, __dirname, __filename) {
+require.define("/lib/network/transport/strophe.rpc.js", function (require, module, exports, __dirname, __filename) {
 /**
  * This program is distributed under the terms of the MIT license.
  * 
@@ -5702,135 +9756,879 @@ Strophe.addConnectionPlugin("rpc", {
 });
 });
 
-require.define("/logging.js", function (require, module, exports, __dirname, __filename) {
-var LogEmitter = require('./logger/logemitter');
-module.exports = new LogEmitter();
-});
+require.define("/lib/network/rpc/ping.js", function (require, module, exports, __dirname, __filename) {
+RPC   = require('./rpc');
 
-require.define("/logger/logemitter.js", function (require, module, exports, __dirname, __filename) {
-var EventEmitter = require('../util/eventemitter');
+var PingRPC = module.exports = RPC.extend({
 
-var LogEmitter = module.exports = EventEmitter.extend({
-
-/**
- * Emit a debug level log event.
- *
- * @param  {String} ns   - namespace associated to this log = where does it come from ?
- * @param  {Array}  args - array of arguments to log
- * @param  {String} [event] - in case of the log comes from an event (@see #subscribeTo), specify the name of the event.
- */
-  debug : function(ns, args, event) {
-    this.emit('debug', {
-      ns    : ns,
-      args  : args,
-      event : event
-    });
-    return this;
+  initialize: function(queried_peer) {
+    if (arguments.length === 0) {
+      this.supr();
+    } else {
+      this.supr(queried_peer, 'PING');
+    }
   },
 
-/**
- * @see #debug
- */
-  info : function(ns, args, event) {
-    this.emit('info', {
-      ns    : ns,
-      args  : args,
-      event : event
-    });
-    return this;
+  normalizeParams: function() {
+    return {};
   },
 
-/**
- * @see #debug
- */
-  warn : function(ns, args, event) {
-    this.emit('warn', {
-      ns    : ns,
-      args  : args,
-      event : event
-    });
-    return this;
+  handleNormalizedParams: function(params) {
+    this.params = [];
   },
 
-/**
- * @see #debug
- */
-  error : function(ns, args, event) {
-    this.emit('error', {
-      ns    : ns,
-      args  : args,
-      event : event
-    });
-    return this;
+  normalizeResult: function() {
+    return {};
   },
 
-/**
- * @see #debug
- */
-  fatal : function(ns, args, event) {
-    this.emit('fatal', {
-      ns    : ns,
-      args  : args,
-      event : event
-    });
-    return this;
-  },
-
- /**
-  * Subscribe to an EventEmitter object. All events emitted by this object will be re-emited as log-event.
-  *
-  * @param  {Object} eventemitter   - the EventEmitter object to subscibe to.
-  * @param  {[type]} [ns=null]      - namespace associate to these log events.
-  * @param  {[type]} [level=debug]  - log level
-  */
-  subscribeTo : function(eventemitter, ns, level) {
-      ns    = ns    || null ;
-      level = level || 'debug';
-
-      if (eventemitter instanceof EventEmitter ||
-          typeof eventemitter.subscribe == 'function') {
-        eventemitter.subscribe(function() {
-          var args = Array.prototype.slice.call(arguments);
-          var event = args.shift();
-          this[level].call(this, ns, args, event);
-        }, this);
-      }
-      return this;
-    },
-
-  /**
-   * Returns an already namespaced logger shim.
-   *
-   * The returned object got all the log methods from the
-   * logemiter (info, debug, warn, error, fatal) but already namespaced
-   * according to the namespace passed as arguments.
-   * The shimed methods, regular functions, can be called naturally.
-   *
-   * @example
-   * var reactor_log = log_emitter.ns('Reactor');
-   * reactor_log.debug('Does'nt work', 'why ?', 'don't know !');
-   *
-   * @param  {String} ns - the wanted namespace
-   * @return {Object} objecy with info, debug, warn, error, fatal functions.
-   */
-  ns : function(ns) {
-    ns = ns || null;
-    var log = {};
-    var emitter = this;
-
-    ['info', 'debug', 'warn', 'error', 'fatal'].forEach(function(i) {
-      log[i] = function() {
-        var args = Array.prototype.slice.call(arguments);
-        return emitter[i](ns, args);
-      };
-    });
-    return log;
+  handleNormalizedResult: function(result) {
+    this.resolve();
   }
 });
-
 });
 
-require.define("/data/storage/lawnchair.js", function (require, module, exports, __dirname, __filename) {
+require.define("/lib/network/rpc/rpc.js", function (require, module, exports, __dirname, __filename) {
+var Deferred  = require('../../util/deferred'),
+    Peer      = require('../../dht/peer'),
+    globals   = require('../../globals'),
+
+    log       = require('../../logging').ns('Reactor');
+
+
+var RPC = module.exports = Deferred.extend({
+
+  initialize: function(queried_peer, method, params) {
+    this.supr();
+
+    // if no arguments, empty RPC that need to parsed from normalized query
+    if (arguments.length === 0) return;
+
+    this._rtt = 0;
+    this._isTimeout = false;
+
+    this.method = method;
+    this.params = params || []; // params should alwais be an array
+    this.setQueried(queried_peer);
+
+    //hack
+    if(this.reactor)
+      this.setQuerying(this.reactor.getMeAsPeer());
+
+    this.setID(this._generateRandomID());
+  },
+
+  // to be defined...
+  reactor : undefined,
+
+  //
+  // Getters
+  //
+
+  getMethod : function() {
+    return this.method;
+  },
+
+  getParams: function(index) {
+    if (typeof index === 'number') {
+      return this.params[index];
+    }
+    return this.params;
+  },
+
+  getResult: function() {
+    return this.getResolvePassedArgs();
+  },
+
+  getError: function() {
+    return this.getRejectPassedArgs();
+  },
+
+  getRTT: function() {
+    return this._rtt;
+  },
+
+  isTimeout: function() {
+    return this._isTimeout;
+  },
+
+  //peers role
+  
+  setQueried : function(queried_peer) {
+    this.queried = queried_peer;
+  },
+
+  getQueried: function() {
+    return this.queried;
+  },
+
+  setQuerying : function(querying_peer) {
+    this.querying = querying_peer;
+  },
+
+  getQuerying: function() {
+    return this.querying;
+  },
+
+  /**
+   * Send method for this RPC.
+   */
+  sendQuery : function() {
+    this._sendTime = new Date().getTime();
+    this._setTimeout();
+    this.reactor.sendRPCQuery(this);
+    return this;
+  },
+
+  sendResponse: function() {
+    this.reactor.sendRPCResponse(this);
+    return this;
+  },
+ 
+  handleNormalizedQuery: function(query, from) {
+    this.setQueried(this.reactor.getMeAsPeer());
+
+    this.id     = query.id;
+    this.method = query.method;
+
+    var params = query.params[0];
+    if (typeof params !== 'object') {
+      log.warn('query with no parameters');
+      this.reject();
+    }
+    else if (this._nonValidID(params.id)) {
+      log.warn('query with non valid node id');
+      this.reject();
+    }
+    else {
+      this.setQuerying(new Peer(from, params.id));
+      this.handleNormalizedParams(params);
+    }
+
+    return this;
+  },
+
+  // @abstract
+  handleNormalizedParams: function() {
+    return this;
+  },
+
+  // @abstract
+  normalizeParams: function() {
+    return {};
+  },
+
+  /**
+   * Express the query associated to this RPC wihtin a normalized form.
+   * @return the normalized query
+   */
+  normalizeQuery : function() {
+    var params = this.normalizeParams();
+    params.id = this.getQuerying().getID();
+
+    return {
+      type : 'request',
+      id     : this.getID(),
+      method : this.method,
+      params : [params]
+    };
+  },
+
+  // @abstract
+  normalizeResult: function() {
+    return {};
+  },
+
+  normalizeResponse: function() {
+    var res = {
+      type : 'response',
+      id     : this.getID(),
+      method : this.method
+    };
+
+    if (this.isResolved()) {
+      res.result    = this.normalizeResult();
+      res.result.id = this.getQueried().getID();
+    } else if (this.isRejected()) {
+      res.error = this.normalizeError();
+    } else {
+      log.warn('try to normalize a response already completed');
+      return null;
+    }
+    return res;
+  },
+
+  normalizeError: function() {
+    return this.getError().toString();
+  },
+
+  /**
+   * Handle the response coming from the node that have executed the RPC. This
+   * method should do verifications and reject or resolve the RPC (as deferred).
+   *
+   * @param  {RPCResponse}  response            ResponseRPC object
+   * @param  {Function}     [specific_handler]  Specific handler
+   */
+  handleNormalizedResponse: function(response, from) {
+    this._rtt = new Date().getTime() - this._sendTime;
+
+    if (this.isResolved() || this.isRejected()) {
+      log.warn('received response to an already completed query', from, response);
+      return this;
+    }
+
+    if (from && from !== this.getQueried().getAddress()) {
+      log.warn('spoofing attack from ' + from + ' instead of ' + this.getQueried().getAddress());
+      return this;
+    }
+
+    if (response.hasOwnProperty('result')) {
+      var id = response.result.id;
+      if (this._nonValidID(id)) {
+        log.warn('non valid ID', id, response);
+        this.reject();
+      }
+      // if the ID is outdated (not the same in the response and in the routing table)
+      // call the ErrBack with the outdated event
+      else if (this._outdatedID(id)) {
+        log.info('outdated ID', this.getQueried(), id);
+        this.reject('outdated', this.getQueried(), id);
+      } else {
+        this.handleNormalizedResult(response.result);
+      }
+    } else if (response.hasOwnProperty('error')) {
+      this.handleNormalizedError(response.error);
+    } else {
+      this.reject();
+    }
+    return this;
+  },
+
+  // @abstract
+  handleNormalizedResult: function(result) {
+    this.resolve();
+  },
+
+  handleNormalizedError: function(error) {
+    this.reject(new Error(error));
+  },
+
+  /**
+   * Clear the timer and resolve.
+   * @extends {Deferred#resolve}
+   */
+  resolve: function() {
+    this._clearTimeout();
+    this.supr.apply(this,arguments);
+  },
+
+  /**
+   * Clear the timer and reject.
+   * @extends {Deferred#reject}
+   */
+  reject: function() {
+    this._clearTimeout();
+    this.supr.apply(this,arguments);
+  },
+
+  cancel: function() {
+    this._clearTimeout();
+    this.supr();
+  },
+
+  //
+  // Timeout
+  //
+
+  _setTimeout: function() {
+    this._timeoutID = setTimeout(function(self) {
+      if (self.inProgress()) {
+        log.info('query timeout');
+        self._isTimeout = true;
+        self.reject(new Error('timeout'));
+      }
+    }, this.reactor.timeoutValue, this);
+  },
+
+  _clearTimeout: function() {
+    if (this._timeoutID) {
+      clearTimeout(this._timeoutID);
+      this._timeoutID = undefined;
+    }
+  },
+
+  //
+  // ID
+  //
+
+  setID : function(id) {
+    this.id = id;
+  },
+
+  getID : function() {
+    return this.id;
+  },
+
+  _generateRandomID : function() {
+    var dict   = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+        length = 2,
+        id     = '';
+    for (var i = 0; i < length; i++) {
+      id += dict.charAt(Math.floor(Math.random() * dict.length));
+    }
+    return id;
+  },
+
+  /**
+   * Check if an id is given in the response.
+   * @private
+   * @param  {String} id ID to validated
+   * @return {Boolean} True if and only if the ID is not valid
+   */
+  _nonValidID: function(id) {
+    return (typeof id !== 'string' || !globals.REGEX_NODE_ID.test(id));
+  },
+
+  /**
+   * Check if the id responded if the same as the local one.
+   * @private
+   * @param  {String} id ID to check
+   * @return {Boolean} True if and only if the ID is outdated
+   */
+  _outdatedID: function(id) {
+    var queried_id = this.getQueried().getID();
+
+    // if the id of the destination
+    // peer is a bootstrap (with null id), update queried
+    if (queried_id === null) {
+      this.getQueried().setID(id);
+    }
+    else if (id !== queried_id) {
+      return true;
+    }
+    return false;
+  }
+
+});
+});
+
+require.define("/lib/network/rpc/findnode.js", function (require, module, exports, __dirname, __filename) {
+var RPC       = require('./rpc'),
+    globals   = require('../../globals'),
+    PeerArray = require('../../util/peerarray');
+
+var FindNodeRPC = module.exports = RPC.extend({
+
+  initialize: function(queried_peer, target_id) {
+    if (arguments.length === 0) {
+      this.supr();
+    } else {
+      this.supr(queried_peer, 'FIND_NODE', [target_id]);
+    }
+  },
+
+  getTarget: function() {
+    return this.getParams(0);
+  },
+
+  normalizeParams: function() {
+    return {
+      target : this.getTarget()
+    };
+  },
+
+  handleNormalizedParams: function(params) {
+    if (typeof params.target !== 'string' || !globals.REGEX_NODE_ID.test(params.target)) {
+      this.reject(new Error('non valid findnode query'));
+    } else {
+      this.params = [params.target];
+    }
+    return this;
+  },
+
+  normalizeResult: function() {
+    return {
+      nodes : this.getResult()[0].getTripleArray()
+    };
+  },
+
+  handleNormalizedResult: function(result) {
+    var nodes;
+    try {
+      nodes = new PeerArray(result.nodes);
+    } catch(e) {
+      return this.reject(new Error('non valid findnode response'));
+    }
+    return this.resolve(nodes);
+  }
+
+});
+});
+
+require.define("/lib/network/rpc/findvalue.js", function (require, module, exports, __dirname, __filename) {
+var RPC       = require('./rpc'),
+    globals   = require('../../globals'),
+    PeerArray = require('../../util/peerarray');
+
+
+var FindValueRPC = module.exports = RPC.extend({
+
+  initialize: function(queried_peer, target_id) {
+    if (arguments.length === 0) {
+      this.supr();
+    } else {
+      this.supr(queried_peer, 'FIND_VALUE', [target_id]);
+    }
+  },
+
+  getTarget: function() {
+    return this.getParams(0);
+  },
+
+  normalizeParams: function() {
+    return {
+      target : this.getTarget()
+    };
+  },
+
+  handleNormalizedParams: function(params) {
+    if (typeof params.target !== 'string' || !globals.REGEX_NODE_ID.test(params.target)) {
+      this.reject(new Error('non valid findvalue query'));
+    } else {
+      this.params = [params.target];
+    }
+    return this;
+  },
+
+  normalizeResult: function() {
+    var args   = this.getResult(),
+        nodes  = args[0].getTripleArray(),
+        result = args[1];
+    if (result) {
+      return {
+        nodes : nodes,
+        value : result.value,
+        exp   : result.exp || -1
+      };
+    } else {
+      return {
+        nodes : nodes
+      };
+    }
+  },
+
+  handleNormalizedResult: function(result) {
+    var nodes, value = null;
+    try {
+      if (result.nodes) {
+        nodes = new PeerArray(result.nodes);
+        if (result.value) {
+          value = {
+            value : result.value,
+            exp   : result.exp
+          };
+        }
+        this.resolve(nodes, value);
+      } else {
+        this.reject(new Error('non valid findvalue response'));
+      }
+    } catch(e) {
+      return this.reject(new Error('non valid findvalue response'));
+    }
+  }
+
+});
+});
+
+require.define("/lib/network/rpc/store.js", function (require, module, exports, __dirname, __filename) {
+var RPC     = require('./rpc'),
+    globals = require('../../globals');
+
+
+var StoreRPC = module.exports = RPC.extend({
+
+  initialize: function(queried_peer, key, value, exp) {
+    if (arguments.length === 0) {
+      this.supr();
+    } else {
+      this.supr(queried_peer, 'STORE', [key, value, exp]);
+    }
+  },
+
+  getKey: function() {
+    return this.getParams(0);
+  },
+
+  getValue: function() {
+    return this.getParams(1);
+  },
+
+  getExpiration: function() {
+    return this.getParams(2);
+  },
+
+  normalizeParams: function() {
+    var exp = this.getExpiration();
+    if (!exp || ~exp) exp = -1;
+    return {
+      key   : this.getKey(),
+      value : this.getValue(),
+      exp   : exp
+    };
+  },
+
+  handleNormalizedParams: function(params) {
+    if (typeof params.key !== 'string' || !globals.REGEX_NODE_ID.test(params.key)) {
+      return this.reject(new Error('non valid store key'));
+    } else {
+      this.params = [params.key, params.value, params.exp];
+    }
+  },
+
+  normalizeResult: function() {
+    return {};
+  },
+
+  handleNormalizedResult: function(result) {
+    this.resolve();
+  }
+
+});
+});
+
+require.define("/lib/data/value-store.js", function (require, module, exports, __dirname, __filename) {
+var EventEmitter      = require('../util/eventemitter'),
+    globals           = require('../globals'),
+    Deferred          = require('../util/deferred'),
+    Crypto            = require('../util/crypto'),
+
+    //@browserify-alias[lawnchair] ./storage/lawnchair -r
+    //@browserify-alias[basic]     ./storage/basic     -r
+    PersistentStorage = require('./storage/lawnchair'),
+
+    log               = require('../logging').ns('ValueStore');
+
+var ValueStore = module.exports = EventEmitter.extend({
+
+  /**
+   * Instanciate a new value management.
+   *
+   * @constructs
+   * @param  {Object} name  A unique name of the store
+   * @param  {Object} [options] Some configuration options..
+   * @param  {Boolean} [options.recover = true] If true, try to recover the last session that
+   *                                    coresponds to the address/nodeID. If false, session is
+   *                                    destructed and a new one is created.
+   */
+  initialize: function(name, options) {
+    this.supr();
+    
+    var config = this.config = {
+      recover    : true,
+      delayedRep : true
+    };
+    for (var option in options) {
+      config[option] = options[option];
+    }
+
+    var self = this;
+    this._store = new PersistentStorage({
+      name   : name,
+      record : 'KeyValue'
+    }, function() {});
+
+    log.debug('initializing' + ((options && options.recover) ? ' with recover' : ''));
+    if (config.recover) {
+      this._recover();
+    } else {
+      this._store.nuke();
+    }
+    this._RepTimeouts = {};
+    this._ExpTimeouts = {};
+
+    this.emit('initialized');
+  },
+
+  /**
+   * Stop the value management instance.
+   *  - clear all timeouts
+   * @return {this}
+   */
+  stop : function() {
+    for(var i in this._RepTimeouts) {
+      clearTimeout(this._RepTimeouts[i]);
+      delete this._RepTimeouts[i];
+    }
+    for(var j in this._ExpTimeouts) {
+      clearTimeout(this._ExpTimeouts[j]);
+      delete this._ExpTimeouts[j];
+    }
+    return this;
+  },
+
+  /**
+   * Store the given key/value in the storage. Provide an expirimation time.
+   * Return ta deferred object representig the state of the store (resolved : OK, rejected : not OK).
+   *
+   * In the background, timers for republish and expiration are started.
+   * For the xpiration time : negative value or not set : no expiration.
+   *
+   * Key/value are stored as object with properties :
+   *   key   - the key
+   *   value - the value that coresspond to the key (null if not found)
+   *   exp   - expiration date (null or negative if unlimited)
+   *   rep   - next republish date
+   *
+   * @public
+   * @see  Deferred
+   *
+   * @param  {String}   key   the key associated to the value
+   * @param  {*}        value the value of the key value
+   * @param  {Integer}  [exp = -1]   timestamp for the expiration date (UTC in ms). If negative value or not set : no expiration.
+   * @return {Deferred} a deferred object representing the state of the store
+   */
+
+  save: function(key, value, exp) {
+    var def = new Deferred();
+
+    var KeyValue = {
+      key   : key,
+      value : value
+    };
+
+    var now = new Date().getTime();
+
+    //set republish date
+    KeyValue.rep =  now + this._repTime;
+
+    //check expiration time : negative value means infinite.
+    KeyValue.exp = exp || -1;
+
+    if( KeyValue.exp > 0 && KeyValue.exp <= now) {
+      KeyValue.now = now;
+      log.warn('save failed : key-value already expired', KeyValue);
+      def.reject('key-value already expired');
+      return def;
+    }
+
+    //set the timers
+    this._setRepTimeout(KeyValue, this._repTime);
+    this._setExpTimeout(KeyValue, KeyValue.exp - now);
+
+    //and save
+    this._store.save(KeyValue, function(obj) {
+      def.resolve(obj);
+    });
+
+    //inform the rest of the world
+    this.emit('save', KeyValue);
+
+    return def;
+  },
+
+  /**
+   * Retrieve the value of the key.
+   *
+   * To catch the result, there is 2 ways :
+   *    - provide a callback function that will be called with value and
+   *    expiration date as arguments.
+   *    - handle the defered object that is returned, by this methods. If
+   *    result, value and expiration date are passed to the success calback
+   *    and if no result, the errback is called.
+   *
+   * Are passed as arguments of the callbak functions:
+   *   value - the value that coresspond to the key (null if not found)
+   *   exp   - expiration date (null or negative if unlimited)
+   *
+   * @see  Deferred
+   * @public
+   *
+   * @param  {String}   key      the key associated to the value
+   * @param  {Function} [callback] callback function
+   * @param  {Object}   [scope = this ValueStore obejct] the scope to apply to the callback function (by default : the instance of ValueManagement)
+   * @return {Deferred} a deferred object representing the state of the retrieve
+   */
+
+  retrieve: function(key, callback, scope) {
+    var def = new Deferred();
+
+    scope = scope || this;
+    this._store.get(key, function(obj) {
+      if(obj === null) {
+        if (callback) callback.call(scope, null);
+        def.reject();
+      }
+      else {
+        if (callback) callback.call(scope, obj.value, obj.exp);
+        def.resolve(obj.value, obj.exp);
+      }
+    });
+    return def;
+  },
+
+  /**
+   * Recover the last stored session.
+   *
+   * @private
+   */
+  _recover: function() {
+    var now = new Date().getTime();
+    var self = this;
+
+    this._store.each(function(kv){
+      try {
+        if(kv.exp >= 0 && kv.exp <= now) {
+          self._store.remove(kv.key);
+          return;
+        }
+        self._setExpTimeout(kv,kv.exp - now);
+        
+        if(typeof kv.rep == 'undefined' || kv.exp <= now) {
+          self._republish(kv);
+          kv.rep =  now + self._repTime;
+          self._store.save(kv);
+        }
+         
+        self._setRepTimeout(kv, kv.rep - now);
+        
+      } catch(e) {
+        self._store.remove(kv.key);
+      }
+    });
+  },
+
+  /**
+   * Reset a timeout for republish of the given Key/Value
+   *
+   * @private
+   * @param {[type]} kv      Key/Value
+   * @param {[type]} timeout the timeout
+   */
+  _setRepTimeout: function(kv, timeout) {
+    if(this._RepTimeouts[kv.key]) {
+        clearTimeout(this._RepTimeouts[kv.key]);
+        delete this._RepTimeouts[kv.key];
+      }
+
+    if(this.config.delayedRep) {
+      timeout = Math.floor(timeout*(1+(2*Math.random()-1)*this._repWindow));
+    }
+
+    var TOiD = setTimeout(function(kv, self) {
+      if(typeof kv == 'undefined') return; //in case of
+      
+      //check if it has already expired or if the timer is an old one
+      var now = new Date().getTime();
+      var hasExp = (typeof kv.exp == 'undefined' || kv.exp === null || kv.exp <0) ? false : (kv.exp <= now);
+      if(hasExp) return;
+      self._republish(kv);
+    }, timeout, kv, this);
+
+    this._RepTimeouts[kv.key] = TOiD;
+    return this;
+  },
+
+  /**
+   * Time between 2 republish processes of a stored value.
+   * By default, the value is the TIMEOUT_REPUBLISH global constant.
+   *
+   * @private
+   * @type {Integer}
+   */
+  _repTime : globals.TIMEOUT_REPUBLISH,
+
+  /**
+   * Percentage on republish timeout definong the window in whicch the repiublishs will occure.
+   * By default, the value is the TIMEOUT_REPUBLISH_WINDOW global constant.
+   * 
+   * @private
+   * @type {Integer}
+   */
+  _repWindow : globals.TIMEOUT_REPUBLISH_WINDOW,
+
+  /**
+   * Make a key/value being republished by calling the `republish` method of node instance.
+   *
+   * Before it checks if key/value is still existing. Reset a new timer.
+   *
+   * @param  {Object} kv the key/value object to republish
+   * @return {Object} this
+   */
+  _republish: function(kv) {
+    var self = this;
+    //check before if the key/value still exists
+      this._store.exists(kv.key, function(exists) {
+        if(exists) {
+          //reset republish date
+          var now = new Date().getTime();
+          kv.rep = now + self._repTime;
+
+          //reset a timer
+          self._setRepTimeout(kv, self._repTime);
+          
+          //sore it
+          self._store.save(kv);
+
+          //call node's republish method
+          self.emit('republish', kv.key, kv.value, kv.exp);
+        }
+      });
+    return this;
+  },
+
+  /**
+   * Reset a timeout for expiration of the given Key/Value.
+   * If the Key/Value has a negative expiration date (infinite), nothing is done.
+   *
+   * @private
+   * @param {[type]} kv      Key/Value
+   * @param {[type]} timeout the timeout
+   * @return this
+   */
+  _setExpTimeout: function(kv, timeout) {
+    if(kv.exp >= 0) {
+      if(this._ExpTimeouts[kv.key]) {
+        clearTimeout(this._ExpTimeouts[kv.key]);
+        delete this._ExpTimeouts[kv.key];
+      }
+
+      var TOiD = setTimeout(function(kv, self) {
+        if(typeof kv == 'undefined') return; //in case of
+
+        //check if it has already expired (old timer)
+        var now = new Date().getTime();
+        var hasExp = (typeof kv.exp == 'undefined' || kv.exp === null || kv.exp <0) ? false : (kv.exp <= now);
+        if(! hasExp) return;
+        
+        self._expire(kv);
+      }, timeout, kv, this);
+
+      this._ExpTimeouts[kv.key] = TOiD;
+    }
+    return this;
+  },
+
+  /**
+   * Make a key/value expire. Before check if stil exists.
+   *
+   * @private
+   * @param  {Object} kv the key/value to make expire
+   * @return {Object} this
+   */
+  _expire: function(kv) {
+    var self = this;
+    //check before if the key/value still exists
+      this._store.exists(kv.key, function(exists) {
+        if(exists) {
+          self._store.remove(kv.key);
+          self.emit('expire', kv);
+        }
+      });
+    return this;
+  }
+});
+});
+
+require.define("/lib/data/storage/lawnchair.js", function (require, module, exports, __dirname, __filename) {
 /**
  * Lawnchair!
  * --- 
@@ -6249,1264 +11047,40 @@ if(module)
   module.exports = Lawnchair;
 });
 
-require.define("/dht/iterativefind/iterativefind-1.js", function (require, module, exports, __dirname, __filename) {
-var Deferred           = require('../../util/deferred'),
-    PeerArray          = require('../../util/peerarray'),
-    XORSortedPeerArray = require('../../util/xorsorted-peerarray'),
-    globals            = require('../../globals'),
-    Peer               = require('../peer');
+require.define("/lib/bootstrap.js", function (require, module, exports, __dirname, __filename) {
+var StateEventEmitter = require('./util/state-eventemitter'),
+    Crypto            = require('./util/crypto'),
+    globals           = require('./globals.js'),
 
+    Peer              = require('./dht/peer'),
+    PeerArray         = require('./util/peerarray'),
 
-var IterativeFind1 = module.exports = Deferred.extend({
-
-  initialize: function(nodeInstance, target, targetType) {
-    this.supr();
-    
-    this._node   = nodeInstance;
-    this._target = (target instanceof Peer) ? target.getID() : target;
-
-    this._targetType = targetType || 'NODE'; // NODE or VALUE
-
-    this.HeardOf    = new XORSortedPeerArray().setRelative(this._target); // Peers that we heard of
-    this.Reached    = new XORSortedPeerArray().setRelative(this._target); // Peers queried that successfully responded
-    this.Queried    = new PeerArray(); // Peers that we heard of and we've already queried
-    this.NotReached = new PeerArray(); // Peers queried but failed to respond
-    this.Trap       = new PeerArray(); // Peers queried but that appears unrelevant to query
-  },
-
-  startWith: function(peers) {
-    this.HeardOf.add(peers);
-    this.HeardOf.first(globals.ALPHA)
-                .sendThemFindRPC(this);
-    this.progress();
-    return this;
-  },
-
-  handleNewHeardOf: function(newHeardOf) {
-    this.HeardOf.add(newHeardOf);
-
-    if (this.HeardOf.newClosest()) {
-      var toQuery = this.HeardOf.first(globals.ALPHA);
-      
-      // move the pending requests to trash
-      this.Trap.add(this.Queried.difference(toQuery)
-                                .difference(this.Reached)
-                                .difference(this.NotReached));
-
-      toQuery.sendThemFindRPC(this);
-    } else {
-        this.HeardOf.first(    globals.K)
-                   .difference(        this.Queried)
-                   .sendThemFindRPC(  this);
-    }
-  },
-
-  checkIfWeGotIt: function() {
-    var closest_reached_peer;
-    try {
-      closest_reached_peer = this.Reached.getPeer(0);
-    } catch(e) {}
-
-    if (closest_reached_peer && closest_reached_peer.getID() === this._target) {
-      this.resolve(closest_reached_peer, this.Reached);
-      return true;
-    }
-    return false;
-  },
-
-  checkIfItsFinished: function() {
-    //check before if we got it (optionnal : should not append)
-    this.checkIfWeGotIt();
-
-    var reached_and_not_reached = this.Reached
-                                      .union(this.NotReached)
-                                      .union(this.Trap);
-
-    if (this.Queried.equals(reached_and_not_reached)) {
-      //no more waiting queries : finished
-      this.reject(this.Reached);
-      return true;
-    }
-    return false;
-  },
-
-  handleRPCFindComplete: function(fromPeer, response, found) {
-    this.Reached.addPeer(fromPeer);
-    this.NotReached.removePeer(fromPeer);
-    this.Trap.removePeer(fromPeer);
-    
-    if (found) {
-      this.resolve(response, this.Reached);
-      return;
-    }
-      
-    if (this.checkIfWeGotIt()) {
-      return;
-    }
-    this.handleNewHeardOf(response);
-    this.progress();
-    this.checkIfItsFinished();
-  },
-
-  handleRPCFindReject: function(fromPeer) {
-    this.NotReached.addPeer(fromPeer);
-    this.Reached.removePeer(fromPeer);
-    this.Trap.removePeer(fromPeer);
-    
-    this.progress();
-    this.checkIfItsFinished();
-  },
-
-  sendFindRPC: function(peers) {
-    if (peers.length === 0 )
-      return;
-
-    var requests = this._node._reactor.sendRPCs(peers, 'FIND_' + this._targetType, this._target);
-
-    this.Queried.add(peers);
-    this.Trap.remove(peers);
-
-    var self = this;
-    requests.forEach(function(request) {
-      request.then(
-        //callback
-        function(response, found) {
-          if (self.inProgress() && !self.Trap.contains(request.getQueried()))
-            self.handleRPCFindComplete(request.getQueried(), response, found);
-        },
-        //errback
-        function() {
-          if (self.inProgress() && !self.Trap.contains(request.getQueried()))
-            self.handleRPCFindReject(request.getQueried());
-        }
-      );
-    });
-  }
-
-});
-});
-
-require.define("/util/deferred.js", function (require, module, exports, __dirname, __filename) {
-var StateEventEmitter = require('./state-eventemitter');
-
-
-//
-// Optimized event with memory for Deferreds
-//
-var DeferredEvent = function() {
-  this.callbacks = [];
-  this.args      = undefined;
-  this.disabled  = false;
-};
-
-DeferredEvent.prototype.addListener = function(listener, scope) {
-  if (this.fired()) {
-    listener.apply(scope, this.args);
-  } else {
-    this.callbacks.push({
-      listener : listener,
-      scope    : scope
-    });
-  }
-};
-
-DeferredEvent.prototype.removeListener = function(listener) {
-  var i = this.callbacks.length - 1;
-  for (; i >= 0; i--) {
-    if (this.callbacks[i].listener === listener) {
-      this.callbacks.splice(i, 1);
-    }
-  }
-};
-
-DeferredEvent.prototype.removeAllListeners = function() {
-  this.callbacks = [];
-};
-
-DeferredEvent.prototype.disable = function() {
-  this.addListener = this.removeListener = this.fire = function() {};
-  this.callbacks   = undefined;
-  this.disabled    = true;
-};
-
-DeferredEvent.prototype.fired = function() {
-  return (typeof this.args !== 'undefined');
-};
-
-DeferredEvent.prototype.fire = function(args) {
-  this.fire = function() {};
-  this.args = args;
-  var i = 0,
-      l = this.callbacks.length;
-  for (; i < l; i++) {
-    var callback = this.callbacks[i];
-    callback.listener.apply(callback.scope, args);
-  }
-  this.callbacks = undefined;
-};
-
-var Deferred = module.exports = StateEventEmitter.extend({
-  
-  initialize: function() {
-    this.supr();
-
-    this.addEvent('rejected', DeferredEvent);
-    this.addEvent('resolved', DeferredEvent);
-    this.addEvent('progress');
-    this.setStateSilently('progress');
-
-    if (arguments.length > 0) {
-      this.then.apply(this, arguments);
-    }
-  },
-
-  //
-  // Callbacks functions
-  //
-
-  then: function(callback, errback, progress) {
-    var context = arguments[arguments.length - 1];
-
-    if (typeof context === 'function')
-      context = this;
-
-    this.addCallback(callback, context)
-        .addErrback(errback,   context)
-        .addProgress(progress, context);
-
-    return this;
-  },
-
-  pipe: function() {
-    var deferred  = new Deferred(),
-        callbacks = arguments,
-        context   = arguments[arguments.length - 1];
-
-    if (typeof context === 'function')
-      context = this;
-
-    var pipes = ['resolve', 'reject', 'progress'].map(function(action, index) {
-      return (typeof callbacks[index] === 'function') ? function() {
-        var returned = callbacks[index].apply(context, arguments);
-        if (typeof returned === 'undefined') {
-          deferred[action]();
-        } else if (Deferred.isPromise(returned)) {
-          returned.then(deferred.resolve, deferred.reject, deferred.progress, deferred);
-        } else {
-          if (returned instanceof Error) {
-            action = 'reject';
-          }
-          deferred[action](returned);
-        }
-      } : undefined;
-    });
-
-    this.then.apply(this, pipes);
-    return deferred;
-  },
-
-  always: function() {
-    this.addCallback.apply(this, arguments)
-        .addErrback.apply(this, arguments);
-
-    return this;
-  },
-
-  addCallback: function(callback, context) {
-    if (typeof callback === 'function')
-      this.on('resolved', callback, context || this);
-    return this;
-  },
-
-  addErrback: function(errback, context) {
-    if (typeof errback === 'function')
-      this.on('rejected', errback, context || this);
-    return this;
-  },
-
-  addProgress: function(progress, context) {
-    if (typeof progress === 'function')
-      this.on('progress', progress, context || this);
-    return this;
-  },
-
-  //
-  // Firing functions
-  //
-
-  resolve: function() {
-    this.disable('rejected');
-    this._complete('resolved', arguments);
-    return this;
-  },
-
-  reject: function() {
-    this.disable('resolved');
-    this._complete('rejected', arguments);
-    return this;
-  },
-
-  _complete: function(state, args) {
-    // Deactivate firing functions
-    var self = this;
-    this.resolve = this.reject = this.progress = function() {
-      return self;
-    };
-
-    // Free the progress event
-    this.disable('progress');
-    
-    // Fire the event chain
-    args = Array.prototype.slice.call(args);
-    args.unshift(state);
-    this.setState.apply(this, args);
-  },
-
-  progress: function() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift('progress');
-    this.emit.apply(this, args);
-    return this;
-  },
-
-  //
-  // Helpers
-  //
-
-  getResolvePassedArgs: function() {
-    if (!this.isResolved()) {
-      throw new Error('not resolved');
-    } else {
-      return this._events.resolved.args;
-    }
-  },
-
-  getRejectPassedArgs: function() {
-    if (!this.isRejected()) {
-      throw new Error('not rejected');
-    } else {
-      return this._events.rejected.args;
-    }
-  },
-
-  isCompleted: function() {
-    return (
-      this.fired('resolved') ||
-      this.fired('rejected')
-    );
-  },
-
-  isResolved: function() {
-    return this.stateIs('resolved');
-  },
-
-  isRejected: function() {
-    return this.stateIs('rejected');
-  },
-
-  inProgress: function() {
-    return this.stateIs('progress');
-  },
-
-  cancel: function() {
-    this.disable('resolved');
-    this.disable('rejected');
-  }
-
-}).statics({
-  
-  /**
-   * Static function which accepts a promise object
-   * or any kind of object and returns a promise.
-   * If the given object is a promise, it simply returns
-   * the same object, if it's a value it returns a
-   * new resolved deferred object
-   *
-   * @param  {Object} promise Promise or value
-   * @return {Deferred}
-   */
-  when: function(promise) {
-    if (this.isPromise(promise))
-      return promise;
-
-    return new Deferred().resolve(promise);
-  },
-
-  //
-  // Inspired by when.js from Brian Cavalier
-  //
-  whenAtLeast: function(promises, toResolve) {
-    toResolve    = Math.max(1, Math.min(toResolve || 1, promises.length));
-
-    var deferred = new Deferred(),
-        promisesLeft = promises.length,
-        resolved = [],
-        rejected = [];
-
-    var finish = function() {
-      if (--promisesLeft === 0) {
-        if (resolved.length >= toResolve) {
-          deferred.resolve(resolved, rejected);
-        } else {
-          deferred.reject(resolved, rejected);
-        }
-      }
-    };
-
-    var failure = function() {
-      rejected.push(this);
-      finish();
-    };
-
-    var success = function() {
-      resolved.push(this);
-      finish();
-    };
-
-    for (var i = 0; i < promises.length; i++) {
-      Deferred.when(promises[i])
-              .then(success.bind(promises[i]), failure.bind(promises[i]), deferred.progress);
-    }
-    return deferred;
-  },
-  
-  whenAll: function(promises) {
-    return Deferred.whenSome(promises, promises.length);
-  },
-
-  whenSome: function(promises, toResolve) {
-    var results  = [],
-        deferred = new Deferred();
-
-    toResolve = Math.max(0, Math.min(toResolve, promises.length));
-    var success = function() {
-      var index = promises.indexOf(this);
-      results[index] = Array.prototype.slice.call(arguments);
-      if (--toResolve === 0) {
-        deferred.resolve.apply(deferred, results);
-      }
-    };
-
-    if (toResolve === 0) {
-      deferred.resolve.apply(deferred, results);
-    } else {
-      for (var i = 0; i < promises.length; i++) {
-        Deferred.when(promises[i])
-                .then(success.bind(promises[i]), deferred.reject, deferred.progress);
-      }
-    }
-    return deferred;
-  },
-
-  whenMap: function(promises, map) {
-    var results  = [],
-        deferred = new Deferred(),
-        total    = promises.length,
-        success;
-        
-    success = function() {
-      var index = promises.indexOf(this);
-      results[index] = map.apply(this, arguments);
-      if (--total === 0) {
-        deferred.resolve(results);
-      }
-    };
-
-    for (var i = 0, l = promises.length; i < l; i++) {
-      Deferred.when(promises[i])
-              .then(success.bind(promises[i]), deferred.reject, deferred.progress);
-    }
-    return deferred;
-  },
-
-  isPromise: function(promise) {
-    return promise && typeof promise.then === 'function';
-  }
-
-});
-});
-
-require.define("/util/peerarray.js", function (require, module, exports, __dirname, __filename) {
-var klass   = require('klass'),
-    Peer    = require('../dht/peer');
-
-var PeerArray = module.exports = klass({
-
-  initialize: function(peers) {
-    this.array = [];
-    if (peers) {
-      this.add(peers);
-    }
-  },
-
-  //
-  // Mutator methods
-  //
-
-  add: function(peers) {
-    var that = this;
-    peers.forEach(function(peer) {
-      that.addPeer(peer);
-    });
-    return this;
-  },
-
-  addPeer: function(peer) {
-    peer = (peer instanceof Peer) ? peer : new Peer(peer);
-    if (!this.contains(peer)) {
-      this.array.push(peer);
-    }
-    return this;
-  },
-
-  remove: function(rmPeers) {
-    this.array = this.array.filter(function(peer) {
-      return rmPeers.every(function(rmPeer) {
-        return !(rmPeer.equals(peer));
-      });
-    });
-    return this;
-  },
-
-  removePeer: function (rmPeer) {
-    var index = this.find(rmPeer);
-    if (~index)
-      this.array.splice(index, 1);
-    
-    return this;
-  },
-
-  move: function(oldIndex, newIndex) {
-    if (newIndex < 0 || newIndex >= this.size())
-      throw new RangeError('new index out of range');
-
-    this.array.splice(newIndex, 0, this.array.splice(oldIndex, 1)[0]);
-    return this;
-  },
-
-  sort: function(compareFn) {
-    this.array.sort(compareFn);
-    return this;
-  },
-
-  //
-  // Accessor Methods
-  //
-
-  toArray: function() {
-    return this.array;
-  },
-
-  getTripleArray: function() {
-    return this.array.map(function(peer) {
-      return peer.getTriple();
-    });
-  },
-
-  getPeer: function(index) {
-    if (index instanceof Peer) {
-      index = this.find(index);
-      if (index === -1)
-        throw new ReferenceError('this peer does not exist');
-    } else {
-      if (index < 0 || index >= this.size())
-        throw new RangeError(index + ' out of range');
-    }
-    return this.array[index];
-  },
-
-  size: function() {
-    return this.array.length;
-  },
-
-  find: function(peer) {
-    var i = this.array.indexOf(peer);
-    if (~i) {
-      return i;
-    } else {
-      for (i = 0, l = this.size(); i < l; i++)
-        if (peer.equals(this.array[i]))
-          return i;
-    }
-    return -1;
-  },
-
-  contains: function(sample) {
-    if (sample instanceof Peer) {
-      return (this.find(sample) !== -1);
-    }
-
-    var that = this;
-    return sample.every(function(samplePeer) {
-      return that.array.some(function(peer) {
-        return peer.equals(samplePeer);
-      });
-    });
-  },
-
-  equals: function(peers) {
-    peers = (peers instanceof PeerArray) ? peers : (new PeerArray(peers));
-    return this.contains(peers) && peers.contains(this);
-  },
-
-  empty: function() {
-    return this.array.length === 0;
-  },
-
-  join: function(separator) {
-    return this.array.join(separator);
-  },
-
-  clone: function(array) {
-    if (array || array === null) {
-      var clone = new this.constructor();
-      clone.array = array || [];
-      for (var prop in this) {
-        if (this.hasOwnProperty(prop) && !Array.isArray(this[prop]))
-          clone[prop] = this[prop];
-      }
-      return clone;
-    } else {
-      return this.clone(this.array.slice());
-    }
-  },
-
-  union: function(peers) {
-    return this.clone().add(peers);
-  },
-
-  difference: function(peers) {
-    var clone = this.clone();
-    if (peers instanceof Peer) {
-      clone.removePeer(peers);
-    } else {
-      clone.remove(peers);
-    }
-    return clone;
-  },
-
-  first: function(number, iterator) {
-    if (!number) {
-      number = 1;
-    } else if (typeof number === 'function') {
-      iterator = number;
-      number = 1;
-    }
-
-    if (iterator) {
-      var clone = this.clone(null),
-          i = 0, r = 0, l = this.size();
-      while (r < number && i < l) {
-        if (iterator.call(null, this.array[i]) === true) {
-          clone.addPeer(this.array[i]);
-          r++;
-        }
-        i++;
-      }
-      return clone;
-    } else {
-      return this.clone(this.array.slice(0, number));
-    }
-  },
-
-  //
-  // Iteration methods
-  //
-
-  forEach: function(iterator, context) {
-    this.array.forEach(iterator, context);
-    return this;
-  },
-
-  map: function(iterator, context) {
-    return this.array.map(iterator, context);
-  },
-
-  reduce: function(iterator, context) {
-    return this.array.reduce(iterator, context);
-  },
-
-  filter: function(iterator, context) {
-    return this.clone(this.array.filter(iterator, context));
-  },
-
-  some: function(iterator, context) {
-    return this.array.some(iterator, context);
-  },
-
-  every: function(iterator, context) {
-    return this.array.every(iterator, context);
-  },
-
-  // -- DEPRECATED --
-  sendThemFindRPC : function(iter_lookup) {
-    iter_lookup.sendFindRPC(this);
-    return this;
-  }
-
-});
-});
-
-require.define("/dht/peer.js", function (require, module, exports, __dirname, __filename) {
-var klass   = require('klass'),
-    Crypto  = require('../util/crypto'),
-    globals = require('../globals');
-
-var Peer = module.exports = klass({
-
-  /**
-   * Peer constructor
-   *
-   * @param {String|Array} address Address of the Peer or tuple representation
-   * @param {String}       id      ID of the Peer
-   */
-  initialize: function() {
-    var args  = arguments;
-
-    if (Array.isArray(args[0])) {
-      args  = args[0];
-    }
-
-    this.touch();
-    this._distance = null;
-    this._address  = args[0];
-    this._id       = args[1];
-
-    if (!this._validateID(this._id)) {
-      throw new Error('non valid ID');
-    }
-  },
-
-  //
-  // Public
-  //
-
-  touch: function() {
-    this._lastSeen = new Date().getTime();
-    return this;
-  },
-
-  setID: function(id) {
-    this._id = id;
-  },
-
-  setAddress: function(address) {
-    this._address = address;
-  },
-
-  getLastSeen: function() {
-    return this._lastSeen;
-  },
-
-  getID: function() {
-    return this._id;
-  },
-
-  cacheDistance: function(id) {
-    this._distance = this._distance || this.getDistanceTo(id);
-    return this;
-  },
-
-  getDistance: function() {
-    return this._distance;
-  },
-
-  getDistanceTo: function(id) {
-     return Crypto.distance(this.getID(), id);
-  },
-
-  getAddress: function() {
-    return this._address;
-  },
-
-  getTriple: function() {
-    return [this._address, this._id];
-  },
-
-  equals: function(peer) {
-    return (this._id === peer.getID());
-  },
-
-  toString: function() {
-    return '<' + this._address + '#' + this._id + '>';
-  },
-
-  //
-  // Private
-  //
-
-  _validateID: function(id) {
-    return typeof id === 'string' && globals.REGEX_NODE_ID.test(id);
-  },
-
-  _generateID: function() {
-    //return globals.DIGEST(this._address);
-    return Crypto.digest.randomSHA1();
-  }
-
-});
-});
-
-require.define("/util/crypto.js", function (require, module, exports, __dirname, __filename) {
-/*
- * Crypto-JS v2.5.3
- * http://code.google.com/p/crypto-js/
- * Copyright (c) 2011, Jeff Mott. All rights reserved.
- * http://code.google.com/p/crypto-js/wiki/License
- */
-
-var Crypto = module.exports = {
-  // Bit-wise rotate left
-  rotl: function (n, b) {
-    return (n << b) | (n >>> (32 - b));
-  },
-
-  // Bit-wise rotate right
-  rotr: function (n, b) {
-    return (n << (32 - b)) | (n >>> b);
-  },
-
-  // Swap big-endian to little-endian and vice versa
-  endian: function (n) {
-    // If number given, swap endian
-    if (n.constructor == Number) {
-      return Crypto.rotl(n, 8) & 0x00FF00FF | Crypto.rotl(n, 24) & 0xFF00FF00;
-    }
-
-    // Else, assume array and swap all items
-    for (var i = 0; i < n.length; i++)
-      n[i] = Crypto.endian(n[i]);
-    return n;
-  },
-
-  // Generate an array of any length of random bytes
-  randomBytes: function (n) {
-    for (var bytes = []; n > 0; n--)
-      bytes.push(Math.floor(Math.random() * 256));
-    return bytes;
-  },
-
-  // Convert a byte array to big-endian 32-bit words
-  bytesToWords: function (bytes) {
-    for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
-      words[b >>> 5] |= bytes[i] << (24 - b % 32);
-    return words;
-  },
-
-  // Convert big-endian 32-bit words to a byte array
-  wordsToBytes: function (words) {
-    for (var bytes = [], b = 0; b < words.length * 32; b += 8)
-      bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
-    return bytes;
-  },
-
-  // Convert a byte array to a hex string
-  bytesToHex: function (bytes) {
-    for (var hex = [], i = 0; i < bytes.length; i++) {
-      hex.push((bytes[i] >>> 4).toString(16));
-      hex.push((bytes[i] & 0xF).toString(16));
-    }
-    return hex.join("");
-  },
-
-  // Convert a hex string to a byte array
-  hexToBytes: function (hex) {
-    for (var bytes = [], c = 0; c < hex.length; c += 2)
-      bytes.push(parseInt(hex.substr(c, 2), 16));
-    return bytes;
-  },
-
-  /**
-   * Compares two bytes array and tell which
-   * one is greater than the other.
-   * It is possible to use this function with
-   * `Array.prototype.sort`
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort
-   *
-   * @param  {Array} a Bytes array
-   * @param  {Array} b Bytes array
-   * @return {-1|0|1}
-   */
-  compareBytes: function(a, b, xor) {
-    var i, l,
-        byte_a, byte_b;
-    if (typeof xor !== 'undefined') {
-      for (i = 0, l = a.length; i < l; i++) {
-        byte_a = a[i] ^ xor[i];
-        byte_b = b[i] ^ xor[i];
-        if (byte_a[i] > byte_b[i])      return 1;
-        else if (byte_a[i] < byte_b[i]) return -1;
-      }
-    } else {
-      for (i = 0, l = a.length; i < l; i++) {
-        if (a[i] > b[i])      return 1;
-        else if (a[i] < b[i]) return -1;
-      }
-    }
-    return 0;
-  },
-
-  compareHex: function(a, b, xor) {
-    var c, l,
-        byte_a, byte_b, byte_x;
-    if (typeof xor !== 'undefined') {
-      for (c = 0, l = a.length; c < l; c += 2) {
-        byte_x = parseInt(xor.substr(c, 2), 16);
-        byte_a = parseInt(a.substr(c, 2), 16) ^ byte_x;
-        byte_b = parseInt(b.substr(c, 2), 16) ^ byte_x;
-        if (byte_a > byte_b)      return 1;
-        else if (byte_a < byte_b) return -1;
-      }
-    } else {
-      for (c = 0, l = a.length; c < l; c += 2) {
-        byte_a = parseInt(a.substr(c, 2), 16);
-        byte_b = parseInt(b.substr(c, 2), 16);
-        if (byte_a > byte_b)      return 1;
-        else if (byte_a < byte_b) return -1;
-      }
-    }
-    return 0;
-  },
-
-  /**
-   * Return the position of the first different bit
-   * between two hexadecimal strings
-   *
-   * @param {String} hex1 the first hexadecimal string
-   * @param {String} hex2 the second hexadecimal string
-   * @return {Integer} the position of the bit
-   * @see http://jsperf.com/integral-binary-logarithm/3
-   */
-  distance: function(hex1, hex2, bytes) {
-    if (bytes === true) {
-      hex1 = Crypto.bytesToHex(hex1);
-      hex2 = Crypto.bytesToHex(hex2);
-    }
-
-    if (hex1 === hex2) {
-      return 0;
-    }
-
-    var length = hex1.length,
-        diff   = 0;
-    if (hex2.length !== length) {
-      throw new TypeError('different length string', hex1, hex2);
-    }
-
-    for (var c = 0; c < length; c+=2) {
-      diff = parseInt(hex1.substr(c, 2), 16) ^ parseInt(hex2.substr(c, 2), 16);
-      if (diff > 0)
-        return 4*(length - c) + Math.floor(Math.log(diff) / Math.LN2) - 7;
-    }
-    return 0;
-  }
-};
-
-
-Crypto.charenc = {};
-Crypto.charenc.Binary = {
-
-  // Convert a string to a byte array
-  stringToBytes: function (str) {
-    for (var bytes = [], i = 0; i < str.length; i++)
-    bytes.push(str.charCodeAt(i) & 0xFF);
-    return bytes;
-  },
-
-  // Convert a byte array to a string
-  bytesToString: function (bytes) {
-    for (var str = [], i = 0; i < bytes.length; i++)
-    str.push(String.fromCharCode(bytes[i]));
-    return str.join("");
-  }
-
-};
-
-Crypto.charenc.UTF8 = {
-
-  // Convert a string to a byte array
-  stringToBytes: function (str) {
-    return Crypto.charenc.Binary.stringToBytes(unescape(encodeURIComponent(str)));
-  },
-
-  // Convert a byte array to a string
-  bytesToString: function (bytes) {
-    return decodeURIComponent(escape(Crypto.charenc.Binary.bytesToString(bytes)));
-  }
-
-};
-
-// Digest (SHA1)
-
-Crypto.digest = {
-
-  SHA1: function(message) {
-    var digestbytes = Crypto.wordsToBytes(Crypto.digest._sha1(message));
-    return Crypto.bytesToHex(digestbytes);
-  },
-
-  randomSHA1: function(id, range) {
-    var bytes = [];
-    var index = 0;
-
-    if (id) {
-      var distance;
-      if (typeof range.min === 'number' &&
-          typeof range.max === 'number') {
-        distance = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-      }
-      else if (typeof range === 'number') {
-        distance = range;
-      }
-
-      if (distance && distance > 0) {
-        bytes = Crypto.hexToBytes(id);
-        index = Math.floor(20 - distance / 8);
-
-        var pow = (distance - 1) % 8;
-        var max = Math.pow(2, pow + 1) - 1;
-        var min = Math.pow(2, pow);
-        bytes[index] ^= Math.floor(Math.random() * (max - min + 1)) + min;
-        
-        index += 1;
-      }
-      else {
-        return id;
-      }
-    }
-
-    for (; index < 20; index++) {
-      bytes[index] = Math.floor(Math.random() * 256);
-    }
-    return Crypto.bytesToHex(bytes);
-  },
-
-  _sha1: function (message) {
-    // Convert to byte array
-    if (message.constructor == String) message = Crypto.charenc.UTF8.stringToBytes(message);
-
-    /* else, assume byte array already */
-    var m  = Crypto.bytesToWords(message),
-    l  = message.length * 8,
-    w  =  [],
-    H0 =  1732584193,
-    H1 = -271733879,
-    H2 = -1732584194,
-    H3 =  271733878,
-    H4 = -1009589776;
-
-    // Padding
-    m[l >> 5] |= 0x80 << (24 - l % 32);
-    m[((l + 64 >>> 9) << 4) + 15] = l;
-
-    for (var i = 0; i < m.length; i += 16) {
-
-      var a = H0,
-          b = H1,
-          c = H2,
-          d = H3,
-          e = H4;
-
-      for (var j = 0; j < 80; j++) {
-
-        if (j < 16) w[j] = m[i + j];
-        else {
-          var n = w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16];
-          w[j] = (n << 1) | (n >>> 31);
-        }
-
-        var t = ((H0 << 5) | (H0 >>> 27)) + H4 + (w[j] >>> 0) + (
-          j < 20 ? (H1 & H2 | ~H1 & H3) + 1518500249 :
-          j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
-          j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
-                   (H1 ^ H2 ^ H3) - 899497514);
-
-        H4 =  H3;
-        H3 =  H2;
-        H2 = (H1 << 30) | (H1 >>> 2);
-        H1 =  H0;
-        H0 =  t;
-
-      }
-
-      H0 += a;
-      H1 += b;
-      H2 += c;
-      H3 += d;
-      H4 += e;
-
-    }
-
-    return [H0, H1, H2, H3, H4];
-  }
-
-};
-});
-
-require.define("/util/xorsorted-peerarray.js", function (require, module, exports, __dirname, __filename) {
-var SortedPeerArray = require('./sorted-peerarray'),
-    Crypto          = require('./crypto');
-    Peer            = require('../dht/peer')
-
-var XORSortedPeerArray = module.exports = SortedPeerArray.extend({
-  
-  initialize: function(peers, relative) {
-    if (relative) {
-      this.setRelative(relative);
-    }
-    this.supr(peers);
-  },
-
-  setRelative: function(relative) {
-    this._relative = (relative instanceof Peer) ? relative.getID() : relative;
-    return this;
-  },
-
-  _insertionSort: function(newPeer) {
-    if (!this._relative) throw new Error('no relative node id');
-    return this.supr(newPeer);
-  },
-
-  compareFn: function(a, b) {
-    if (!a && !b) return 0;
-    if (!a) return 1;
-    if (!b) return -1;
-    return Crypto.compareHex(a.getID(), b.getID(), this._relative);
-  }
-
-});
-});
-
-require.define("/util/sorted-peerarray.js", function (require, module, exports, __dirname, __filename) {
-var PeerArray = require('./peerarray'),
-    Peer      = require('../dht/peer');
-
-var SortedPeerArray = module.exports = PeerArray.extend({
-  
-  initialize: function(peers) {
-    this._newClosestIndex = -1;
-    this.supr(peers);
-  },
-
-  add: function(peers) {
-    var newIndex = Infinity;
-    peers.forEach(function(peer) {
-      var index = this._insertionSort(peer);
-      if (index !== -1) {
-        newIndex = Math.min(newIndex, index);
-      }
-    }, this);
-    this._newClosestIndex = isFinite(newIndex) ? newIndex : -1;
-    return this;
-  },
-
-  addPeer: function(peer) {
-    this._newClosestIndex = this._insertionSort(peer);
-    return this;
-  },
-
-  sort: function() {
-    this.supr(this.compareFn);
-  },
-
-  compare: function(compare) {
-    this.compareFn = compare;
-    return this;
-  },
-
-  newClosest: function() {
-    return this._newClosestIndex === 0;
-  },
-
-  newClosestIndex: function() {
-    return this._newClosestIndex;
-  },
-
-  _insertionSort: function(peer) {
-    if (!(peer instanceof Peer)) {
-      peer = new Peer(peer);
-    }
-    var i = -1, diff = 0, l = this.size();
-    do {
-      diff = this.compareFn(peer, this.array[++i]);
-      if (diff === 0) return -1;
-    } while (diff > 0 && i < l);
-
-    this.array.splice(i, 0, peer);
-    return i;
-  },
-
-  compareFn: function(a, b) {
-    return a - b;
-  }
-
-});
-});
-
-require.define("/node.js", function (require, module, exports, __dirname, __filename) {
-var StateEventEmitter  = require('./util/state-eventemitter'),
-    Deferred           = require('./util/deferred'),
-    Crypto             = require('./util/crypto'),
-    PeerArray          = require('./util/peerarray'),
-    XORSortedPeerArray = require('./util/xorsorted-peerarray'),
-    IterativeDeferred  = require('./util/iterative-deferred'),
- 
-    globals            = require('./globals.js'),
-
-    RoutingTable       = require('./dht/routing-table'),
-    Peer               = require('./dht/peer'),
-    BootstrapPeer      = require('./dht/bootstrap-peer'),
-
-    Reactor            = require('./network/reactor'),
     PingRPC            = require('./network/rpc/ping'),
     FindNodeRPC        = require('./network/rpc/findnode'),
     FindValueRPC       = require('./network/rpc/findvalue'),
     StoreRPC           = require('./network/rpc/store'),
 
-    ValueManagement    = require('./data/value-store');
- 
+    Reactor           = require('./network/reactor');
+    
 
-var Node = module.exports = Peer.extend({
-  /**
-   * TODO : explicit the options..
-   *
-   *
-   * @param  {[type]} id      [description]
-   * @param  {[type]} options [description]
-   * @return {[type]}
-   */
+var Bootstrap = module.exports = StateEventEmitter.extend({
+
   initialize: function(id, options) {
-    // extends Peer
-    this.supr('non-defined', id || Crypto.digest.randomSHA1());
-
-    //implements StateEventEmitter
-    for (var fn in StateEventEmitter.prototype) {
-      if (fn !== 'initialize') this[fn] = StateEventEmitter.prototype[fn];
-    }
-    StateEventEmitter.prototype.initialize.call(this);
-
+    this.supr();
     this.setState('initializing');
 
-    // store config
+    if (!id)
+      this._id = this._generateID();
+    else
+      this._id = id;
+
     var config = this.config = {};
     for (var option in options) {
       config[option] = options[option];
     }
 
-    // extracts bootstraps from the config object
-    if (!Array.isArray(config.bootstraps) || config.bootstraps.length === 0) {
-      throw new Error('no bootstrap to join the network');
-    } else {
-      this._bootstraps = config.bootstraps.map(function(address) {
-        return new BootstrapPeer(address);
-      });
-    }
+    this._peers = new PeerArray();
 
-    // instantiate a routing table and listen to it
-    this._routingTable = new RoutingTable(this, config.routing_table);
-    this._routingTable.on(this.routingTableEvents, this);
-
-    // instantiate a reactor and listen to it
     this._reactor = new Reactor(this, config.reactor);
     this._reactor.register({
       PING       : PingRPC,
@@ -7518,15 +11092,40 @@ var Node = module.exports = Peer.extend({
 
     this.setState('initialized');
   },
+
+  //
+  // Events
+  //
+
+  reactorEvents : {
+    // Connection
+    connected: function(address) {
+      this._me      = new Peer(address, this._id);
+      this._address = address;
+      this.setState('connected');
+    },
+
+    disconnected: function() {
+      this.setState('disconnected');
+    },
+
+    // RPC
+    reached: function(peer) {
+      peer.touch();
+      console.log('add peers', peer.getAddress());
+      this._peers.addPeer(peer);
+    },
+
+    queried: function(rpc) {
+      this._handleRPCQuery(rpc);
+    }
+  },
+
   
-  /**
-   * Connect method : make the reactor connect.
-   * @public
-   *
-   * @param  {Function} [callback] - callback to be called when connected
-   * @param  {Object}   [context = this] - context of the callback
-   * @return {self}
-   */
+  //
+  // Network functions
+  //
+
   connect: function(callback, context) {
     if (this.stateIsNot('connected')) {
       if (callback) {
@@ -7537,3477 +11136,348 @@ var Node = module.exports = Peer.extend({
     return this;
   },
 
-  /**
-   * Disconnect method : make the reactor disconnect.
-   * @public
-   *
-   * @param  {Function} [callback] - callback to be called when connected
-   * @param  {Object}   [context = this] - context of the callback
-   * @return {self}
-   */
   disconnect: function(callback, context) {
     if (this.stateIsNot('disconnected')) {
-      if (callback) {
-        this.once('disconnected', callback, context || this);
-      }
-      this._routingTable.stop();
       this._reactor.disconnectTransport();
     }
     return this;
   },
 
-  /**
-   * Joining process : do an iterative find node on our own ID,
-   * startying by contacting the peers passed as bootstraps.
-   * @public
-   *
-   * TODO : expose a public API.
-   *
-   * @param  {Function} callback   - called when bootstraps process ends
-   * @param  {Object}   context    - context of the callback
-   *
-   * @return {self} this
-   */
-  join: function(callback, context) {
-    // lookup process
-    var startLookup = function() {
-      this.emit('joining');
-      return this.iterativeFindNode(this);
-    };
-    var noBootstrap = function() {
-      return new Error('no bootstrap');
-    };
+  //
+  // RPCs
+  //
 
-    // joining result
-    var success = function() {
-      this.emit('joined');
-    };
-    var failure = function() {
-      this.emit('join failed');
-    };
-
-    //ping the bootstraps
-    var pings = this._bootstraps.map(function(peer) {
-      return new PingRPC(peer);
-    });
-    this._reactor.sendRPC(pings);
-
-    context = context || this;
-    Deferred.whenAtLeast(pings)
-            .pipe(startLookup, noBootstrap, this)
-            .then(success, failure, this)
-            .then(callback, callback, context);
-    
-    return this;
+  _handleRPCQuery: function(rpc) {
+    if (!rpc.inProgress())
+      return;
+    var result,
+        method = rpc.getMethod();
+    result = this[method].call(this, rpc);
   },
 
-  /**
-   * Get a value on the DHT providing the associated key.
-   *
-   * @public
-   * Public wrapper around #iterativeFindValue.
-   *
-   * Provided callback will be called with the found value
-   * or with null if not found.
-   *
-   * @param {String}   key       - key to find
-   * @param {Function} callback  - function to be called at end
-   * @param {Object}   [context] - context of callback
-   * @return {self}
-   */
-  get: function(key, callback, context) {
-    context = context || this;
-    this.iterativeFindValue(key).then(
-      function(kv) {
-        callback.call(context, kv.value);
-      }, function() {
-        callback.call(context, null);
-      });
-    return this;
-  },
-
-  /**
-   * Put a given value on the DHT associated to the given key and
-   * with the given expiration time.
-   *
-   * @public
-   * Public wrapper around #iterativeStore.
-   *
-   * If the given key is `null` the associated key is set to the SHA1 of
-   * the value. Expiration time is not mandatory and set to infinite
-   * by default.
-   *
-   * An optional callback (with a context) can be provided and will be
-   * called with :
-   *   - 1st parameter : key associated to the value on the DHT
-   *   - 2nd parameter : number of peers that successfully stored the
-   *        value. If 0, the process has failed.
-   *
-   * @param {String || null}  key        - key or null if value by default SHA1(value)
-   * @param {*}               value      - value to store on the DHT
-   * @param {Date || Number}  [key]      - date of expiration of the key/value
-   * @param {Function}        [callback] - callback when the store process ends
-   * @param {Object}          [context]  - context of callback
-   * @return {self}
-   */
-  put: function(key, value, exp, callback, context) {
-    // if no exp, arguments sliding
-    if (typeof exp == 'function') {
-      exp = undefined;
-      callback = exp;
-      context = callback;
-    }
-
-    // default values
-    key = key || Crypto.digest.SHA1(String(value));
-    exp = exp || -1;
-    context = context || this;
-
-    this.iterativeStore(key, value, exp)
-        .then(function(key, peers) {
-          if (callback) callback.call(context, key, peers.size());
-        }, function() {
-          if (callback) callback.call(context, null, 0);
-        });
-    return this;
-  },
-  
- //# INTERNAL EVENTS HANDLING
-
-  /**
-   * Reactions to events coming from the reactor.
-   * @type {Object}
-   */
-  reactorEvents : {
-
-    /**
-     * On `connected` event :
-     *   - save our address on the network
-     *   - state is `connected`
-     *
-     * @param  {String} address - Address of the node on the network
-     */
-    connected: function(address) {
-      this.setAddress(address);
-      if (typeof this._store == 'undefined') {
-        this._store = new ValueManagement(this, this.config.value_management);
-        this._store.on(this.VMEvents, this);
-      }
-      this.setState('connected');
-    },
-
-    /**
-     * On `disconnected`, state becomes `disconnected`.
-     */
-    disconnected: function() {
-      this.setState('disconnected');
-    },
-
-    /**
-     * On `reached` peer, add it to routing table.
-     *
-     * @param  {Peer} peer - Peer that had been reached.
-     */
-    reached: function(peer) {
-      peer.touch();
-      this._routingTable.addPeer(peer);
-    },
-
-    /**
-     * On `queried` (means we received a RPC request), call
-     * the appopriate method to fullfill the RPC.
-     * @see #handle+`method_name`
-     *
-     * @param  {RPC} rpc - The received rpc
-     */
-    queried: function(rpc) {
-      if (!rpc.inProgress())
-        return;
-      this['handle' + rpc.getMethod()].call(this, rpc);
-    },
-
-    /**
-     * On `outdated` (means we received a response from a peer
-     * which ID seems to be different from the one in the routing table),
-     * update the ID in the routing table.
-     *
-     * @param  {Peer} peer - outdated peer
-     * @param  {String} id - new id
-     */
-    outdated: function(peer, id) {
-      this._routingTable.removePeer(peer);
-      peer.setID(id);
-      this._routingTable.addPeer(peer);
-    }
-  },
-
-  /**
-   * Handle an incoming PING RPC request :
-   * simply respond to it.
-   *
-   * @param  {PingRPC} rpc - the incoming RPC object
-   */
-  handlePING: function(rpc) {
+  PING: function(rpc) {
     rpc.resolve();
   },
 
-  /**
-   * Handle an incoming FIND_NODE RPC request :
-   * fetch from the routing table the BETA closest
-   * peers (except the querying peer) to the
-   * targeted ID and respond to the rpc.
-   *
-   * @param  {FindNodeRPC} rpc - the inconming rpc object
-   */
-  handleFIND_NODE: function(rpc) {
-    rpc.resolve(this._routingTable.getClosePeers(rpc.getTarget(), globals.BETA, rpc.getQuerying()));
-  },
-
-  /**
-   * Handle an incoming FIND_VALUE request:
-   * - if we got the value, respond it.
-   * - if not, fetch the BETA closest peer, respond them.
-   *
-   * @param  {FindValueRPC} rpc - the incoming rpc oject
-   */
-  handleFIND_VALUE: function(rpc) {
-    this._store.retrieve(rpc.getTarget())
-        .then(function(value, exp) {
-          rpc.resolve({value : value, exp : exp}, true);
-        }, function() {
-          rpc.resolve(this._routingTable.getClosePeers(rpc.getTarget(), globals.BETA, rpc.getQuerying()), false);
-        }, this);
-  },
-
-  /**
-   * Handle an incoming STORE request :
-   * store the value in ValueManagement and respond.
-   *
-   * @param  {StoreRPC} rpc - the incoming rpc object.
-   */
-  handleSTORE: function(rpc) {
-    this._store.save(rpc.getKey(), rpc.getValue(), rpc.getExpiration())
-               .then(rpc.resolve, rpc.reject, rpc);
-  },
-
-  /**
-   * Reactions to events comming from the routing table.
-   * @type {Object}
-   */
-  routingTableEvents : {
-
-    /**
-     * On `refresh` (means a kbucket has not seen any fresh
-     * peers for a REFRESH_TIMEOUT time), do an titerative find node
-     * on a random ID in the KBucket range.
-     *
-     * @param  {KBucket} kbucket - Kbucket needing to be refreshed
-     */
-    refresh: function(kbucket) {
-      var random_sha = Crypto.digest.randomSHA1(this.getID(), kbucket.getRange());
-      this.iterativeFindNode(random_sha);
-    }
-  },
-
-  /**
-   * Reactions to event coming from the value management.
-   * @type {Object}
-   */
-  VMEvents : {
-
-    /**
-     * On `republish` (means a key-value needs to be republished
-     * on the network) : do an iterative store on it.
-     *
-     * @param  {String} key   - key
-     * @param  {Object} value - value
-     * @param  {Date | Number} exp   - expiration date
-     */
-    republish: function(key, value, exp) {
-      this.iterativeStore(key, value, exp);
-    }
-  },
-
- //# ITERATIVE PROCESSES
-
-  /**
-   * Launch an iterative find node process.
-   *
-   * Return a deffered object :
-   *   - resolve :
-   *       {Peer}      peer  - peer found that have the targeted ID
-   *       {PeerArray} peers - reached peers during the iterative process
-   *   - reject :
-   *       {PeerArray} peers - reached peers during the iterative process
-   *
-   * @param  {Peer | String} peer - Peer or Node ID to find.
-   * @return {Deferred}
-   */
-  iterativeFindNode: function(target) {
-    target = (target instanceof Peer) ? target.getID() : target;
-
-    var send   = this.send(),
-        close  = this._routingTable.getClosePeers(target, globals.K),
-        init   = new XORSortedPeerArray(close, target),
-        lookup = new IterativeDeferred(init),
-        staled = false;
-
-    function map(peer) {
-      var rpc = new FindNodeRPC(peer, target);
-      send(rpc);
-      return rpc;
-    }
-
-    function reduce(peers, newPeers, map) {
-      peers.add(newPeers);
-      if (peers.newClosestIndex() >= 0 && peers.newClosestIndex() < globals.ALPHA) {
-        peers.first(globals.ALPHA, map);
-      }
-      return peers;
-    }
-
-    function end(peers, map, reached) {
-      if (staled) {
-        lookup.reject(new XORSortedPeerArray(reached, target));
-        return;
-      }
-
-      if (reached.length <= globals.ALPHA && peers.size() > 0) {
-        staled = true;
-        peers.first(globals.K, map);
-      } else {
-        lookup.resolve(new XORSortedPeerArray(reached, target));
-      }
-    }
-
-    // -- UI HACK
-    lookup._target = target;
-    this.emit('iterativeFindNode', lookup, close);
-
-    return lookup
-      .map(map)
-      .reduce(reduce, init)
-      .end(end);
-  },
-
-  /**
-   * Launch an iterative find value process.
-   *
-   * If succeed, it STOREs the value to the
-   * closest reached peer which didn't responded
-   * the value.
-   *
-   * Return a deffered object :
-   *   - resolve :
-   *       {Object}    keyValue - properties :
-   *                                `value` - the retrieved value
-   *                                `exp`   - the expiration date
-   *       {PeerArray} peers    - reached peers during the iterative process
-   *   - reject
-   *       {PeerArray} peers - reached peers during the iterative process
-   *
-   * @param  {String} key - targeted ID
-   * @return {Deferred}
-   */
-  iterativeFindValue: function(key) {
-    if (!globals.REGEX_NODE_ID.test(key)) {
-      throw new TypeError('non valid key');
-    }
-
-    var send   = this.send(),
-        close  = this._routingTable.getClosePeers(key, globals.K),
-        init   = new XORSortedPeerArray(close, key),
-        lookup = new IterativeDeferred(init),
-        staled = false;
-
-    function map(peer) {
-      var rpc = new FindValueRPC(peer, key);
-      send(rpc);
-      return rpc;
-    }
-
-    function reduce(peers, result, found, map, queried, reached) {
-      if (found) {
-        var index = (peers.newClosestIndex() > 0) ? 0 : 1;
-        var rpc = new StoreRPC(peers.getPeer(index), key, result.value, result.exp);
-        send(rpc);
-        lookup.resolve(result, new XORSortedPeerArray(reached, key));
-      } else {
-        peers.add(result);
-        if(peers.newClosestIndex() >= 0 && peers.newClosestIndex() < globals.ALPHA) {
-          peers.first(globals.ALPHA, map);
-        }
-      }
-      return peers;
-    }
-
-    function end(peers, map, reached) {
-      lookup.reject(new XORSortedPeerArray(reached, key));
-    }
-
-    // -- UI HACK
-    lookup._target = key;
-    this.emit('iterativeFindValue', lookup, close);
-
-    return lookup
-      .map(map)
-      .reduce(reduce, init)
-      .end(end);
-  },
-
-  /**
-   * Launch an iterative store process :
-   *   do an iterative find node on the key,
-   *   and send STORE RPCsto the K closest
-   *   reached peers.
-   *
-   * Return a deferred object that is resolved when
-   * at least one of the store RPC is resolved :
-   *   - resolve :
-   *       {String}    key   - key with wihich the value was stored
-   *       {PeerArray} peers - peers that resolved the store RPC
-   *       {PeerArray} peers_not - peers that did not resolved the store RPC
-   *   - reject
-   *       {PeerArray} peers_not - peers that did not resolved the store RPC
-   *
-   * @param  {String} key - key
-   * @param  {*} value - value to store on the network
-   * @param  {Date | Integer} [exp = never] - experiation date of the value
-   * @return {Deferred}
-   */
-  iterativeStore: function(key, value, exp) {
-    if (!globals.REGEX_NODE_ID.test(key)) {
-      throw new TypeError('non valid key');
-    }
-    
-    function querieds(rpcs) {
-      return new PeerArray(rpcs.map(function(rpc) {
-        return rpc.getQueried();
-      }));
-    }
-
-    var def = new Deferred(),
-        send = this.send();
-
-    var stores = function(peers) {
-      var targets = peers.first(globals.K);
-      var rpcs = targets.map(function(peer) {
-        return send(new StoreRPC(peer, key, value, exp));
-      });
-      Deferred.whenAtLeast(rpcs, 1)
-              .then(function(stored, notStored) {
-                def.resolve(key, querieds(stored), querieds(notStored));
-              }, function(stored, notStored) {
-                def.reject(querieds(notStored));
-              });
-    };
-
-    this.iterativeFindNode(key)
-        .then(stores, function() { def.reject(new PeerArray()); });
-
-    return def;
-  },
-
-  /**
-   * Closure to proxy the reactor send method
-   */
-  send: function() {
-    var reactor = this._reactor;
-    return function() {
-      return reactor.sendRPC.apply(reactor, arguments);
-    };
-  }
-
-});
-});
-
-require.define("/util/iterative-deferred.js", function (require, module, exports, __dirname, __filename) {
-var Deferred  = require('./deferred');
-
-var IterativeDeferred = module.exports = Deferred.extend({
-  initialize: function(to_map) {
-    this.supr();
-    this.to_map = to_map;
-    this._started = false;
-
-    this._onFly = 0;
-    this._mapped = [];
-    this._resolved = [];
-    this._rejected = [];
-    this._reduceBuffer = [];
-    this._endShouldBeLaunched = false;
-  },
-
-  /**
-   * Functional programming: easy setter for the map function.
-   *
-   *   | The map function, to be defined: should map a key to a deferred object.
-   *   | Should return a deferred object that will be registered: the iterative
-   *   | process won't stop until all registered deferred are completed or a
-   *   | manual intervention.
-   *   |
-   *   | If the key has already been mapped, the mapping will be ignored. To test
-   *   | equality between key, @see #equalTestFn.
-   *   |
-   *   | @param  {object} key - key to map to a Deferred
-   *   | @return {undefined | Deferred} mapped Deferred
-   *
-   * @param  {Function} mapFn [description]
-   */
-  map: function(mapFn) {
-    this.mapFn = mapFn;
-
-    //directly start if anything to map
-    if (this.to_map)
-      this.start();
-    return this;
-  },
-
-  /**
-   * Set itinial reduce value.
-   *
-   * @param  {*} init_value
-   */
-  init: function(init_value) {
-    this._currentReduceResult = init_value;
-    return this;
-  },
-
-  /**
-   * Functional programming: easy setter for the reduce function:
-   *
-   *   | The reduce function, to be defined: should combine resolved result from
-   *   | mapped deferred and the previous reduce result. It can feed the mapping
-   *   | process with keys to map, by calling the map argument function.
-   *   | If the deferred resolved multiple arguments, the additional arguments are
-   *   | present.
-   *   | At any moment the iterative process can be stopped manually just by
-   *   | completing the working process as deferred: simply call `this.resolve` or
-   *   | `this.reject`.
-   *   | The end arguments key, resolved and rejected are if needed to decide the
-   *   | reduce process.
-   *   | @param  {*}     previous - previously returned by the reduce function
-   *   | @param  {*}       result - the result resolved by the mapped Deferred
-   *   | @param  {*} [additional] - if the resolve callback was called with multiple
-   *   |                            arguments, additional arguments are present
-   *   | @param  {function}   map - use this function to feed the mapping process with
-   *   |                            new keys
-   *   | @param  {object}     key - original mapping key whose deferred produced the
-   *   |                            given resolved result
-   *   | @param  {array} resolved - array of keys which mapped Deferred have been resolved
-   *   | @param  {array} rejected - array of keys which mapped Deferred have been rejected
-   *   | @return {*} reduce result
-   *
-   * @param {function} reduceFn -  see above
-   * @param {*}    initialValue - initial reduce value
-   */
-  reduce: function(reduceFn, initialValue) {
-    this.reduceFn = reduceFn;
-
-    if (initialValue)
-      this.init(initialValue);
-
-    //if waiting reduces in buffer, empty it :
-    while (this._reduceBuffer.length >0) {
-      var args = this._reduceBuffer.shift();
-      this._launchReduce.apply(this, args);
-    }
-
-    return this;
-  },
-
-  /**
-   * Functionnal programming: easy setter for the end function.
-   *
-   *   | The end function, will be called when the iterative process ends, ie. there
-   *   | is no more uncompleted mapped Deferred and all reduce processes are finished.
-   *   |
-   *   | The end function should complete the process by calling `this.resolve` or
-   *   | `this.reject`. If this is not done, the process will be automatically resolved.
-   *   |
-   *   | @param {*} reduce_result - what finally came out the reduce process
-   *   | @param {function}    map - use this function to feed the mapping process with
-   *   |                            new keys if you want to relaunch the process again
-   *   | @param {array}  resolved - array of keys which mapped Deferred have been resolved
-   *   | @param {array}  rejected - array of keys which mapped Deferred have been rejected
-   *
-   * @param  {function} endFn [description]
-   */
-  end: function(endFn) {
-    this.endFn = endFn;
-
-    //it's over : launch immediatly end
-    if (this._endShouldBeLaunched)
-      this._launchEnd();
-
-    return this;
-  },
-
-  /**
-   * Start the iterative map/reduce given the this array of
-   * map consumable.
-   *
-   * @param  {Array<key>} array [description]
-   */
-  start: function(array) {
-    if (this._started)
-      return this;
-    this._started = true;
-
-    if (array)
-      this.to_map = array;
-
-    var to_map = this.to_map;
-    var length = to_map.length || to_map.size();
-    if (length !== 0) {
-      //go !
-      this.to_map.forEach(function(key) {
-        this._launchMap(key);
-      }, this);
+  FIND_NODE: function(rpc) {
+    //give random BETA peeers
+    var toGive;
+    if (this._peers.size() <= globals.BETA) {
+      toGive = this._peers.clone();
     } else {
-      this._launchEnd();
-    }
-    return this;
-  },
-
-  /**
-   * Test the equality of 2 keys.
-   *
-   * Used to determine if a key has already been mapped. Use an #equals method if
-   * present. Else use the result of `===`.
-   *
-   * @param  {*} key1
-   * @param  {*} key2
-   * @return {boolean} result
-   */
-  equalTestFn: function(key1, key2) {
-    return (typeof key1.equals === 'function') ?
-            key1.equals(key2)
-          : key1 === key2;
-  },
-
-  _launchMap: function(key) {
-
-    //if the key has alreday been mapped
-    var already = this._mapped.some(function(key2) {
-      return this.equalTestFn(key, key2);
-    }, this);
-
-    if (already) {
-      return false;
-    }
-
-    this._mapped.push(key);
-
-    //call the map function and get the deferred
-    var def = this.mapFn(key);
-
-    if (!def) return true;
-    def = Deferred.when(def);
-
-    //we've got a new deferred on the fly
-    this._onFly ++;
-
-    function callback() {
-      this._onFly --;
-      if (!this.isCompleted()) {
-        //add to resolved
-        this._resolved.push(key);
-        //reduce result
-        this._launchReduce(key, arguments);
+      var indexs = [];
+      toGive = new PeerArray();
+      while(toGive.size() < globals.BETA) {
+        var i = Math.floor(Math.random()*this._peers.size());
+        toGive.addPeer(this._peers.getPeer(i));
       }
     }
-
-    function errback() {
-      this._onFly --; 
-      if (!this.isCompleted()) {
-        //add to rejected
-        this._rejected.push(key);
-        //end ?
-        this._checkFinish();
-      }
-    }
-
-    //on deferred resolve or reject, decrement
-    def.then(callback, errback, this);
-    return true;
-  },
-
-  _launchReduce: function(key, result) {
-    //if the reduce function is not yet defined, put in a buffer for later
-    if (!this.reduceFn) {
-      this._reduceBuffer.push(arguments);
-      return;
-    }
-
-    var reduce_args = [],
-        i, l, that = this;
-
-    //add previous reduce result
-    reduce_args.push(this._currentReduceResult);
-    //add resolve result of the mapped deferred
-    for (i = 0, l = result.length; i < l; i++) { reduce_args.push(result[i]); }
-    reduce_args.push(function map(key) {
-      return that._launchMap(key);
-    });
-    //add the key that produced result
-    reduce_args.push(key);
-    //add current resolved key
-    reduce_args.push(this._resolved);
-    //add current rejected key
-    reduce_args.push(this._rejected);
-
-    //call reduce
-    this._currentReduceResult = this.reduceFn.apply(this, reduce_args);
-
-    //end ?
-    this._checkFinish();
-  },
-
-  _launchEnd: function() {
-    this._endShouldBeLaunched = true;
-
-    if (this.endFn) {
-      var toMap = [];
-      var map = function(key) { toMap.push(key); };
-      this.endFn(this._currentReduceResult, map, this._resolved, this._rejected);
-
-      // if we have to relaunch a mapping
-      if (toMap.length) {
-        for (var i = 0, l = toMap.length; i < l; i++) {
-          this._launchMap(toMap[i]);
-        }
-      } else if (!this.isCompleted()) {
-        //force the completion of the process if endFn didn't do it
-        this.resolve(this._currentReduceResult);
-      }
-      
-    }
-  },
-
-  _checkFinish: function() {
-    if (this._onFly === 0 && this._reduceBuffer.length === 0 && !this.isCompleted()) {
-      this._launchEnd();
-    }
-  }
-});
-});
-
-require.define("/dht/routing-table.js", function (require, module, exports, __dirname, __filename) {
-var EventEmitter      = require('../util/eventemitter'),
-    Crypto            = require('../util/crypto'),
-    globals           = require('../globals.js'),
-    
-    KBucket           = require('./kbucket'),
-    Peer              = require('./peer'),
-    PeerArray         = require('../util/peerarray'),
-
-    log               = require('../logging').ns('RoutingTable');
-
-
-/**
- * Represents the routing table of a {@link Node}.
- * @name RoutingTable
- * @augments EventEmitter
- * @class
- */
-var RoutingTable = module.exports = EventEmitter.extend(
-  /** @lends RoutingTable# */
-  {
-  /**
-   * Construct an instance of a {@link RoutingTable} associated to the instance of {@link Node} passed as parameter.
-   * @xclass Represents the routing table of a {@link Node}.
-   * @xaugments EventEmitter
-   * @constructs
-   * @param {Node} node - Associated node.
-   */
-  initialize: function(node) {
-    this.supr();
-    this._node = node;
-    this._parentID = ('string' === typeof node) ? node : node.getID();
-    this._kbuckets = [new KBucket(this)];
-  },
-
-  // Public
-
-  /**
-   * Start the routing table engine :
-   *   - start all refreshTimeouts for KBuckets
-   * @return {this}
-   */
-  start: function() {
-    this.stop();
-    for (var i = 0, l = this._kbuckets.length; i < l; i++) {
-      this._kbuckets[i].setRefreshTimeout();
-    }
-  },
-  
-  /**
-   * Stop the routing table engine :
-   *   - stop all refreshTimout for KBuckets
-   * @return {this}
-   */
-  stop: function() {
-    for (var i = 0, l = this._kbuckets.length; i < l; i++) {
-      this._kbuckets[i].stopRefreshTimeout();
-    }
-    return this;
-  },
-
-  /**
-   * Calculates the distance from 0 to B-1 between the parent `id` and the given `key`.
-   * These keys are SHA1 hashes as hexadecimal `String`
-   * @see {@link Crypto#distance}
-   *
-   * @param {String} key
-   * @return {String} distance between the two keys
-   * @public
-   */
-  distance: function(peer) {
-    var dist;
-    if (peer instanceof Peer) {
-      dist = peer.getDistance();
-      if (!dist) {
-        peer.cacheDistance(this._parentID);
-        dist = peer.getDistance();
-      }
-    } else {
-      dist = Crypto.distance(this._parentID, peer);
-    }
-    return dist;
-  },
-
-  /**
-   * Add multiple peers to the routing table
-   *
-   * @param {Peer[]} peers List of peers to add to the table
-   */
-  add: function(peers) {
-    peers.forEach(function(peer) {
-      this.addPeer(peer);
-    }, this);
-    return this;
-  },
-
-  /**
-   * Add a peer to the routing table or update it if its already in.
-   *
-   * @param {Peer} peer object to add
-   * @return {Void}
-   * @public
-   */
-  addPeer: function(peer) {
-    if (peer.getID() === this._parentID) {
-      return;
-    }
-
-    peer.cacheDistance(this._parentID);
-
-    var index   = this._kbucketIndexFor(peer),
-        kbucket = this._kbuckets[index];
-
-    // find the kbucket for the peer
-    try {
-      kbucket.addPeer(peer);
-      log.debug( 'add peer', peer.getAddress(), peer.getID());
-      this.emit('added', peer);
-    } catch(e) {
-      // if the kbucket is full and splittable
-      if (e === 'split') {
-        var range = kbucket.getRange();
-        this._kbuckets.push(kbucket.split());
-        this.emit('splitted');
-        log.debug('split kbucket', range, kbucket.getRange());
-        this.addPeer(peer);
-      } else {
-        throw e;
-      }
-    }
-    return this;
-  },
-
-  /**
-   * Get the `number` closest peers from a given `id`
-   * but ignore the specified ones in an Array
-   *
-   * @param {String} id
-   * @param {Number} [number = {@link globals.ALPHA}] The number of peers you want
-   * @param {String[] | Peer[]} exclude Array of ids or peers to exclude
-   */
-  getClosePeers: function(id, number, exclude) {
-    if (typeof number !== 'number') {
-      number = globals.BETA;
-    }
-    
-    // get the default kbucket for this id
-    var index         = this._kbucketIndexFor(id),
-        kbuckets_left = this.howManyKBuckets() - 1,
-        peers         = new PeerArray();
-
-    peers.add(this._kbuckets[index].getPeers(number, exclude));
-
-    // if we don't have enough peers in the default kbucket
-    // try to find other ones in the closest kbuckets
-    if (peers.size() < number && kbuckets_left > 0) {
-      var indexes_path = [],
-          i;
-
-      // build an array which values are the kbuckets index
-      // sorted by their distance with the default kbucket
-      for (i = 0; i < this.howManyKBuckets(); i++) {
-        if (i !== index) {
-          indexes_path.push(i);
-        }
-      }
-
-      if (index > 1) {
-        indexes_path.sort(function(a, b) {
-          var diff = Math.abs(a - index) - Math.abs(b - index);
-          if (diff < 0)
-            return -1;
-          else if (diff > 0)
-            return 1;
-          return 0;
-        });
-      }
-
-      // read through the sorted kbuckets and retrieve the closest peers
-      // until we get the good amount
-      i = 0;
-      while (peers.size() < number && (index = indexes_path[i++])) {
-        peers.add(this._kbuckets[index].getPeers(number - peers.size(), exclude));
-      }
-    }
-    
-    return peers;
-  },
-
-  getPeer: function(peer) {
-    peer = this._kbucketFor(peer).getPeer(peer);
-    if (peer) {
-      return peer;
-    }
-    return false;
-  },
-
-  removePeer: function(peer) {
-    return this._kbucketFor(peer).removePeer(peer);
-  },
-
-  getKBuckets: function() {
-    return this._kbuckets;
-  },
-
-  howManyKBuckets: function() {
-    return this._kbuckets.length;
-  },
-
-  howManyPeers: function() {
-    return this._kbuckets.reduce(function(sum, kbucket) {
-      return sum + kbucket.size();
-    }, 0);
-  },
-
-  getParentID: function() {
-    return this._parentID;
-  },
-
-  // Private
-
-  /**
-   * Find the appropriate KBucket index for a given key
-   *
-   * @param {String} key SHA1 hash
-   * @return {Integer} index for the `_kbuckets`
-   * @private
-   */
-  _kbucketIndexFor: function(peer) {
-    var dist = this.distance(peer);
-    // if the id is our id, return the splittable kbucket
-    if (dist === 0) {
-      return this._kbuckets.length - 1;
-    }
-    // find the kbucket with the distance in range
-    for (var i = 0; i < this._kbuckets.length; i++) {
-      if (this._kbuckets[i].distanceInRange(dist)) {
-        return i;
-      }
-    }
-    return -1;
-  },
-
-  _kbucketFor: function(peer) {
-    var index = this._kbucketIndexFor(peer);
-    if (index !== -1)
-      return this._kbuckets[index];
-    return false;
-  },
-
-  /**
-   * Exports the routing table to a serializable object
-   *
-   * @param {Object}  [options] options hash
-   * @param {Boolean} [options.include_lastseen] If true the last_seen
-   * paramter will be included in peer triple array
-   *
-   * @param {Boolean} [options.include_distance] If true the distance
-   * paramter will be included in peer triple array
-   *
-   * @return {Object}
-   */
-  exports: function(options) {
-    var refresh  = Infinity;
-    var kbuckets = this._kbuckets.map(function(kbucket) {
-      var object = kbucket.exports(options);
-      refresh = Math.min(refresh, object.refresh);
-      return object;
-    });
-    return {
-      id       : this._parentID,
-      kbuckets : kbuckets,
-      refresh  : refresh
-    };
-  },
-
-  /**
-   * Imports a previously exported routing table
-   * and returns true if the process succeeded
-   *
-   * @param  {Object} routing_table
-   * @return {Boolean}
-   */
-  imports: function(routing_table) {
-    if (routing_table.id !== this._parentID) {
-      return false;
-    }
-    var now = new Date().getTime();
-    if (routing_table.refresh < now) {
-      return false;
-    }
-
-    try {
-      var kbuckets = routing_table.kbuckets;
-      for (var i = 0, l = kbuckets.length; i < l; i++) {
-        var kbucket = new KBucket();
-        if (!kbucket.imports(kbuckets[i])) {
-          throw new Error();
-        }
-        this._kbuckets[i] = kbucket;
-      }
-      return true;
-    } catch(e) {
-      log.fatal( 'failed to import', routing_table);
-      return false;
-    }
-  }
-
-});
-});
-
-require.define("/dht/kbucket.js", function (require, module, exports, __dirname, __filename) {
-var PeerArray = require('../util/peerarray'),
-    globals   = require('../globals'),
-    Crypto    = require('../util/crypto');
-
-
-var KBucket = module.exports = PeerArray.extend(
-  /** @lends KBucket# */
-  {
-  /**
-   *
-   * @class Namespace : KadOH.KBucket </br> Represents a KBucket.
-   * @constructs
-   * @param  {Node|String} node - Node instance or parent node ID
-   * @param  {Number} [min=0] - Min limit of this KBucket (expressed as bit position)
-   * @param  {Number} [max=globals.B] - Max limit of this KBucket (expressed as bit position)
-   */
-  initialize: function(rt, min, max) {
-    this.supr();
-    if (arguments.length > 0) {
-      this._routingTable = rt;
-      this._parentID     = (typeof rt.getParentID === 'function') ? rt.getParentID() : rt;
-      this._min          = min || 0;
-      this._max          = max || globals.B;
-      this._timeoutID    = undefined;
-      this.touch();
-    }
-  },
-
-  // Public
-
-  /**
-   * Add then given Peer to the KBucket
-   * If the Peer is already in the KBucket, it will be updated
-   *
-   * @param {Peer} peer - The peer to add or update
-   * @return {KBucket} self to allow chaining
-   */
-  addPeer: function(peer) {
-    var index = this.find(peer);
-    if (~index) {
-      this.getPeer(index).touch();
-      this.move(index, 0);
-      this.touch();
-    } else {
-      if (!this.isFull()) {
-        peer.cacheDistance(this._parentID);
-        if (!this.peerInRange(peer)) {
-          throw new Error(peer + ' is not in range for ' + this);
-        }
-        this.array.unshift(peer);
-        this.touch();
-      }
-      else {
-        if (!this.isSplittable()) {
-          var oldest = this.getOldestPeer();
-          if (oldest) {
-            this.removePeer(oldest);
-            this.addPeer(peer);
-            this.touch();
-          }
-        } else {
-          throw 'split';
-        }
-      }
-    }
-    return this;
-  },
-
-  /**
-   * Get the latest seen Peer.
-   *
-   * @return {Peer}
-   */
-  getNewestPeer: function() {
-    return this.getPeer(0);
-  },
-  
-  /**
-   * Get the least recent Peer.
-   *
-   * @return {Peer}
-   */
-  getOldestPeer: function() {
-    return this.getPeer(this.size() - 1);
-  },
-  
-  /**
-   * Get all the peers from the KBucket
-   *
-   * @param {Integer} number - fix the number of peers to get
-   * @param {Peer|Peer[]} [exclude] - the {@link Peer}s to exclude
-   * @return {Array}
-   */
-  getPeers: function(number, exclude) {
-    var clone = new PeerArray(this);
-    if (exclude)
-      clone = clone.difference(exclude);
-    if (number > 0)
-      clone = clone.first(number);
-    return clone;
-  },
-
-  peerInRange: function(peer) {
-    return this.distanceInRange(peer.getDistance());
-  },
-  
-  /**
-   * Check wether or not the given NodeID
-   * is in range of the KBucket
-   *
-   * @param {String} id - NodeID to check
-   * @return {Boolean} true if it is in range.
-   */
-  idInRange: function(id) {
-    return this.distanceInRange(Crypto.distance(id, this._parentID));
-  },
-  
-  /**
-   * Check wether or not a given distance is in range of the
-   *
-   * @param {String} distance - distance to check
-   * @return {Boolean}
-   */
-  distanceInRange: function(distance) {
-    return (this._min < distance) && (distance <= this._max);
-  },
-
-  /**
-   * Get an `Object` with the `min` and `max` values
-   * of the KBucket's range (expressed as bit position).
-   *
-   * @return {Object} range - range object
-   * @return {Integer} range.min - minimum bit position
-   * @return {Integer} renage.max - maximum bit position
-   */
-  getRange: function() {
-    return {
-      min: this._min,
-      max: this._max
-    };
-  },
-
-  /**
-   * Set the range of the KBucket (expressed as bit position)
-   *
-   * @param {Object} range - range object
-   * @param {Integer} range.min - minimum bit position
-   * @param {Integer} range.max - maximum bit position
-   * @return {KBucket} self to allow chaining
-   */
-  setRange: function(range) {
-    this._min = range.min;
-    this._max = range.max;
-    return this;
-  },
-
-  /**
-   * Set the range min of the KBucket (expressed as bit position)
-   *
-   * @param {Integer} min - minimum bit position
-   * @return {KBucket} self to allow chaining
-   */
-  setRangeMin: function(min) {
-    this._min = min;
-    return this;
-  },
-  
-  /**
-   * Set the range max of the KBucket (expressed as bit position)
-   *
-   * @param {Integer} max - max bit position
-   * @return {KBucket} self to allow chaining
-   */
-  setRangeMax: function(max) {
-    this._max = max;
-    return this;
-  },
-
-  /**
-   * Split the KBucket range in half (higher range)
-   * and return a new KBucket with the lower range
-   *
-   * @return {KBucket} The created KBucket
-   */
-  split: function() {
-    var split_value = this._max - 1;
-
-    var new_kbucket = new this.constructor(this._routingTable, this.min, split_value);
-    this.setRangeMin(split_value);
-
-    var i = this.size() - 1;
-    if (i > 0) {
-      var trash = [];
-      for (; i >= 0; i--) {
-        var peer = this.array[i];
-        if (new_kbucket.peerInRange(peer)) {
-          trash.push(peer);
-          new_kbucket.addPeer(peer);
-        }
-      }
-      this.remove(trash);
-    }
-    return new_kbucket;
-  },
-
-  /**
-   * Check wether or not the KBucket is splittable
-   *
-   * @return {Boolean} true if splittable
-   */
-  isSplittable: function() {
-    return (this._min === 0);
-  },
-
-  /**
-   * Check wether or not the KBucket is full
-   *
-   * @return {Boolean} true if full
-   */
-  isFull: function() {
-    return (this.size() == globals.K);
-  },
-
-  /**
-   * Initiates the refresh process
-   */
-  setRefreshTimeout: function() {
-    this._timeoutID = setTimeout(function(self) {
-      self._routingTable.emit('refresh', self);
-      self.touch();
-    }, (this._refreshTime - new Date().getTime()), this);
-    return this;
-  },
-
-  /**
-   * Stop refresh timeout
-   */
-  stopRefreshTimeout : function() {
-    if (this._timeoutID) {
-      clearTimeout(this._timeoutID);
-      this._timeoutID = undefined;
-    }
-    return this;
-  },
-
-  /**
-   * To be called whenever the KBucket is updated
-   * This function re-initiate de refresh process
-   */
-  touch: function() {
-    // if the refreshTime is in the past (the app wasn't running)
-    this._refreshTime = new Date().getTime() +
-                        Math.floor(globals.TIMEOUT_REFRESH*(1+(2*Math.random()-1)*globals.TIMEOUT_REFRESH_WINDOW));
-    return this.stopRefreshTimeout()
-               .setRefreshTimeout();
-  },
-
-  /**
-   * Represent the KBucket as a String
-   *
-   * @return {String} representation of the KBucket
-   */
-  toString: function() {
-    return '<' + this._min + ':' + this._max + '><#' + this.size() + '>';
-  },
-
-  //
-  // Export
-  //
-
-  exports: function(options) {
-    var peers = [];
-
-    if (options && (options.include_lastseen || options.include_distance)) {
-      this.forEach(function(peer) {
-        var ar = peer.getTriple();
-        if (options.include_lastseen) ar.push(peer.getLastSeen());
-        if (options.include_distance) ar.push(peer.getDistance());
-        peers.push(ar);
-      });
-    } else {
-      peers = this.getTripleArray();
-    }
-
-    return {
-      range   : this.getRange(),
-      peers   : peers,
-      refresh : this._refreshTime
-    };
-  },
-
-  imports: function(kbucket) {
-    try {
-      this.setRange(kbucket.range);
-      this.add(kbucket.peers);
-      this._refreshTime = kbucket.refresh;
-      this.stopRefreshTimeout()
-          .setRefreshTimeout();
-      return true;
-    } catch(e) {
-      return false;
-    }
-  }
-
-});
-});
-
-require.define("/dht/bootstrap-peer.js", function (require, module, exports, __dirname, __filename) {
-var Peer = require('./peer');
-
-var BootstrapPeer = module.exports = Peer.extend({
-
-  initialize: function() {
-    var args  = arguments;
-
-    if (Array.isArray(args[0])) {
-      args  = args[0];
-    }
-
-    this.touch();
-    this._distance = null;
-    this._address  = args[0];
-    this._id       = null;
-  }
-
-});
-});
-
-require.define("/network/reactor.js", function (require, module, exports, __dirname, __filename) {
-var StateEventEmitter = require('../util/state-eventemitter'),
-    globals           = require('../globals'),
-
-    protocol          = require('./protocol'),
-    Transport         = require('./transport'),
- 
-    log = require('../logging').ns('Reactor');
-  
-var Reactor = module.exports = StateEventEmitter.extend({
-
-  /**
-   * TODO : explicit the options
-   *
-   * @param  {Node}   node    - the Node Instance to which this reactor is associated
-   * @param  {Object} options - options
-   */
-  initialize: function(node, options) {
-    this.supr();
-    this._node = node;
-
-    // load config
-    var config = this.config = {
-      protocol : globals.PROTOCOL,
-      cleanup  : globals.CLEANUP_INTERVAL,
-      adaptiveTimeout : globals.ADAPTIVE_TIMEOUT_INTERVAL
-    };
-    for (var option in options) {
-      this.config[option] = options[option];
-    }
-
-    if (!protocol.hasOwnProperty(config.protocol)) throw new Error('non defined protocol');
-
-    // instantiate the transport and protocol
-    this._protocol  = protocol[config.protocol];
-    this._transport = new Transport(
-      config.host,
-      config.transport
-    );
-
-    // request table and ragular clean up the table
-    this._requests = {};
-    this._startCleanup();
-    this._rtts = [];
-
-    // associate RPC object to RPC methods
-    this.RPCObject = {
-      __default  : undefined
-    };
-
-    this.setState('disconnected');
-  },
-
-  /**
-   * Register RPC objects to associate with RPC method names.
-   * 
-   * @example
-   * reactor.register({
-   *   'PING'  : PingRPC,
-   *   'STORE' : StoreRPC
-   * });
-   * 
-   * Special method name '__default' : object use when method
-   * names not associated to any RPCObject.
-   * 
-   * @param  {Object} rpcs - hash of RPCS to register
-   */
-  register: function(rpcs) {
-    //TODO suppress reference to reactor
-    for(var i in rpcs) {
-      this.RPCObject[i] = rpcs[i].extend({reactor : this});
-    }
-    return this;
-  },
-
-  /**
-   * Stop the reactor:
-   * stop clean-up process and disconnect transport.
-   */
-  stop: function() {
-    this._stopCleanup();
-    this._stopAdaptiveTimeout();
-    this.disconnectTransport();
-  },
-
-  /**
-   * Return the node instance (also a Peer instance).
-   * @return {Object} node instance
-   */
-  getMeAsPeer: function() {
-    return this._node;
-  },
-
-  /**
-   * Connect the transport.
-   */
-  connectTransport: function() {
-    if (this._transport.stateIsNot('connected')) {
-      this._transport.once('connected', function(address) {
-        // main listen loop
-        this._transport.listen(this.handleRPCMessage, this);
-        this._startCleanup();
-        this.setState('connected', address);
-      }, this);
-      this._transport.connect();
-    }
-    return this;
-  },
-
-  /**
-   * Disconnect the transport.
-   * @return {[type]}
-   */
-  disconnectTransport: function() {
-    if (this._transport.stateIsNot('disconnected')) {
-      this._transport.once('disconnected', function() {
-        this.setState('disconnected');
-      }, this);
-      this._transport.disconnect();
-    }
-    return this;
-  },
-
-  /**
-   * Send a RPC query : add it to the requests table and pass it
-   * to #sendNormalizedQuery.
-   *
-   * @param  {RPC} rpc - rpc to send
-   */
-  sendRPCQuery: function(rpc) {
-    if (this.stateIsNot('connected')) {
-      rpc.reject('transport not connected');
-      log.error('send query : transport disconnected', rpc);
-    }
-    else {
-      this._storeRequest(rpc);
-      this.sendNormalizedQuery(rpc.normalizeQuery(), rpc.getQueried(), rpc);
-      log.debug('Reactor', 'send query', rpc.getMethod(), rpc.getQueried().getAddress(), rpc.normalizeQuery());
-    }
-    this.emit('querying', rpc);
-    return this;
-  },
-  
-  /**
-   * Encode a normalised query whith the appropriate protcol,
-   * and send it.
-   *
-   * @param  {Object} query    - normalized query
-   * @param  {Peer} dst_peer - destination peer
-   */
-  sendNormalizedQuery: function(query, dst_peer) {
-    var req = this._protocol.buildRequest(query.method, query.params);
-    req.setRPCID(query.id);
-
-    this._transport.send(dst_peer.getAddress(), req);
-  },
-
-  /**
-   * Send a RPC response.
-   * @param  {RPC} rpc - RPC object to send.
-   */
-  sendRPCResponse: function(rpc) {
-    if (this.stateIsNot('connected')) {
-      rpc.reject('transport not connected');
-      log.error('send response : transport disconnected', rpc);
-    } else {
-      this.sendNormalizedResponse(rpc.normalizeResponse(), rpc.getQuerying(), rpc);
-      log.debug('send response', rpc.getMethod(), rpc.getQuerying().getAddress(), rpc.normalizeResponse());
-    }
-    return this;
-  },
-
-  /**
-   * Encode a normalised query whith the appropriate protcol,
-   * and send it.
-   *
-   * @param  {Object} response    - normalized query
-   * @param  {Peer} dst_peer - destination peer
-   */
-  sendNormalizedResponse: function(response, dst_peer) {
-    var prot = this._protocol,
-        res  = (response.hasOwnProperty('result')) ?
-          prot.buildResponse(response.result, response.id) :
-          prot.buildErrorResponse(prot.buildInternalRPCError(response.error), response.id);
-
-    this._transport.send(dst_peer.getAddress(), res);
-  },
-
-  /**
-   * Handle an incoming encoded RPC message :
-   * normalyse the message and pass it to the right handler.
-   *
-   * @param  {Object} data - raw data
-   */
-  handleRPCMessage: function(data) {
-    var message;
-    try {
-      message = this._protocol.parseRPCMessage(data.msg);
-    }
-    catch(RPCError) {
-      log.warn('received a broken RPC message', RPCError);
-      return;
-    }
-
-    if (message.isRequest()) {
-      this.handleNormalizedQuery({
-          id     : message.getRPCID(),
-          method : message.getMethod(),
-          params : message.getParams()
-      }, data.src);
-    } else if (message.isResponse()) {
-      this.handleNormalizedResponse({
-        id     : message.getRPCID(),
-        result : message.getResult()
-      }, data.src);
-    } else if (message.isError()) {
-      this.handleNormalizedResponse({
-        id    : message.getRPCID(),
-        error : message.getError()
-      }, data.src);
-    }
-  },
-
-  /**
-   * Handle a normalized query : construct the associated RPC object,
-   * and emit `queried` wiht the object. Bind the resolve or reject for
-   * sending the response.
-   *
-   * @param  {Object} query - normalized query
-   * @param  {String} from  - address of the querying peer
-   */
-  handleNormalizedQuery: function(query, from) {
-    var method = (this.RPCObject.hasOwnProperty(query.method)) ? query.method : '__default';
-
-    if (!this.RPCObject[method]) {
-      log.warn( 'receive query with method "' + query.method + '" not available');
-      return;
-    }
-    
-    //crate the appropirate RPC object
-    var rpc = new this.RPCObject[method]();
-
-    rpc.handleNormalizedQuery(query, from);
-
-    //when resolved or rejected, send response
-    rpc.always(rpc.sendResponse);
-
-    //handler could have rejected the query
-    if (!rpc.isRejected()) {
-      this.emit('reached', rpc.getQuerying());
-      log.debug('received query', rpc.getMethod(), from, query);
-      this.emit('queried', rpc);
-    }
-  },
-
-  /**
-   * Handle a normalized response : find the associated RPC
-   * object (correspond to the rpc id) and pass to it.
-   * @param  {Object} response - normalized response
-   * @param  {String} from     - address of the peer that responded
-   */
-  handleNormalizedResponse: function(response, from) {
-    var rpc = this._getRequestByID(response.id);
-
-    if (!rpc) {
-      log.warn('response matches no request', from, response);
-    } else {
-      log.debug('received response', rpc.getMethod(), from, response);
-      rpc.handleNormalizedResponse(response, from);
-      this.addRTT(rpc.getRTT());
-    }
-    return this;
-  },
-
-  /**
-   * Find a request in the requests table given its rpc id.
-   * @param  {String} id - rpc id
-   */
-  _getRequestByID: function(id) {
-    return this._requests[id];
-  },
-
-  /**
-   * Store the request in he table.
-   * @param  {RPC} rpc - rpc to store
-   */
-  _storeRequest: function(rpc) {
-    this._requests[rpc.getID()] = rpc;
-  },
-
-  /**
-   * Periodicly remove the stored requests already completed.
-   */
-  _startCleanup: function() {
-    this._cleanupProcess = setInterval(function(self) {
-      var requests = self._requests;
-      for (var id in requests) {
-        if (requests.hasOwnProperty(id)) {
-          if (requests[id].isCompleted())
-            delete requests[id];
-        }
-      }
-    }, this.config.cleanup, this);
-  },
-
-  /**
-   * Stop the periodic cleanup.
-   */
-  _stopCleanup: function() {
-    clearInterval(this._cleanupProcess);
-  },
-
-  //helpers :
-  
-  /**
-   * kethod to send a rpc.
-   * 
-   * @param  {RPC | Array<RPC>} rpc - rpc to send
-   */
-  sendRPC: function(rpc) {
-
-    //an array of RPCs
-    if(Array.isArray(rpc)) {
-      for(var i  = 0; i < rpc.length; i++) {
-        this.sendRPC(rpc[i]);
-      }
-      return this;
-    }
-
-    //pass instace of reactor
-    rpc.reactor = this;
-    rpc.setQuerying(this.getMeAsPeer());
-    
-    var success = function() {
-      // emit the reach as the first event
-      this.emit('reached', rpc.getQueried());
-    };
-    var failure = function(type) {
-      if (type === 'outdated') {
-        // forward outdated events
-        this.emit.apply(this, arguments);
-      }
-    };
-
-    rpc.then(success, failure, this);
-    return rpc.sendQuery();
-  },
-
-  //
-  // Statistics
-  //
-
-  timeoutValue: globals.TIMEOUT_RPC,
-
-  adaptive: {
-    size : 3000,
-    tolerance : 0.75,
-    max : 10 * 1000,
-    min : 1000,
-    deflt : globals.TIMEOUT_RPC,
-    running : false
-  },
-
-  addRTT: function(rtt) {
-    if (rtt <= 0) return;
-    this._rtts.push(rtt);
-    if (!this.adaptive.running) {
-      this.adaptive.running = true;
-      if (this.config.adaptiveTimeout) {
-        var self = this;
-        setTimeout(function() {
-          self._adaptiveTimeout();
-        }, this.config.adaptiveTimeout);
-      }
-    }
-  },
-
-  /**
-   * Implements the algorithm to compute a
-   * long-term-adaptive-timeout value
-   */
-  _adaptiveTimeout: function() {
-    var adaptive = this.adaptive;
-    var rtts = this._rtts;
-
-    if (rtts.length > adaptive.size) {
-      this._rtts = rtts = rtts.slice(rtts.length - adaptive.size);
-    }
-
-    var timeout = this.adaptiveFn(rtts.slice(), adaptive);
-    if (timeout > adaptive.max) {
-      timeout = adaptive.max;
-    } else if (timeout < adaptive.min) {
-      timeout = adaptive.min;
-    }
-
-    this.timeoutValue = timeout;
-    adaptive.running = false;
-  },
-
-  /**
-   * Default adaptive function based on a fault tolerance
-   * adaptive timeout.
-   * This function can be overridden
-   */
-  adaptiveFn: function(distribution, adaptive) {
-    distribution.sort(function(a, b) { return a - b; });
-    var i = Math.round(distribution.length * adaptive.tolerance) - 1;
-    if (i < distribution.length - 1) {
-      return distribution[i];
-    }
-    return adaptive.deflt;
-  }
-
-});
-});
-
-require.define("/network/protocol/index.js", function (require, module, exports, __dirname, __filename) {
-exports.jsonrpc2    = require('./jsonrpc2');
-exports.xmlrpc      = require('./xmlrpc');
-
-if(process.title !== 'browser') {
-  //@browserify-ignore
-  exports.node_xmlrpc = require('./node-xmlrpc');
-}
-
-});
-
-require.define("/network/protocol/jsonrpc2.js", function (require, module, exports, __dirname, __filename) {
-/**
- * Implementation of the JSON RPC v2.0 protocol.
- *
- * @namespace <i>Namespace </i> : KadOH.protocol.jsonrpc2
- * @name jsonrpc2
- */
-
-  
-var RPCS;
-try {
-  RPCS = require('../../globals').RPCS;
-} catch(e) {
-  console.log('no rpc');
-}
-
-/**
- * JSONRPC 2 error code significations.
- */
-var JSONRPC_ERROR_STRINGS = {
-  "-32700" : "Parse error.",
-  "-32600" : "Invalid Request.",
-  "-32601" : "Method not found.",
-  "-32602" : "Invalid params.",
-  "-32603" : "Internal error."
-};
-
-/**
- * Parse a given rawdata of JSON (as Object) and return an RPCMessage object.
- * If Errors occurs, RPCError is throwed.
- * @memberOf jsonrpc2
- * @param {Object} raw data to parse
- * @return {RPCMessage} The resulted RPCMessage
- * @throws {RPCError}  Information about error occured
- */
-var parseRPCMessage = function(raw) {
-  var obj = {};
-
-  if (typeof raw === 'string') {
-    raw = JSON.parse(raw);
-  }
-
-  if (typeof raw !== 'object')
-    throw new RPCError(-32600);
-
-  // ID
-  if (raw.id){
-    if (typeof raw.id === 'number') {
-      if (raw.id >>> 0 !== raw.id) //is a integer
-        throw new RPCError(-32600);
-    }
-    else if (typeof raw.id !== 'string' && typeof raw.id === 'boolean')
-      throw new RPCError(-32600);
-    //OK
-    obj.id = String(raw.id);
-  }
-  else {
-    obj.id = null;
-  }
-  
-  // jsonrpc version
-  if (raw.jsonrpc !== '2.0')
-    throw new RPCError(-32600, null, {id : obj.id});
-  obj.jsonrpc = raw.jsonrpc;
-  
-  // Request
-  if (raw.method) {
-    if (raw.error || raw.result || typeof raw.method !== 'string')
-      throw new RPCError(-32600, null, {id : obj.id});
-    
-    var method = raw.method.toUpperCase();
-    if (RPCS && RPCS.indexOf(method) === -1)
-      throw new RPCError(-32601, null, {id : obj.id});
-    obj.method = method;
-    
-    if (raw.params && !Array.isArray(raw.params))
-      throw new RPCError(-32602, null, {id : obj.id});
-    obj.params = raw.params || [];
-  }
-  
-  // Response
-  else if (raw.result) {
-    if (raw.error)
-      throw new RPCError(-32600, null, {id : obj.id});
-    obj.result = raw.result;
-  }
-  
-  // Errorresponse
-  else if (raw.error) {
-    obj.error = new RPCError(
-      raw.error.code,
-      raw.error.message,
-      raw.error.data ? (raw.error.data.id = obj.id) : {id : obj.id}
-    );
-  }
-
-  else {
-    throw new RPCError(-32600, null, {id : obj.id});
-  }
-
-  return new RPCMessage(obj);
-};
-
-//
-// RPC Message builder
-//
-/**
- *  Build a request.
- *
- * @memberOf jsonrpc2
- * @param {String} Method name
- * @param {Array || Object} Parameters of the mehod
- * @param {String} [id] RPCid of the request. Can be set later.
- * @return {RPCMessage} The resulted RPCMessage
- */
-var buildRequest = function(methodname, params, id) {
-  var obj ={};
-  obj.jsonrpc = '2.0';
-  obj.method  = methodname;
-  obj.params  = params;
-  if (id) obj.id = String(id);
-  
-  return new RPCMessage(obj);
-};
-
-/**
- * Build a response.
- *
- * @memberOf jsonrpc2
- * @param The result of the RPC
- * @param {String} [id] RPCid of the request. Can be set later.
- * @return {RPCMessage} The resulted RPCMessage
- */
-var buildResponse = function(result, id) {
-  var obj ={};
-  obj.jsonrpc  = '2.0';
-  obj.result   = result;
-  if (id) obj.id = String(id);
-  
-  return new RPCMessage(obj);
-};
-
-/**
- *  Build an error response.
- *
- * @memberOf jsonrpc2
- * @param {Object|RPCError} The error object to transmit
- * @param {String} [id=RPCError.getRPCID()] RPCid of the request. If not, defined try to extract RPCID from error object.
- * @return {RPCMessage} The resulted RPCMessage
- */
-var buildErrorResponse = function(error, id) {
-  var obj = {};
-  obj.jsonrpc  = '2.0';
-  obj.error   = error;
-  if (id) {
-    obj.id = String(id);
-    if (typeof obj.error.data !== 'undefined')
-      delete obj.error.data.id;
-  } else {
-    if (typeof error.hasRPCID !== 'undefined' && error.hasRPCID())
-      obj.id = String(error.getRPCID());
-  }
-  return new RPCMessage(obj);
-};
-
-/**
- * Build an internal RPC error. Use it when bad things occurs localy when resolving a RPC and you want to notify the caller.
- *
- * @memberOf jsonrpc2
- * @param {Object} [data] Complement data to trnasmit
- * @return {RPCError} The resulting RPCError
- */
-var buildInternalRPCError = function(data) {
-  return new RPCError(-32603, undefined, data);
-};
-
-/**
- * A RPC message object.
- *
- * @name RPCMessage
- * @class <i>Namespace</i> : KadOH.protocol.jsonrpc2._RPCMessage
- * @param {object} Raw parsed JSON RPC message object.
- */
-var RPCMessage = function(obj) { _clone(this, obj);                       };
-
-RPCMessage.prototype =  {
-  /**
-   * Setter for the RPC ID.
-   * @param {String} id The id to set
-   * @return {RPCMessage} Chainable object.
-   */
-  setRPCID  : function(id) {
-    this.id = String(id);
-    return this;
-  },
-  /**
-   * Getter for the RPC ID.
-   * @public
-   * @return {String} RPC ID.
-   */
-  getRPCID  : function() {  return this.id;       },
-  /**
-   * @public
-   * @return {Boolean} True if RPCMessage is a response.
-   */
-  isResponse: function() {  return !!this.result; },
-  /**
-   * @public
-   * @return {Object|String|Number} The result of the RPC reponse message.
-   */
-  getResult : function() {  return this.result;   },
-  /**
-   * @public
-   * @return {Boolean} True if RPC message is a request.
-   */
-  isRequest : function() {  return !!this.method; },
-  /**
-   * @public
-   * @return {String} Method invoked by the RPC message.
-   */
-  getMethod : function() {  return this.method;   },
-  /**
-   * @public
-   * @return {*} Return the parameters passed in a RPC message.
-   */
-  getParams : function(i) {
-    if (typeof i === 'number') {
-      return this.params[i];
-    }
-    return this.params;
-  },
-  /**
-   * @public
-   * @return {Boolean} True if RPCMessage is an error message.
-   */
-  isError   : function() {  return !!this.error;  },
-  /**
-   * @public
-   * @return {Object} The error object contained in message.
-   */
-  getError  : function() {  return this.error;    },
-  /**
-   * @public
-   * @return {'response'|'request'|'error'} Type of RPCMessage
-   */
-  getType   : function() {  if (this.isResponse()) return 'response';
-                            if (this.isRequest())  return 'request';
-                            if (this.isError())    return 'error';         },
-  /**
-   * @public
-   * @return {Object} Raw rpc message object.
-   */
-  stringify : function() {  return _clone({}, this);                      }
-};
-
-/**
- * RPC error object.
- * In the data arguments object, it can be passed as property the ID of the related RPCMessage.
- *
- * @name RPCError
- * @class <i>Namespace</i> : KadOH.protocol.jsonrpc2._RPCMessage
- * @param {Number} code    JSON RPC error code.
- * @param {String} [message] Description of the error.
- * @param {Object} [data]    Optionnal complementary data about error.
- */
-var RPCError = function(code, message, data) {
-  this.code    = code;
-  this.message = message ? message :
-                         (JSONRPC_ERROR_STRINGS[code] ? JSONRPC_ERROR_STRINGS[code] : '');
-  if (data)
-    this.data = data;
-};
-
-RPCError.prototype = {
-  /**
-   * @return {Boolean} True if a id is present in the data object.
-   */
-  hasRPCID : function() {
-    return (this.data && this.data.id);
-  },
-  /**
-   * @return {String} The RPC id in the data object.
-   */
-  getRPCID : function() {
-    if (this.hasRPCID()) return this.data.id;
-  },
-  /**
-   * @return {Object} Raw error message object.
-   */
-  stringify : function() {
-    return _clone({}, this);
-  }
-};
-
-//
-// API
-//
-var jsonrpc2 = {
-  parseRPCMessage        : parseRPCMessage,
-  buildErrorResponse     : buildErrorResponse,
-  buildResponse          : buildResponse,
-  buildRequest           : buildRequest,
-  buildInternalRPCError  : buildInternalRPCError,
-  RPCMessage             : RPCMessage,
-  RPCError               : RPCError,
-  JSONRPC_ERROR_STRINGS  : JSONRPC_ERROR_STRINGS
-};
-
-//
-// Util
-//
-var _clone = function(clone, obj) {
-  if (null === obj || 'object' !== typeof obj)
-    return {};
-  for (var attr in obj) {
-    if (obj.hasOwnProperty(attr)) clone[attr] = obj[attr];
-  }
-  return clone;
-};
-
-//exporting
-for(var i in jsonrpc2) {
-  exports[i] = jsonrpc2[i];
-}
-});
-
-require.define("/network/protocol/xmlrpc.js", function (require, module, exports, __dirname, __filename) {
-// Greatly inspired from :
-// Some easier XML-RPC methods for Mozilla.
-// 12/7/2005, 26/12/2005, 6/1/2006 David Murray.
-// http://deepestsender.mozdev.org/
-// v0.3
-// @see http://code.google.com/p/qpanel/source/browse/trunk/src/client/lib/xmlrpc.js
-
-var XMLRPC_ERROR_STRINGS = {
-  '-32700' : 'Parse error.',
-  '-32600' : 'Invalid Request.',
-  '-32601' : 'Method not found.',
-  '-32602' : 'Invalid params.',
-  '-32603' : 'Internal error.'
-};
-
-var _convertToXML = function(obj) {
-  var xml = document.implementation.createDocument('', 'value', null);
-  var findtype = new RegExp('function (.*?)\\(\\) \\{.*');
-  var value, numtype;
-  switch (findtype.exec(obj.constructor.toString())[1]) {
-    case 'Number':
-      // Numbers can only be sent as integers or doubles.
-      if (Math.floor(obj) !== obj) {
-        numtype = xml.createElement('double');
-      } else {
-        numtype = xml.createElement('i4');
-      }
-      var number = xml.documentElement.appendChild(numtype);
-      number.appendChild(xml.createTextNode(obj));
-      break;
-    case 'String':
-      var string = xml.documentElement.appendChild(xml.createElement('string'));
-      string.appendChild(xml.createTextNode(obj));
-      break;
-    case 'Boolean':
-      var bool = xml.documentElement.appendChild(xml.createElement('boolean'));
-      bool.appendChild(xml.createTextNode(obj * 1));
-      break;
-    case 'Object':
-      var struct = xml.documentElement.appendChild(xml.createElement('struct'));
-      for (var w in obj) {
-        if(obj[y] && typeof obj[y] === 'function')
-          continue;
-        var member = struct.appendChild(xml.createElement('member'));
-        member.appendChild(xml.createElement('name'))
-              .appendChild(xml.createTextNode(w));
-        member.appendChild(_convertToXML(obj[w]));
-      }
-      break;
-    case 'Date':
-      var datetext = obj.getFullYear() + _padNumber(obj.getMonth() + 1) + _padNumber(obj.getDate()) + 'T' + _padNumber(obj.getHours()) + ':' + _padNumber(obj.getMinutes()) + ':' + _padNumber(obj.getSeconds());
-      xml.documentElement.appendChild(xml.createElement('dateTime.iso8601'))
-         .appendChild(xml.createTextNode(datetext));
-      break;
-    case 'Array':
-      var array = xml.documentElement.appendChild(xml.createElement('array'));
-      var data = array.appendChild(xml.createElement('data'));
-      for (var y in obj) {
-        if(typeof obj[y] === 'function')
-          continue;
-        value = data.appendChild(xml.createElement('value'));
-        value.appendChild(_convertToXML(obj[y]));
-      }
-      break;
-    default:
-      // Hellishly awful binary encoding shit goes here.
-      // GZiped base64
-      // @TODO
-      break;
-  }
-  return xml.documentElement;
-};
-
-var _padNumber = function(num) {
-  if (num < 10) {
-    num = '0' + num;
-  }
-  return num;
-};
-
-var _removeWhiteSpace = function(node) {
-  var notWhitespace = /\S/;
-  for (var x = 0; x < node.childNodes.length; x++) {
-    var childNode = node.childNodes[x];
-    if ((childNode.nodeType === 3) && (!notWhitespace.test(childNode.textContent))) {
-      // that is, if it's a whitespace text node
-      node.removeChild(node.childNodes[x]);
-      x--;
-    }
-    if (childNode.nodeType === 1) {
-      // elements can have text child nodes of their own
-      _removeWhiteSpace(childNode);
-    }
-  }
-};
-
-var _convertFromXML = function(obj) {
-  if (!obj)
-    return null;
-
-  var data;
-  var tag = obj.tagName.toLowerCase();
-
-  try {
-    switch (tag) {
-      case "value":
-        return _convertFromXML(obj.firstChild);
-      case "double":
-      case "i4":
-      case "int":
-        var number = obj.textContent;
-        data = number * 1;
-        break;
-      case "boolean":
-        var bool = obj.textContent;
-        data = (bool === "1" || bool === "true") ? true : false;
-        break;
-      case "datetime.iso8601":
-        var date = obj.textContent;
-        data = new Date();
-        data.setFullYear(date.substring(0,4), date.substring(4,6) - 1, date.substring(6,8));
-        data.setHours(date.substring(9,11), date.substring(12,14), date.substring(15,17));
-        break;
-      case "array":
-        data = [];
-        var datatag = obj.firstChild;
-        for (var k = 0; k < datatag.childNodes.length; k++) {
-          var value = datatag.childNodes[k];
-          data.push(_convertFromXML(value.firstChild));
-        }
-        break;
-      case "struct":
-        data = {};
-        for (var j = 0; j < obj.childNodes.length; j++) {
-          var membername  = obj.childNodes[j].getElementsByTagName("name")[0].textContent;
-          var membervalue = obj.childNodes[j].getElementsByTagName("value")[0].firstChild;
-          data[membername] = membervalue ? _convertFromXML(membervalue) : null;
-        }
-        break;
-      case "string":
-        data = obj.textContent;
-        break;
-      default:
-        data = null;
-        break;
-    }
-  } catch(e) {
-    data = null;
-  }
-  return data;
-};
-
- var _parseRequestMessage = function(iq) {
-  var rpc = {};
-  rpc.id  = iq.getAttribute("id") || null;
-
-  // Method name
-  var method = iq.getElementsByTagName("methodName")[0];
-  rpc.method = method ? method.textContent : null;
-
-  // Parameters
-  rpc.params = null;
-  try {
-    var params = iq.getElementsByTagName("params")[0]
-                   .childNodes;
-    if (params && params.length > 0) {
-      rpc.params = [];
-      for (var i = 0; i < params.length; i++) {
-        rpc.params.push(_convertFromXML(params[i].firstChild));
-      }
-    }
-  } catch(e) {
-    throw new RPCError(-32600, null, {id : rpc.id});
-  }
-
-  return new RPCMessage(rpc, iq);
-};
-
-var _parseResponseMessage = function(iq) {
-  var rpc = {};
-  rpc.id  = iq.getAttribute("id") || null;
-
-  try {
-    var result = iq.getElementsByTagName("methodResponse")[0].firstChild;
-
-    // Response
-    var tag = result.tagName;
-    if (tag === "params") {
-      rpc.result = _convertFromXML(result.firstChild.firstChild);
-    }
-    // Error
-    else if (tag === "fault") {
-      rpc.error  = _convertFromXML(result.firstChild);
-    }
-  } catch(e) {
-    throw new RPCError(-32600, null, {id : rpc.id});
-  }
-  return new RPCMessage(rpc, iq);
-};
-
-var parseRPCMessage = function(iq) {
-  if (typeof iq === 'string') {
-    try {
-      var parser = new DOMParser();
-      var doc    = parser.parseFromString(iq, 'text/xml');
-      _removeWhiteSpace(doc);
-      iq = doc.documentElement;
-      if (iq.tagName == "parsererror") {
-        throw new RPCError(-32600, null, {});
-      }
-    } catch(e) {
-      throw new RPCError(-32600, null, {});
-    }
-  }
-  var type = iq.getAttribute('type');
-  if (type === 'set') {
-    return _parseRequestMessage(iq);
-  } else if (type === 'result') {
-    return _parseResponseMessage(iq);
-  } else {
-    throw new RPCError(-32600, null, {id : iq.getAttribute('id')});
-  }
-};
-
-var buildRequest = function(methodname, params) {
-  var xml = document.implementation.createDocument('', 'methodCall', null);
-  xml.documentElement.appendChild(xml.createElement('methodName'))
-                     .appendChild(xml.createTextNode(methodname));
-  
-  var xmlparams = xml.documentElement.appendChild(xml.createElement('params'));
-  for (var i = 0; i < params.length; i++) {
-    xmlparams.appendChild(xml.createElement('param'))
-             .appendChild(_convertToXML(params[i]));
-  }
-  
-  return new RPCMessage({
-    method: methodname,
-    params: params
-  } ,xml);
-};
-
-var buildResponse = function(result, id) {
-  id = id ? String(id) : '';
-  var xml = document.implementation.createDocument('', 'methodResponse', null);
-  xml.documentElement.appendChild(xml.createElement('params'))
-                     .appendChild(xml.createElement('param'))
-                     .appendChild(_convertToXML(result));
-
-  return new RPCMessage({
-    id: id,
-    result: result
-  }, xml);
-};
-
-var buildErrorResponse = function(error, id) {
-  var obj = {};
-  obj.error = error;
-  if (id) {
-    obj.id = String(id);
-    if (typeof obj.error.data !== 'undefined')
-      delete obj.error.data.id;
-  } else {
-    if (typeof error.hasRPCID !== 'undefined' && error.hasRPCID())
-      obj.id = String(error.getRPCID());
-  }
-
-  var xml = document.implementation.createDocument('', 'methodResponse', null);
-  xml.documentElement.appendChild(xml.createElement('fault'))
-                     .appendChild(_convertToXML({
-                       faultCode: error.code,
-                       faultString: error.message
-                     }));
-
-  return new RPCMessage(obj, xml);
-};
-
-var buildInternalRPCError = function(data) {
-  return new RPCError(-32603, undefined, data);
-};
-
-/**
- * A RPC message object.
- *
- * @name RPCMessage
- * @class <i>Namespace</i> : KadOH.protocol.xmlrpc._RPCMessage
- * @param {object} Raw parsed XML RPC message object.
- */
-var RPCMessage = function(obj, xml) {
-  _clone(this, obj);
-  this._xml = xml;
-};
-
-RPCMessage.prototype =  {
-  /**
-   * Setter for the RPC ID.
-   * @param {String} id The id to set
-   * @return {RPCMessage} Chainable object.
-   */
-  setRPCID  : function(id) {this.id = String(id); return this;            },
-  /**
-   * Getter for the RPC ID.
-   * @public
-   * @return {String} RPC ID.
-   */
-  getRPCID  : function() {  return this.id;                               },
-  /**
-   * @public
-   * @return {Boolean} True if RPCMessage is a response.
-   */
-  isResponse: function() {  return ('undefined' !== typeof this.result);  },
-  /**
-   * @public
-   * @return {Object|String|Number} The result of the RPC reponse message.
-   */
-  getResult : function() {  return this.result;                           },
-  /**
-   * @public
-   * @return {Boolean} True if RPC message is a request.
-   */
-  isRequest : function() {  return ('undefined' !== typeof this.method);  },
-  /**
-   * @public
-   * @return {String} Method invoked by the RPC message.
-   */
-  getMethod : function() {  return this.method;                           },
-  /**
-   * @public
-   * @return {*} Return the parameters passed in a RPC message.
-   */
-  getParams : function(i) {
-    if (typeof i === 'number') {
-      return this.params[i];
-    }
-    return this.params;
-  },
-  /**
-   * @public
-   * @return {Boolean} True if RPCMessage is an error message.
-   */
-  isError   : function() {  return ('undefined' !== typeof this.error);   },
-  /**
-   * @public
-   * @return {Object} The error object contained in message.
-   */
-  getError  : function() {  return this.error;                            },
-  /**
-   * @public
-   * @return {'response'|'request'|'error'} Type of RPCMessage
-   */
-  getType   : function() {  if (this.isResponse()) return 'response';
-                            if (this.isRequest())  return 'request';
-                            if (this.isError())    return 'error';         },
-  /**
-   * @public
-   * @return {Object} Raw rpc message object.
-   */
-  stringify : function() {
-    return this._xml.documentElement;
-  }
-};
-
-/**
- * RPC error object.
- * In the data arguments object, it can be passed as property the ID of the related RPCMessage.
- *
- * @name RPCError
- * @class <i>Namespace</i> : KadOH.protocol.xmlrpc._RPCMessage
- * @param {Number} code    XML RPC error code.
- * @param {String} [message] Description of the error.
- * @param {Object} [data]    Optionnal complementary data about error.
- */
-var RPCError = function(code, message, data) {
-  this.code =  code;
-  this.message = message ? message : (XMLRPC_ERROR_STRINGS[code] ? XMLRPC_ERROR_STRINGS[code] : '');
-  if (data !== undefined && data !== null)
-    this.data = data;
-};
-RPCError.prototype = {
-  /**
-   * @return {Boolean} True if a id is present in the data object.
-   */
-  hasRPCID : function() {
-    return ('undefined' !== typeof this.data) && (('undefined' !== typeof this.data.id));
-  },
-  /**
-   * @return {String} The RPC id in the data object.
-   */
-  getRPCID : function() {
-    if (this.hasRPCID()) return this.data.id;
-  },
-  /**
-   * @return {Object} Raw error message object.
-   */
-  stringify : function() {
-    return _clone({}, this);
-  }
-};
-
-var xmlrpc = {
-  parseRPCMessage       : parseRPCMessage,
-  buildRequest          : buildRequest,
-  buildResponse         : buildResponse,
-  buildErrorResponse    : buildErrorResponse,
-  buildInternalRPCError : buildInternalRPCError,
-  RPCMessage            : RPCMessage,
-  RPCError              : RPCError,
-  XMLRPC_ERROR_STRINGS  : XMLRPC_ERROR_STRINGS
-};
-
-var _clone = function(clone, obj) {
-  if (null === obj || 'object' !== typeof obj)
-    return {};
-  for (var attr in obj) {
-    if (obj.hasOwnProperty(attr)) clone[attr] = obj[attr];
-  }
-  return clone;
-};
-
-//exporting
-for(var i in xmlrpc) {
-  exports[i] = xmlrpc[i];
-}
-});
-
-require.define("/network/rpc/ping.js", function (require, module, exports, __dirname, __filename) {
-RPC   = require('./rpc');
-
-var PingRPC = module.exports = RPC.extend({
-
-  initialize: function(queried_peer) {
-    if (arguments.length === 0) {
-      this.supr();
-    } else {
-      this.supr(queried_peer, 'PING');
-    }
-  },
-
-  normalizeParams: function() {
-    return {};
-  },
-
-  handleNormalizedParams: function(params) {
-    this.params = [];
+    toGive.removePeer(rpc.getQuerying());
+    rpc.resolve(toGive);
   },
 
-  normalizeResult: function() {
-    return {};
+  FIND_VALUE: function(rpc) {
+    rpc.reject('I am  a bootstrap !');
   },
-
-  handleNormalizedResult: function(result) {
-    this.resolve();
-  }
-});
-});
-
-require.define("/network/rpc/rpc.js", function (require, module, exports, __dirname, __filename) {
-var Deferred  = require('../../util/deferred'),
-    Peer      = require('../../dht/peer'),
-    globals   = require('../../globals'),
-
-    log       = require('../../logging').ns('Reactor');
 
-
-var RPC = module.exports = Deferred.extend({
-
-  initialize: function(queried_peer, method, params) {
-    this.supr();
-
-    // if no arguments, empty RPC that need to parsed from normalized query
-    if (arguments.length === 0) return;
-
-    this._rtt = 0;
-    this._isTimeout = false;
-
-    this.method = method;
-    this.params = params || []; // params should alwais be an array
-    this.setQueried(queried_peer);
-
-    //hack
-    if(this.reactor)
-      this.setQuerying(this.reactor.getMeAsPeer());
-
-    this.setID(this._generateRandomID());
+  STORE: function(rpc) {
+    rpc.reject('I am  a bootstrap !');
   },
-
-  // to be defined...
-  reactor : undefined,
 
   //
   // Getters
   //
-
-  getMethod : function() {
-    return this.method;
-  },
-
-  getParams: function(index) {
-    if (typeof index === 'number') {
-      return this.params[index];
-    }
-    return this.params;
-  },
-
-  getResult: function() {
-    return this.getResolvePassedArgs();
-  },
-
-  getError: function() {
-    return this.getRejectPassedArgs();
-  },
-
-  getRTT: function() {
-    return this._rtt;
-  },
-
-  isTimeout: function() {
-    return this._isTimeout;
-  },
-
-  //peers role
   
-  setQueried : function(queried_peer) {
-    this.queried = queried_peer;
+  reactor: function() {
+    return this._reactor;
   },
 
-  getQueried: function() {
-    return this.queried;
+  getMe: function() {
+    return this._me;
+  },
+  
+  getID: function() {
+    return this._id;
   },
 
-  setQuerying : function(querying_peer) {
-    this.querying = querying_peer;
+  getAddress: function() {
+    return this._address;
   },
-
-  getQuerying: function() {
-    return this.querying;
-  },
-
-  /**
-   * Send method for this RPC.
-   */
-  sendQuery : function() {
-    this._sendTime = new Date().getTime();
-    this._setTimeout();
-    this.reactor.sendRPCQuery(this);
-    return this;
-  },
-
-  sendResponse: function() {
-    this.reactor.sendRPCResponse(this);
-    return this;
-  },
- 
-  handleNormalizedQuery: function(query, from) {
-    this.setQueried(this.reactor.getMeAsPeer());
-
-    this.id     = query.id;
-    this.method = query.method;
-
-    var params = query.params[0];
-    if (typeof params !== 'object') {
-      log.warn('query with no parameters');
-      this.reject();
-    }
-    else if (this._nonValidID(params.id)) {
-      log.warn('query with non valid node id');
-      this.reject();
-    }
-    else {
-      this.setQuerying(new Peer(from, params.id));
-      this.handleNormalizedParams(params);
-    }
-
-    return this;
-  },
-
-  // @abstract
-  handleNormalizedParams: function() {
-    return this;
-  },
-
-  // @abstract
-  normalizeParams: function() {
-    return {};
-  },
-
-  /**
-   * Express the query associated to this RPC wihtin a normalized form.
-   * @return the normalized query
-   */
-  normalizeQuery : function() {
-    var params = this.normalizeParams();
-    params.id = this.getQuerying().getID();
-
-    return {
-      id     : this.getID(),
-      method : this.method,
-      params : [params]
-    };
-  },
-
-  // @abstract
-  normalizeResult: function() {
-    return {};
-  },
-
-  normalizeResponse: function() {
-    var res = {
-      id     : this.getID(),
-      method : this.method
-    };
-
-    if (this.isResolved()) {
-      res.result    = this.normalizeResult();
-      res.result.id = this.getQueried().getID();
-    } else if (this.isRejected()) {
-      res.error = this.normalizeError();
-    } else {
-      log.warn('try to normalize a response already completed');
-      return null;
-    }
-    return res;
-  },
-
-  normalizeError: function() {
-    return this.getError().toString();
-  },
-
-  /**
-   * Handle the response coming from the node that have executed the RPC. This
-   * method should do verifications and reject or resolve the RPC (as deferred).
-   *
-   * @param  {RPCResponse}  response            ResponseRPC object
-   * @param  {Function}     [specific_handler]  Specific handler
-   */
-  handleNormalizedResponse: function(response, from) {
-    this._rtt = new Date().getTime() - this._sendTime;
-
-    if (this.isResolved() || this.isRejected()) {
-      log.warn('received response to an already completed query', from, response);
-      return this;
-    }
-
-    if (from && from !== this.getQueried().getAddress()) {
-      log.warn('spoofing attack from ' + from + ' instead of ' + this.getQueried().getAddress());
-      return this;
-    }
-
-    if (response.hasOwnProperty('result')) {
-      var id = response.result.id;
-      if (this._nonValidID(id)) {
-        log.warn('non valid ID', id, response);
-        this.reject();
-      }
-      // if the ID is outdated (not the same in the response and in the routing table)
-      // call the ErrBack with the outdated event
-      else if (this._outdatedID(id)) {
-        log.info('outdated ID', this.getQueried(), id);
-        this.reject('outdated', this.getQueried(), id);
-      } else {
-        this.handleNormalizedResult(response.result);
-      }
-    } else if (response.hasOwnProperty('error')) {
-      this.handleNormalizedError(response.error);
-    } else {
-      this.reject();
-    }
-    return this;
-  },
-
-  // @abstract
-  handleNormalizedResult: function(result) {
-    this.resolve();
-  },
-
-  handleNormalizedError: function(error) {
-    this.reject(new Error(error));
-  },
-
-  /**
-   * Clear the timer and resolve.
-   * @extends {Deferred#resolve}
-   */
-  resolve: function() {
-    this._clearTimeout();
-    this.supr.apply(this,arguments);
-  },
-
-  /**
-   * Clear the timer and reject.
-   * @extends {Deferred#reject}
-   */
-  reject: function() {
-    this._clearTimeout();
-    this.supr.apply(this,arguments);
-  },
-
-  cancel: function() {
-    this._clearTimeout();
-    this.supr();
-  },
-
+  
   //
-  // Timeout
+  // Private
   //
 
-  _setTimeout: function() {
-    this._timeoutID = setTimeout(function(self) {
-      if (self.inProgress()) {
-        log.info('query timeout');
-        self._isTimeout = true;
-        self.reject(new Error('timeout'));
-      }
-    }, this.reactor.timeoutValue, this);
-  },
-
-  _clearTimeout: function() {
-    if (this._timeoutID) {
-      clearTimeout(this._timeoutID);
-      this._timeoutID = undefined;
-    }
-  },
-
-  //
-  // ID
-  //
-
-  setID : function(id) {
-    this.id = id;
-  },
-
-  getID : function() {
-    return this.id;
-  },
-
-  _generateRandomID : function() {
-    var dict   = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
-        length = 2,
-        id     = '';
-    for (var i = 0; i < length; i++) {
-      id += dict.charAt(Math.floor(Math.random() * dict.length));
-    }
-    return id;
-  },
-
-  /**
-   * Check if an id is given in the response.
-   * @private
-   * @param  {String} id ID to validated
-   * @return {Boolean} True if and only if the ID is not valid
-   */
-  _nonValidID: function(id) {
-    return (typeof id !== 'string' || !globals.REGEX_NODE_ID.test(id));
-  },
-
-  /**
-   * Check if the id responded if the same as the local one.
-   * @private
-   * @param  {String} id ID to check
-   * @return {Boolean} True if and only if the ID is outdated
-   */
-  _outdatedID: function(id) {
-    var queried_id = this.getQueried().getID();
-
-    // if the id of the destination
-    // peer is a bootstrap (with null id), update queried
-    if (queried_id === null) {
-      this.getQueried().setID(id);
-    }
-    else if (id !== queried_id) {
-      return true;
-    }
-    return false;
+  _generateID: function() {
+    return Crypto.digest.randomSHA1();
   }
 
 });
 });
 
-require.define("/network/rpc/findnode.js", function (require, module, exports, __dirname, __filename) {
-var RPC       = require('./rpc'),
-    globals   = require('../../globals'),
-    PeerArray = require('../../util/peerarray');
+require.define("/lib/dht/iterativefind/iterative-findnode.js", function (require, module, exports, __dirname, __filename) {
+var IterativeDeferred   = require('../../util/iterative-deferred');
+var XORSortedPeerArray  = require('../../util/xorsorted-peerarray');
+var PeerArray           = require('../../util/peerarray');
+var Peer                = require('../peer');
+var globals             = require('../../globals');
+var FindNodeRPC         = require('../../network/rpc/findnode');
 
-var FindNodeRPC = module.exports = RPC.extend({
+var IterativeFindValue = module.exports = IterativeDeferred.extend({
+  initialize: function(to_map) {
+    this.supr(to_map);
 
-  initialize: function(queried_peer, target_id) {
-    if (arguments.length === 0) {
-      this.supr();
-    } else {
-      this.supr(queried_peer, 'FIND_NODE', [target_id]);
-    }
+     //hack
+    this._targetType = 'NODE';
+    this._staled = false;
   },
 
-  getTarget: function() {
-    return this.getParams(0);
-  },
+  target: function(target) {
+    this._target = (target instanceof Peer) ? target.getID() : target;
+    this.init(new XORSortedPeerArray(this.to_map, this._target));
 
-  normalizeParams: function() {
-    return {
-      target : this.getTarget()
-    };
-  },
+    //auto-start
+    if(this.sendFn)
+      this.start();
 
-  handleNormalizedParams: function(params) {
-    if (typeof params.target !== 'string' || !globals.REGEX_NODE_ID.test(params.target)) {
-      this.reject(new Error('non valid findnode query'));
-    } else {
-      this.params = [params.target];
-    }
     return this;
   },
 
-  normalizeResult: function() {
-    return {
-      nodes : this.getResult()[0].getTripleArray()
+  send: function(sendFn, sendCtxt) {
+    this.sendFn = function() {
+      sendFn.apply(sendCtxt || null, arguments);
     };
+
+    //auto-start
+    if(this._target)
+      this.start();
+
+    return this;
   },
 
-  handleNormalizedResult: function(result) {
-    var nodes;
-    try {
-      nodes = new PeerArray(result.nodes);
-    } catch(e) {
-      return this.reject(new Error('non valid findnode response'));
+  mapFn: function(peer) {
+    var rpc = new FindNodeRPC(peer, this._target);
+    this.sendFn(rpc);
+    return rpc;
+  },
+
+  reduceFn: function(peers, newPeers, map) {
+    peers.add(newPeers);
+
+    if (peers.newClosestIndex() >= 0 && peers.newClosestIndex() < globals.ALPHA) {
+      peers.first(globals.ALPHA, map);
     }
-    return this.resolve(nodes);
+
+    return peers;
+  },
+
+  endFn: function(peers, map, reached) {
+    if (this._staled) {
+      this.reject(new XORSortedPeerArray(reached, this._target));
+      return;
+    }
+
+    if (reached.length <= globals.ALPHA && peers.size() > 0) {
+      this._staled = true;
+      peers.first(globals.K, map);
+    } else {
+      this.reject(new XORSortedPeerArray(reached, this._target));
+    }
   }
-
 });
 });
 
-require.define("/network/rpc/findvalue.js", function (require, module, exports, __dirname, __filename) {
-var RPC       = require('./rpc'),
-    globals   = require('../../globals'),
-    PeerArray = require('../../util/peerarray');
+require.define("/lib/dht/iterativefind/iterative-findvalue.js", function (require, module, exports, __dirname, __filename) {
+var IterativeDeferred   = require('../../util/iterative-deferred');
+var XORSortedPeerArray  = require('../../util/xorsorted-peerarray');
+var PeerArray           = require('../../util/peerarray');
+var Peer                = require('../peer');
+var globals             = require('../../globals');
+var FindValueRPC        = require('../../network/rpc/findvalue');
 
+var IterativeFindValue = module.exports = IterativeDeferred.extend({
+  initialize: function(to_map) {
+    this.supr(to_map);
+    //hack
+    this._targetType = 'VALUE';
 
-var FindValueRPC = module.exports = RPC.extend({
-
-  initialize: function(queried_peer, target_id) {
-    if (arguments.length === 0) {
-      this.supr();
-    } else {
-      this.supr(queried_peer, 'FIND_VALUE', [target_id]);
-    }
   },
 
-  getTarget: function() {
-    return this.getParams(0);
-  },
+  target: function(target) {
+    this._target = (target instanceof Peer) ? target.getID() : target;
+    this.init(new XORSortedPeerArray().setRelative(this._target));
 
-  normalizeParams: function() {
-    return {
-      target : this.getTarget()
-    };
-  },
+    //auto-start
+    if(this.sendFn)
+      this.start();
 
-  handleNormalizedParams: function(params) {
-    if (typeof params.target !== 'string' || !globals.REGEX_NODE_ID.test(params.target)) {
-      this.reject(new Error('non valid findvalue query'));
-    } else {
-      this.params = [params.target];
-    }
     return this;
   },
 
-  normalizeResult: function() {
-    var args   = this.getResult(),
-        result = args[0],
-        found  = args[1];
+  send: function(sendFn, sendCtxt) {
+    this.sendFn = function() {
+      sendFn.apply(sendCtxt || null, arguments);
+    };
+
+     //auto-start
+    if(this._target)
+      this.start();
+
+    return this;
+  },
+
+  mapFn: function(peer) {
+    var rpc = new FindValueRPC(peer, this._target);
+    this.sendFn(rpc);
+    return rpc;
+  },
+
+  reduceFn: function(peers, result, found, map, queried, reached) {
     if (found) {
-      return {
-        value : result.value,
-        exp   : result.exp || -1
-      };
+      this.resolve(result, new XORSortedPeerArray(reached, this._target));
     } else {
-      return {
-        nodes : result.getTripleArray()
-      };
-    }
-  },
+      peers.add(result);
 
-  handleNormalizedResult: function(result) {
-    var resolve,
-        found = false;
-
-    if (result.value) {
-      found = true;
-      resolve = {
-        value : result.value,
-        exp   : result.exp
-      };
-    }
-    else if (result.nodes) {
-      try {
-        resolve = new PeerArray(result.nodes);
-      } catch(e) {
-        return this.reject(new Error('non valid findvalue response'));
+      if(peers.newClosest()) {
+        peers.first(globals.ALPHA, map);
       }
     }
+    return peers;
+  },
 
-    if (resolve) {
-      return this.resolve(resolve, found);
-    } else {
-      return this.reject(new Error('non valid findvalue response'));
+  endFn: function(peers, map, reached) {
+    this.reject(new XORSortedPeerArray(reached, this._target));
+  }
+});
+});
+
+require.define("/lib/data/storage/basic.js", function (require, module, exports, __dirname, __filename) {
+var klass = require('klass');
+/*
+ * Basic Storage class. Used in Node.js when lawnchair is not defined.
+ * Imitate the API of lawnchair but is not persistant.
+ */
+
+var BasicPersistentStorage = module.exports = klass({
+
+  initialize: function(config, cb) {
+    cb = cb || function(){};
+    this.config = config; //could be usefull
+    this._index = {};
+    cb.call(this, this);
+  },
+
+  save: function(kv, cb) {
+    cb = cb || function(){};
+    this._index[kv.key] = kv;
+    cb.call(this, kv);
+    return this;
+  },
+
+  get: function(key, cb) {
+    cb = cb || function(){};
+    if(typeof this._index[key] == 'undefined') {
+      cb.call(this, null);
+      return this;
+    }
+    cb.call(this, this._index[key]);
+    return this;
+  },
+
+  exists: function(key, cb) {
+    if(typeof this._index[key] == 'undefined') {
+      cb.call(this, false);
+      return this;
+    }
+    cb.call(this, true);
+    return this;
+
+  },
+
+  remove: function(key, cb) {
+    cb = cb || function(){};
+    if(typeof this._index[key] == 'undefined') {
+      cb.call(this);
+      return this;
+    }
+    delete this._index[key];
+    cb.call(this);
+    return this;
+  },
+
+  nuke: function(cb) {
+    cb = cb || function(){};
+    this._index = {};
+    cb.call(this);
+  },
+
+  each: function(cb) {
+    for(var obj in this._index) {
+      cb.call(this, obj);
     }
   }
-
 });
 });
 
-require.define("/network/rpc/store.js", function (require, module, exports, __dirname, __filename) {
-var RPC     = require('./rpc'),
-    globals = require('../../globals');
-
-
-var StoreRPC = module.exports = RPC.extend({
-
-  initialize: function(queried_peer, key, value, exp) {
-    if (arguments.length === 0) {
-      this.supr();
-    } else {
-      this.supr(queried_peer, 'STORE', [key, value, exp]);
-    }
-  },
-
-  getKey: function() {
-    return this.getParams(0);
-  },
-
-  getValue: function() {
-    return this.getParams(1);
-  },
-
-  getExpiration: function() {
-    return this.getParams(2);
-  },
-
-  normalizeParams: function() {
-    var exp = this.getExpiration();
-    if (!exp || ~exp) exp = -1;
-    return {
-      key   : this.getKey(),
-      value : this.getValue(),
-      exp   : exp
-    };
-  },
-
-  handleNormalizedParams: function(params) {
-    if (typeof params.key !== 'string' || !globals.REGEX_NODE_ID.test(params.key)) {
-      return this.reject(new Error('non valid store key'));
-    } else {
-      this.params = [params.key, params.value, params.exp];
-    }
-  },
-
-  normalizeResult: function() {
-    return {};
-  },
-
-  handleNormalizedResult: function(result) {
-    this.resolve();
-  }
-
-});
-});
-
-require.define("/data/value-store.js", function (require, module, exports, __dirname, __filename) {
-var EventEmitter      = require('../util/eventemitter'),
-    globals           = require('../globals'),
-    Deferred          = require('../util/deferred'),
-    Crypto            = require('../util/crypto'),
-    PersistentStorage = require('./storage'),
-
-    log               = require('../logging').ns('ValueStore');
-
-var ValueStore = module.exports = EventEmitter.extend({
-
-  /**
-   * Instanciate a new value management.
-   *
-   * @constructs
-   * @param  {Object} node    The node instance on which the value mangement depends.
-   * @param  {Object} [options] Some configuration options..
-   * @param  {Boolean} [options.recover = true] If true, try to recover the last session that
-   *                                    coresponds to the address/nodeID. If false, session is
-   *                                    destructed and a new one is created.
-   */
-  initialize: function(node, options) {
-    this.supr();
-    this._node = node;
-
-    var config = this.config = {
-      recover    : true,
-      delayedRep : true
-    };
-    for (var option in options) {
-      config[option] = options[option];
-    }
-
-    this._nodeID = node.getID();
-    this._nodeAddress = node.getAddress();
-
-    var self = this;
-    this._store = new PersistentStorage({
-      name   : ['KadOH', node.getID(), node.getAddress()].join('|'),
-      record : 'KeyValue'
-    }, function() {});
-
-    log.debug('initializing' + ((options && options.recover) ? ' with recover' : ''));
-    if (config.recover) {
-      this._recover();
-    } else {
-      this._store.nuke();
-    }
-    this._RepTimeouts = {};
-    this._ExpTimeouts = {};
-
-    this.emit('initialized');
-  },
-
-  /**
-   * Stop the value management instance.
-   *  - clear all timeouts
-   * @return {this}
-   */
-  stop : function() {
-    for(var i in this._RepTimeouts) {
-      clearTimeout(this._RepTimeouts[i]);
-      delete this._RepTimeouts[i];
-    }
-    for(var j in this._ExpTimeouts) {
-      clearTimeout(this._ExpTimeouts[j]);
-      delete this._ExpTimeouts[j];
-    }
-    return this;
-  },
-
-  /**
-   * Store the given key/value in the storage. Provide an expirimation time.
-   * Return ta deferred object representig the state of the store (resolved : OK, rejected : not OK).
-   *
-   * In the background, timers for republish and expiration are started.
-   * For the xpiration time : negative value or not set : no expiration.
-   *
-   * Key/value are stored as object with properties :
-   *   key   - the key
-   *   value - the value that coresspond to the key (null if not found)
-   *   exp   - expiration date (null or negative if unlimited)
-   *   rep   - next republish date
-   *
-   * @public
-   * @see  Deferred
-   *
-   * @param  {String}   key   the key associated to the value
-   * @param  {*}        value the value of the key value
-   * @param  {Integer}  [exp = -1]   timestamp for the expiration date (UTC in ms). If negative value or not set : no expiration.
-   * @return {Deferred} a deferred object representing the state of the store
-   */
-
-  save: function(key, value, exp) {
-    var def = new Deferred();
-
-    var KeyValue = {
-      key   : key,
-      value : value
-    };
-
-    var now = new Date().getTime();
-
-    //set republish date
-    KeyValue.rep =  now + this._repTime;
-
-    //check expiration time : negative value means infinite.
-    KeyValue.exp = exp || -1;
-
-    if( KeyValue.exp > 0 && KeyValue.exp <= now) {
-      KeyValue.now = now;
-      log.warn('save failed : key-value already expired', KeyValue);
-      def.reject('key-value already expired');
-      return def;
-    }
-
-    //set the timers
-    this._setRepTimeout(KeyValue, this._repTime);
-    this._setExpTimeout(KeyValue, KeyValue.exp - now);
-
-    //and save
-    this._store.save(KeyValue, function(obj) {
-      def.resolve(obj);
-    });
-
-    //inform the rest of the world
-    this.emit('save', KeyValue);
-
-    return def;
-  },
-
-  /**
-   * Retrieve the value of the key.
-   *
-   * To catch the result, there is 2 ways :
-   *    - provide a callback function that will be called with value and
-   *    expiration date as arguments.
-   *    - handle the defered object that is returned, by this methods. If
-   *    result, value and expiration date are passed to the success calback
-   *    and if no result, the errback is called.
-   *
-   * Are passed as arguments of the callbak functions:
-   *   value - the value that coresspond to the key (null if not found)
-   *   exp   - expiration date (null or negative if unlimited)
-   *
-   * @see  Deferred
-   * @public
-   *
-   * @param  {String}   key      the key associated to the value
-   * @param  {Function} [callback] callback function
-   * @param  {Object}   [scope = this ValueStore obejct] the scope to apply to the callback function (by default : the instance of ValueManagement)
-   * @return {Deferred} a deferred object representing the state of the retrieve
-   */
-
-  retrieve: function(key, callback, scope) {
-    var def = new Deferred();
-
-    scope = scope || this;
-    this._store.get(key, function(obj) {
-      if(obj === null) {
-        if (callback) callback.call(scope, null);
-        def.reject();
-      }
-      else {
-        if (callback) callback.call(scope, obj.value, obj.exp);
-        def.resolve(obj.value, obj.exp);
-      }
-    });
-    return def;
-  },
-
-  /**
-   * Recover the last stored session.
-   *
-   * @private
-   */
-  _recover: function() {
-    var now = new Date().getTime();
-    var self = this;
-
-    this._store.each(function(kv){
-      try {
-        if(kv.exp >= 0 && kv.exp <= now) {
-          self._store.remove(kv.key);
-          return;
-        }
-        self._setExpTimeout(kv,kv.exp - now);
-        
-        if(typeof kv.rep == 'undefined' || kv.exp <= now) {
-          self._republish(kv);
-          kv.rep =  now + self._repTime;
-          self._store.save(kv);
-        }
-         
-        self._setRepTimeout(kv, kv.rep - now);
-        
-      } catch(e) {
-        self._store.remove(kv.key);
-      }
-    });
-  },
-
-  /**
-   * Reset a timeout for republish of the given Key/Value
-   *
-   * @private
-   * @param {[type]} kv      Key/Value
-   * @param {[type]} timeout the timeout
-   */
-  _setRepTimeout: function(kv, timeout) {
-    if(this._RepTimeouts[kv.key]) {
-        clearTimeout(this._RepTimeouts[kv.key]);
-        delete this._RepTimeouts[kv.key];
-      }
-
-    if(this.config.delayedRep) {
-      timeout = Math.floor(timeout*(1+(2*Math.random()-1)*this._repWindow));
-    }
-
-    var TOiD = setTimeout(function(kv, self) {
-      if(typeof kv == 'undefined') return; //in case of
-      
-      //check if it has already expired or if the timer is an old one
-      var now = new Date().getTime();
-      var hasExp = (typeof kv.exp == 'undefined' || kv.exp === null || kv.exp <0) ? false : (kv.exp <= now);
-      if(hasExp) return;
-      self._republish(kv);
-    }, timeout, kv, this);
-
-    this._RepTimeouts[kv.key] = TOiD;
-    return this;
-  },
-
-  /**
-   * Time between 2 republish processes of a stored value.
-   * By default, the value is the TIMEOUT_REPUBLISH global constant.
-   *
-   * @private
-   * @type {Integer}
-   */
-  _repTime : globals.TIMEOUT_REPUBLISH,
-
-  /**
-   * Percentage on republish timeout definong the window in whicch the repiublishs will occure.
-   * By default, the value is the TIMEOUT_REPUBLISH_WINDOW global constant.
-   * 
-   * @private
-   * @type {Integer}
-   */
-  _repWindow : globals.TIMEOUT_REPUBLISH_WINDOW,
-
-  /**
-   * Make a key/value being republished by calling the `republish` method of node instance.
-   *
-   * Before it checks if key/value is still existing. Reset a new timer.
-   *
-   * @param  {Object} kv the key/value object to republish
-   * @return {Object} this
-   */
-  _republish: function(kv) {
-    var self = this;
-    //check before if the key/value still exists
-      this._store.exists(kv.key, function(exists) {
-        if(exists) {
-          //reset republish date
-          var now = new Date().getTime();
-          kv.rep = now + self._repTime;
-
-          //reset a timer
-          self._setRepTimeout(kv, self._repTime);
-          
-          //sore it
-          self._store.save(kv);
-
-          //call node's republish method
-          self.emit('republish', kv.key, kv.value, kv.exp);
-        }
-      });
-    return this;
-  },
-
-  /**
-   * Reset a timeout for expiration of the given Key/Value.
-   * If the Key/Value has a negative expiration date (infinite), nothing is done.
-   *
-   * @private
-   * @param {[type]} kv      Key/Value
-   * @param {[type]} timeout the timeout
-   * @return this
-   */
-  _setExpTimeout: function(kv, timeout) {
-    if(kv.exp >= 0) {
-      if(this._ExpTimeouts[kv.key]) {
-        clearTimeout(this._ExpTimeouts[kv.key]);
-        delete this._ExpTimeouts[kv.key];
-      }
-
-      var TOiD = setTimeout(function(kv, self) {
-        if(typeof kv == 'undefined') return; //in case of
-
-        //check if it has already expired (old timer)
-        var now = new Date().getTime();
-        var hasExp = (typeof kv.exp == 'undefined' || kv.exp === null || kv.exp <0) ? false : (kv.exp <= now);
-        if(! hasExp) return;
-        
-        self._expire(kv);
-      }, timeout, kv, this);
-
-      this._ExpTimeouts[kv.key] = TOiD;
-    }
-    return this;
-  },
-
-  /**
-   * Make a key/value expire. Before check if stil exists.
-   *
-   * @private
-   * @param  {Object} kv the key/value to make expire
-   * @return {Object} this
-   */
-  _expire: function(kv) {
-    var self = this;
-    //check before if the key/value still exists
-      this._store.exists(kv.key, function(exists) {
-        if(exists) {
-          self._store.remove(kv.key);
-          self.emit('expire', kv);
-        }
-      });
-    return this;
-  },
- 
- /**
-  * Helper
-  * @param  {String} key [description]
-  * @return {[type]}
-  */
-  _getDistanceToKey: function(key) {
-    return Crypto.distance(this._nodeID, key);
-  }
-
-});
-});
-
-require.alias("/network/transport/strophe.js", "/network/transport/index.js");
-
-require.alias("/data/storage/lawnchair.js", "/data/storage/index.js");
-
-require.alias("/dht/iterativefind/iterativefind-1.js", "/dht/iterativefind/index.js");
-
-require.define("/index-browserify.js", function (require, module, exports, __dirname, __filename) {
+require.define("/lib/index-browserify.js", function (require, module, exports, __dirname, __filename) {
     window.KadOH = {
   Node : require('./node'),
   log  : require('./logging')
 };
+
+exports.util = {
+  crypto              : require('./util/crypto'),
+  EventEmitter        : require('./util/eventemitter'),
+  StateEventEmitter   : require('./util/state-eventemitter'),
+  Deferred            : require('./util/deferred'),
+  PeerArray           : require('./util/peerarray'),
+  SortedPeerArray     : require('./util/sorted-peerarray'),
+  XORSortedPeerArray  : require('./util/xorsorted-peerarray')
+};
+
+exports.globals = require('./globals');
+
+exports.logic = {
+  KademliaNode        : require('./node'),
+  Bootstrap           : require('./bootstrap')
+};
+
+exports.network = {
+  Reactor             : require('./network/reactor'),
+  rpc : {
+    RPC               : require('./network/rpc/rpc'),
+    Ping              : require('./network/rpc/ping'),
+    FindNode          : require('./network/rpc/findnode'),
+    FindValue         : require('./network/rpc/findvalue'),
+    Store             : require('./network/rpc/store')
+  },
+  transport : {
+    '':'',
+    //@browserify-ignore[xmpp] --comment
+    //SimUDP            : require('./network/transport/simudp'),
+
+    //@browserify-ignore[simudp] --comment
+    Strophe           : require('./network/transport/strophe')
+  }
+};
+
+exports.dht = {
+  RoutingTable        : require('./dht/routing-table'),
+  KBucket             : require('./dht/kbucket'),
+  Peer                : require('./dht/peer'),
+  BootstrapPeer       : require('./dht/bootstrap-peer'),
+  IterativeFindNode   : require('./dht/iterativefind/iterative-findnode'),
+  IterativeFindValue  : require('./dht/iterativefind/iterative-findvalue')
+};
+
+exports.data = {
+  ValueStore          : require('./data/value-store'),
+  storage : {
+    Basic             : require('./data/storage/basic'),
+
+    //@browserify-ignore[basic] --comment
+    Lawnchair         : require('./data/storage/lawnchair')
+  }
+};
 });
-require("/index-browserify.js");
+require("/lib/index-browserify.js");
