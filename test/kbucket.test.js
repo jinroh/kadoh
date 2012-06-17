@@ -70,7 +70,8 @@ describe('KBucket', function() {
       for (var i=0; i < globals.K; i++) {
         kbucket.addPeer(new Peer('127.0.0.1:' + (1025+i), rID()));
       }
-      expect(kbucket.getPeers(globals.K - 1).size()).to.equal(globals.K - 1);
+      expect(kbucket.getPeers().size()).to.equal(globals.K);
+      expect(kbucket.getPeers(3).size()).to.equal(3);
       expect(kbucket.getPeers(globals.K).map(function(peer) {
         return peer.getAddress().split(':')[1];
       })).to.be.sorted(function(a,b) {
@@ -79,16 +80,21 @@ describe('KBucket', function() {
     });
 
     it('should exclude certain peers', function() {
+      var exclude;
       for (var i=0; i < globals.K; i++) {
         var peer = new Peer('127.0.0.1:' + (1025+i), rID());
         kbucket.addPeer(peer);
         if (i === 1) {
-          var exclude = [peer];
+          exclude = [peer];
         }
       }
-      expect(kbucket.getPeers(kbucket.size(), exclude).contains(exclude)).to.be.false;
+      expect(kbucket.getPeers(4, exclude).contains(exclude)).to.be.false;
+      expect(kbucket.getPeers(4, exclude).size()).to.equal(4);
     });
     
+    it('should return an empty PeerArray when empty', function() {
+      expect(kbucket.getPeers(3, [new Peer(address, rID())])).to.deep.equal(new PeerArray());
+    });
   });
   
   describe('When I have a full KBucket', function() {

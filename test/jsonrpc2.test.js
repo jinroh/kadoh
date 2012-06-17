@@ -11,6 +11,13 @@ describe('JSON-RPC2 protocol', function() {
     expect(jsonrpc2.encode).to.be.a('function');
   });
 
+  describe('encode * decode composition', function() {
+    it('should be the identity function', function() {
+      expect(jsonrpc2.decode(jsonrpc2.encode(ping.request))).to.deep.equal(ping.request);
+      expect(jsonrpc2.decode(jsonrpc2.encode(findnode.request))).to.deep.equal(findnode.request);
+    });
+  });
+
   describe('encode/decode ping rpcs', function() {
     it('should encode a ping request', function() {
       var encoded = JSON.parse(jsonrpc2.encode(ping.request));
