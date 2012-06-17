@@ -13,7 +13,7 @@ describe('JSON-RPC2 protocol', function() {
 
   describe('encode/decode ping rpcs', function() {
     it('should encode a ping request', function() {
-      var encoded = jsonrpc2.encode(ping.request);
+      var encoded = JSON.parse(jsonrpc2.encode(ping.request));
       expect(encoded).to.be.deep.equal({
         jsonrpc:"2.0",
         method:"PING",
@@ -22,7 +22,7 @@ describe('JSON-RPC2 protocol', function() {
     });
 
     it('should encode a ping response', function() {
-      var encoded = jsonrpc2.encode(ping.response);
+      var encoded = JSON.parse(jsonrpc2.encode(ping.response));
       expect(encoded).to.be.deep.equal({ 
         jsonrpc: '2.0',
         result: { id: 'ebd52e2eef76eebd9fdc72dd6e3176d62a236a6f' },
@@ -30,26 +30,26 @@ describe('JSON-RPC2 protocol', function() {
       });
     
     it('should decode a ping request', function() {
-      var decoded = jsonrpc2.decode({
+      var decoded = jsonrpc2.decode(JSON.stringify({
         jsonrpc:"2.0",
         method:"PING",
         params:[{"id":"ebd52e2eef76eebd9fdc72dd6e3176d62a236a6f"}],
-        id:"Zd"});
+        id:"Zd"}));
       expect(decoded).to.be.deep.equal(ping.request);
     });
 
     it('should decode a ping response', function() {
-      var decoded = jsonrpc2.decode({ 
+      var decoded = jsonrpc2.decode(JSON.stringify({
         jsonrpc: '2.0',
         result: { id: 'ebd52e2eef76eebd9fdc72dd6e3176d62a236a6f' },
-        id: 'Zd' });
+        id: 'Zd' }));
       expect(decoded).to.be.deep.equal(ping.response);
     });
   });
 
   describe('encode/decode findnode rpcs', function() {
     it('should encode a findnode request', function() {
-      var encoded = jsonrpc2.encode(findnode.request);
+      var encoded = JSON.parse(jsonrpc2.encode(findnode.request));
       expect(encoded).to.be.deep.equal({
         "jsonrpc": "2.0",
         "method": "FIND_NODE",
@@ -62,7 +62,7 @@ describe('JSON-RPC2 protocol', function() {
     });
 
     it('should encode a findnode response', function() {
-      var encoded = jsonrpc2.encode(findnode.response);
+      var encoded = JSON.parse(jsonrpc2.encode(findnode.response));
       expect(encoded).to.be.deep.equal({
         "jsonrpc": "2.0",
         "result": {
@@ -83,7 +83,7 @@ describe('JSON-RPC2 protocol', function() {
     });
     
     it('should decode a findnode request', function() {
-      var decoded = jsonrpc2.decode({
+      var decoded = jsonrpc2.decode(JSON.stringify({
         "jsonrpc": "2.0",
         "method": "FIND_NODE",
         "params": [{
@@ -91,12 +91,12 @@ describe('JSON-RPC2 protocol', function() {
           "id": "208e420d58ba3d30abc2ad87bdd3947f89605115"
         }],
         "id": "qN"
-      });
+      }));
       expect(decoded).to.be.deep.equal(findnode.request);
     });
 
     it('should decode a findnode response', function() {
-      var decoded = jsonrpc2.decode({
+      var decoded = jsonrpc2.decode(JSON.stringify({
         "jsonrpc": "2.0",
         "result": {
           "id": "208e473b59668b454afda3726a9c8332a94815ab",
@@ -112,7 +112,7 @@ describe('JSON-RPC2 protocol', function() {
           ]
         },
         "id": "qN"
-      });
+      }));
       expect(decoded).to.be.deep.equal(findnode.response);
     });
   });
