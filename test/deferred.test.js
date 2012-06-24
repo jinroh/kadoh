@@ -265,7 +265,7 @@ describe('Deferred', function() {
         promises[1].resolve('bar');
         expect(success).to.not.have.been.called;
         promises[2].resolve('baz');
-        expect(success).to.have.been.calledWith(promises[0], promises[1], promises[2]);
+        expect(success).to.have.been.calledWith([promises[0], promises[1], promises[2]], []);
         expect(all.isResolved()).to.be.true;
       });
 
@@ -274,7 +274,7 @@ describe('Deferred', function() {
         promises[1].resolve('foo');
         expect(failure).to.not.have.been.called;
         promises[0].reject('bar');
-        expect(failure).to.have.been.calledWith(promises[0])
+        expect(failure).to.have.been.calledWith([promises[1]], [promises[0]])
         expect(all.isRejected()).to.be.true;
       });
 
@@ -288,7 +288,7 @@ describe('Deferred', function() {
         promises[0].resolve('foo');
         expect(success).to.not.have.been.called;
         promises[2].resolve('baz');
-        expect(success).to.have.been.calledWith(promises[0], promises[2]);
+        expect(success).to.have.been.calledWith([promises[0], promises[2]], []);
         expect(some.isResolved()).to.be.true;
       });
 
@@ -298,7 +298,7 @@ describe('Deferred', function() {
         promises[2].resolve('bar');
         expect(some.isCompleted()).to.be.false;
         promises[1].reject('quz');
-        expect(failure).to.have.been.calledWith(promises[0], promises[1]);
+        expect(failure).to.have.been.calledWith([promises[2]], [promises[0], promises[1]]);
         expect(some.isRejected()).to.be.true;
       });
 
