@@ -238,6 +238,8 @@ describe('Deferred', function() {
         new Deferred(),
         new Deferred()
       ];
+      success = sinon.spy();
+      failure = sinon.spy();
     });
 
     it('should test if it is a value or a promise', function() {
@@ -256,7 +258,6 @@ describe('Deferred', function() {
     describe('whenAll', function() {
       
       it('should be resolved when all are resolved', function() {
-        success = sinon.spy();
         var all = Deferred.whenAll(promises).then(success, failure);
         expect(all.isResolved()).to.be.false;
         promises[0].resolve('foo');
@@ -264,8 +265,17 @@ describe('Deferred', function() {
         promises[1].resolve('bar');
         expect(success).to.not.have.been.called;
         promises[2].resolve('baz');
-        expect(success).to.have.been.calledWith(['foo'], ['bar'], ['baz']);
+        expect(success).to.have.been.calledWith(promises[0], promises[1], promises[2]);
         expect(all.isResolved()).to.be.true;
+      });
+
+      it('sould be rejected as soon as a promise is rejected', function() {
+        var all = Deferred.whenAll(promises).then(success, failure);
+        promises[1].resolve('foo');
+        expect(failure).to.not.have.been.called;
+        promises[0].reject('bar');
+        expect(failure).to.have.been.calledWith(promises[0])
+        expect(all.isRejected()).to.be.true;
       });
 
     });
@@ -273,14 +283,23 @@ describe('Deferred', function() {
     describe('whenSome', function() {
       
       it('should be resolved when some are resolved', function() {
-        success = sinon.spy();
         var some = Deferred.whenSome(promises, 2).then(success, failure);
         expect(some.isResolved()).to.be.false;
         promises[0].resolve('foo');
         expect(success).to.not.have.been.called;
         promises[2].resolve('baz');
-        expect(success).to.have.been.calledWith(['foo'], undefined, ['baz']);
+        expect(success).to.have.been.calledWith(promises[0], promises[2]);
         expect(some.isResolved()).to.be.true;
+      });
+
+      it('should be rejected as soon as too many promise have rejected', function() {
+        var some = Deferred.whenSome(promises, 2).then(success, failure);
+        promises[0].reject('foo');
+        promises[2].resolve('bar');
+        expect(some.isCompleted()).to.be.false;
+        promises[1].reject('quz');
+        expect(failure).to.have.been.calledWith(promises[0], promises[1]);
+        expect(some.isRejected()).to.be.true;
       });
 
     });
@@ -290,8 +309,6 @@ describe('Deferred', function() {
       var atl;
 
       beforeEach(function() {
-        success = sinon.spy();
-        failure = sinon.spy();
         atl = Deferred.whenAtLeast(promises).then(success, failure);
         expect(atl.isResolved()).to.be.false;
       });
@@ -322,7 +339,6 @@ describe('Deferred', function() {
       var map;
 
       beforeEach(function() {
-        success = sinon.spy();
         map = Deferred.whenMap(promises, function(value) {
           return value + '_bar';
         }).then(success);
