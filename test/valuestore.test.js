@@ -51,6 +51,13 @@ describe('Value Store', function() {
           done();
         });
       });
+
+      it('should appear in result of keys method', function(done) {
+        v.keys(function(keys) {
+          expect(keys).to.deep.equal([key]);
+          done();
+        });
+      });
     });
 
     describe('and when I\'ve stored a value with an expiration time', function() {
