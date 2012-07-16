@@ -122,5 +122,4 @@ Reporter.prototype.start = function(_emitter) {
 
 Reporter.prototype.stop = function() {
   clearInterval(this.heartbeat);
-  emitter.close();
 };
