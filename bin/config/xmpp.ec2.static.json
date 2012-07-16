@@ -1,0 +1,16 @@
+{
+  "botType"  : "xmpp",
+  "poolSize" : 30,
+  "speed"    : 1,
+  "size"     : 1000,
+  "activity" : 50,
+  "values"   : 100,
+  "jids"     : ["bot%d@kadoh.fr.nf", "azerty"],
+  "starter"  : true,
+  "reporter" : true,
+  "bootstraps" : [
+    ["bootstrap0@kadoh.fr.nf", "kadoh", "azerty"],
+    ["bootstrap1@kadoh.fr.nf", "kadoh", "azerty"],
+    ["bootstrap2@kadoh.fr.nf", "kadoh", "azerty"]
+  ]
+}

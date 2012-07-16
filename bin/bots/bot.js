@@ -33,6 +33,11 @@ Bot.prototype.start = function() {
   }, this._options.delay || 1, this);
 };
 
+Bot.prototype.stop = function() {
+  clearTimeout(this._activity);
+  this.kadoh.disconnect();
+};
+
 Bot.prototype.connect = function() {
   var self = this;
   this.kadoh.connect(function() {
@@ -56,7 +61,7 @@ Bot.prototype.join = function() {
 Bot.prototype.randomActivity = function() {
   var timeout = Math.floor((-Math.log(Math.random()) / this._options.activity * 60000));
   var self = this;
-  setTimeout(function() {
+  this._activity = setTimeout(function() {
     var random = Math.floor(Math.random() * 2);
     var value  = String(Math.floor(Math.random() * self._options.values));
     switch(random) {

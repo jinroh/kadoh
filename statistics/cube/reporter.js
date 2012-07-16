@@ -1,7 +1,9 @@
 var HEARTBEAT_INTERVAL = 55 * 1000;
 
-var emitter  = require('./emitter')('collector.kadoh.fr.nf');
+var emitter  = require('./emitter')('cube');
 var distance = require('../../lib/util/crypto').distance;
+
+var mobile = false, bot = false;
 
 var events = {
   node : {
@@ -61,34 +63,61 @@ function lookupHandler(lookup, type, begin, reached) {
 }
 
 function emit(type, data) {
+  data = data || {};
+  data.mobile = mobile;
+  data.bot = bot;
   emitter.send({
     type : type,
-    time : new Date().getTime(),
+    time : new Date().toISOString(),
     data : data || {}
   });
 }
 
-var Reporter = module.exports = function(node) {
+var Reporter = module.exports = function(node, _mobile, _bot) {
+  mobile = _mobile === true ? true : false;
+  bot = _bot === true ? true : false;
   this.node = node;
   this.ees  = {
-    node         : node,
-    reactor      : node._reactor,
-    transport    : node._reactor._transport,
-    routingTable : node._routingTable,
-    store        : node._store
+    node : node,
+    reactor : node._reactor
   };
 };
 
-Reporter.prototype.start = function() {
+Reporter.prototype.start = function(_emitter) {
+  if (_emitter) emitter = _emitter;
   for (var name in this.ees) {
-    if (events[name]) {
+    if (events.hasOwnProperty(name)) {
       this.ees[name].on(events[name]);
     }
   }
   var self = this;
-  this.heartbeat = setInterval(function() {
-    emit('heartbeat', {id : self.node.getID()});
-  }, HEARTBEAT_INTERVAL);
+  function heartbeat() {
+    var data = { id : self.node.getID() };
+    if (self.node._store) {
+      self.node._store.keys(function(keys) {
+        data.keys = keys;
+        if (self.node._reactor._rtts) {
+          var rtts = self.node._reactor._rtts;
+          var mean = rtts.reduce(function(prev, next) { return prev + next; }, 0) / rtts.length;
+          data.rtts_mean = mean;
+          mean = 0;
+          var variance = 0;
+          for (var i = 0; i < rtts.length; i++) {
+            var _mean = mean;
+            mean += (rtts[i] - _mean) / (i + 1);
+            variance += (rtts[i] - _mean) * (rtts[i] - mean);
+          }
+          variance /= rtts.length;
+          data.rtts_var = variance;
+        }
+        emit('heartbeat', data);
+      });
+    } else {
+      emit('heartbeat', data);
+    }
+  }
+  heartbeat();
+  this.heart = setInterval(heartbeat, HEARTBEAT_INTERVAL);
 };
 
 Reporter.prototype.stop = function() {

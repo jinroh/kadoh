@@ -86,8 +86,10 @@ function poolParams(id) {
     lambda   : config.speed,
     values   : config.values,
     reporter : config.reporter,
+    churns   : config.churns,
     bot : {
       bootstraps : bootstraps,
+      slowRTT    : config.slowRTT,
       reactor : {
         protocol  : protocol, 
         transport : {
