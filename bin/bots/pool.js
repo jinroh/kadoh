@@ -78,7 +78,6 @@ Pool.prototype.churn = function() {
   }
 
   var churnMax = 2 * this._churns[Math.floor(this._churns.length / 2)];
-  console.error(churnMax);
   for (var i = this._nodes.length - 1; i >= 0; i--) {
     setTimeout(stopStart, Math.floor(Math.random() * churnMax), i);
   }
