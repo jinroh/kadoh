@@ -33,6 +33,9 @@ Bot.prototype.start = function() {
 
 Bot.prototype.stop = function() {
   clearTimeout(this._activity);
+  if (this.reporter) {
+    this.reporter.stop();
+  }
   this.kadoh.disconnect();
 };
 
