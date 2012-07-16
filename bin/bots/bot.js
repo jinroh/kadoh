@@ -22,8 +22,6 @@ var Bot = exports.Bot = function(options) {
   options.node.reactor.transport = options.node.reactor.transport || {};
   options.node.reactor.transport.reconnect = true;
   this.kadoh = new Node(null, options.node);
-  if (options.reporter)
-    this.reporter = new Reporter(this.kadoh);
 };
 
 Bot.prototype.start = function() {
@@ -41,9 +39,11 @@ Bot.prototype.stop = function() {
 Bot.prototype.connect = function() {
   var self = this;
   this.kadoh.connect(function() {
-    self.join();
-    if (self.reporter)
+    if (self._options.reporter) {
+      self.reporter = new Reporter(self.kadoh, false, true);
       self.reporter.start();
+    }
+    self.join();
   });
 };
 
