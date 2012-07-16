@@ -64,7 +64,7 @@ Pool.prototype.start = function() {
 
 Pool.prototype.churn = function() {
   var self = this;
-  this._churns.sort();
+  this._churns.sort(function(a,b) { return a - b; });
 
   function stopStart(index) {
     var oldBot, newBot;
