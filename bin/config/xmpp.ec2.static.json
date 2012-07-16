@@ -2,11 +2,11 @@
   "botType"  : "xmpp",
   "poolSize" : 30,
   "speed"    : 1,
-  "size"     : 1000,
+  "size"     : 100,
   "activity" : 50,
   "values"   : 100,
   "jids"     : ["staticbot%d@ec2-23-22-106-113.compute-1.amazonaws.com", "azerty"],
-  "starter"  : true,
+  "starter"  : false,
   "reporter" : true,
   "bootstraps" : [
     ["bootstrap0@ec2-23-22-106-113.compute-1.amazonaws.com", "kadoh", "azerty"],
