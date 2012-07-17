@@ -52,7 +52,7 @@ var events = {
 
 function lookupHandler(lookup, type, begin, reached) {
   data = {
-    type : 'node',
+    type : type,
     time : new Date().getTime() - begin,
     reached  : reached.size(),
     queries  : lookup._mapped.length,
