@@ -19,6 +19,9 @@ var UI_FILES = {
     conf  : __dirname + '/apps/xmpp/conf.json',
     index : __dirname + '/apps/xmpp/index.html',
     app   : __dirname + '/apps/xmpp/app.js'
+  },
+  boilerplate : {
+    app   : __dirname + '/apps/boilerplate/app.js'
   }
 };
 
@@ -177,4 +180,7 @@ namespace('run', function() {
 
   desc('Run the xmpp app server');
   task('xmpp', ['generate:xmpp'], run('xmpp'));
+
+  desc('Run the boilerplate app server');
+  task('boilerplate', run('boilerplate'));
 });

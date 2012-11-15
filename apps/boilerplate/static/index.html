@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <title>KadOH boilerplate</title>
+  <script type="text/javascript" src="/KadOH.js?debug=true"></script>
+  <script type="text/javascript">
+      var config = {
+        bootstraps: ["127.0.0.1:3000", "127.0.0.1:3001", "127.0.0.1:3002"],
+        reactor: {
+          protocol: 'jsonrpc2',
+          type: 'SimUDP',
+          transport: {
+            transports: ['xhr-polling']
+          }
+        }
+      };
+
+
+  node = new KadOH.Node(undefined, config);
+
+  node.connect(function() {
+
+    console.log('connected');
+    node.join(function() {
+
+      console.log('joined');
+      
+      var peers = node._routingTable.howManyPeers();
+      console.log('We got '+peers+' peers in routing table');
+
+
+      /////playe here ////
+      
+    
+    });
+  });
+
+  </script>
+</head>
+<body>
+  
+</body>
+</html>
