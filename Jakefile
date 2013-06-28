@@ -112,6 +112,7 @@ namespace('build', function() {
     return function() {
       var browserify = require('browserify');
       var tagify = require('tagify');
+      var buffer = require('buffer-browserify');
 
       process.stdout.write('Building '+type);
 
@@ -138,7 +139,7 @@ namespace('build', function() {
 // ------------ UI GENERATE ------------
 
 namespace('generate', function() {
-  
+
   function generate(type) {
     return function() {
       process.stdout.write('Creating '+type+' UI');
@@ -163,7 +164,7 @@ namespace('generate', function() {
 // ------------ RUN SERVER ------------
 
 namespace('run', function() {
-  
+
   function run(type) {
     return function(port) {
       port = parseInt(port, 10) || 8080 ;

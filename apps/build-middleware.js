@@ -1,6 +1,6 @@
 var browserify = require('browserify'),
-    tagify = require('tagify'),
-    url   = require('url');
+    tagify     = require('tagify'),
+    url        = require('url');
 
 var lib = require('path').resolve(__dirname,'../lib');
 
@@ -19,7 +19,6 @@ module.exports = function(options) {
                           false;
       build = browserify({debug : options.debug});
 
-
       //transport
       options.transport = u.query.transport ||
                           options.transport ||
@@ -33,12 +32,12 @@ module.exports = function(options) {
       flags.push(options.storage);
 
       build.use(tagify.flags(flags));
-      
+
       //entry
       options.entry      = options.entry ||
                            lib+'/index-browserify.js';
       build.addEntry(options.entry);
-      
+
       res.statusCode = 200;
       res.setHeader('content-type', 'text/javascript');
       res.end(build.bundle());
