@@ -98,8 +98,9 @@ KadOHui.Control.prototype = {
                   .button('toggle');
       that.pingResult.empty();
       var address = that.pingAddress.val();
-      var peer = new (require('/dht/bootstrap-peer'))(address);
-      var ping = that.node._reactor.PING(peer);
+      var peer = new (require('/lib/dht/bootstrap-peer'))(address);
+      var ping = new (require('/lib/network/rpc/ping'))(peer);
+
       ping.then(function() {
         that.pingResult.html('<img src="/UI/img/success-icon24.png">'+
                              '<code>'+ping.getQueried().getID()+'</code>');
@@ -109,6 +110,8 @@ KadOHui.Control.prototype = {
         that.pingBtn.click(onPing)
                     .button('toggle');
       });
+
+      that.node._reactor.sendRPC(ping)
     };
     this.pingBtn.click(onPing);
     return this;
