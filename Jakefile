@@ -34,7 +34,7 @@ var UI     = require(__dirname + '/UI/generator');
 namespace('test', function() {
 
   desc('Testing in the browser');
-  task('browser', ['default'], function() {
+  task('browser', function() {
     jake.Task['build:test'].execute();
 
     var jasmine = require('jasmine-runner');
@@ -51,7 +51,7 @@ namespace('test', function() {
 var checked = ' done ✓'.green + '\n';
 
 desc('Building and minifing the embedded code');
-task('build', ['default'], function() {
+task('build', function() {
   jake.Task['build:xmpp'].execute();
   jake.Task['build:simudp'].execute();
 });
@@ -79,10 +79,10 @@ namespace('build', function() {
   }
 
   desc('Building the brower-side code with xmpp configuration');
-  task('xmpp', ['default'], build('xmpp', false));
+  task('xmpp', build('xmpp', false));
 
   desc('Building the brower-side code with simudp configuration');
-  task('simudp', ['default'], build('simudp', false));
+  task('simudp', build('simudp', false));
 });
 
 // ------------ UI GENERATE ------------
@@ -101,13 +101,13 @@ namespace('generate', function() {
   }
 
   desc('Generate the mainline proxy app UI');
-  task('mainline', ['default'], generate('mainline'));
+  task('mainline', generate('mainline'));
 
   desc('Generate the udp proxy app UI');
-  task('udp', ['default'], generate('udp'));
+  task('udp', generate('udp'));
 
   desc('Generate the xmpp app UI');
-  task('xmpp', ['default'], generate('xmpp'));
+  task('xmpp', generate('xmpp'));
 });
 
 // ------------ RUN SERVER ------------
