@@ -30,20 +30,6 @@ var PROC   = require('child_process');
 var COLORS = require('colors');
 var UI     = require(__dirname + '/UI/generator');
 
-// ------------ DEFAULT ------------
-desc('Say Hello to Kadoh');
-task('default', [], function() {
-  var logo =
-    '                                                        \n' +
-    '      _/    _/                  _/    _/_/    _/    _/  \n' +
-    '     _/  _/      _/_/_/    _/_/_/  _/    _/  _/    _/   \n' +
-    '    _/_/      _/    _/  _/    _/  _/    _/  _/_/_/_/    \n' +
-    '   _/  _/    _/    _/  _/    _/  _/    _/  _/    _/     \n' +
-    '  _/    _/    _/_/_/    _/_/_/    _/_/    _/    _/      \n' +
-    '                                                        ';
-  console.log(logo.yellow);
-});
-
 // ------------ TESTS ------------
 namespace('test', function() {
   desc('Testing in node');
