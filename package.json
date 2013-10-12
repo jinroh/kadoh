@@ -53,7 +53,8 @@
     "optimist": "~0.3",
     "nconf": "~0.5",
     "multimeter": "~0.1",
-    "grunt": "~0.4.1"
+    "grunt": "~0.4.1",
+    "grunt-mocha-test": "~0.7.0"
   },
   "engines": {
     "node": ">= 0.6.0"

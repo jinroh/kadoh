@@ -32,13 +32,6 @@ var UI     = require(__dirname + '/UI/generator');
 
 // ------------ TESTS ------------
 namespace('test', function() {
-  desc('Testing in node');
-  task('node', ['default'], function(reporter) {
-    reporter = reporter || 'dot'
-    var mocha = PROC.spawn('mocha', ['--colors', '--reporter', reporter]);
-    mocha.stdout.pipe(process.stdout, { end: false });
-    mocha.stderr.pipe(process.stderr, { end: false });
-  }, true);
 
   desc('Testing in the browser');
   task('browser', ['default'], function() {

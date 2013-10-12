@@ -4,6 +4,11 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
+    mochaTest: {
+      test: {
+        src: ['test/**/*.js']
+      }
+    }
   });
 
   // ascii task
@@ -12,5 +17,12 @@ module.exports = function(grunt) {
     grunt.log.writeln(logo.yellow);
   });
 
+  // defautl task
   grunt.registerTask('default', ['ascii']);
+
+  // tests tasks aliases
+  grunt.registerTask('test:node', ['ascii', 'mochaTest:test']);
+
+  // load npm tasks
+  grunt.loadNpmTasks('grunt-mocha-test');
 };
