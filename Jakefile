@@ -46,45 +46,6 @@ namespace('test', function() {
   });
 });
 
-// ------------ BUILD ------------
-
-var checked = ' done ✓'.green + '\n';
-
-desc('Building and minifing the embedded code');
-task('build', function() {
-  jake.Task['build:xmpp'].execute();
-  jake.Task['build:simudp'].execute();
-});
-
-namespace('build', function() {
-
-  function build(type, debug) {
-    return function() {
-      var browserify = require('browserify');
-      var tagify = require('tagify');
-
-      process.stdout.write('Building '+type);
-
-      var build = browserify({debug : debug});
-      build.use(tagify.flags([type, 'lawnchair']));
-      build.addEntry(LIB_DIR+'index-browserify.js');
-
-      fs.writeFileSync(
-        DIST_DIR+'KadOH.'+type+'.js',
-        build.bundle()
-      );
-
-      process.stdout.write(checked);
-    };
-  }
-
-  desc('Building the brower-side code with xmpp configuration');
-  task('xmpp', build('xmpp', false));
-
-  desc('Building the brower-side code with simudp configuration');
-  task('simudp', build('simudp', false));
-});
-
 // ------------ UI GENERATE ------------
 
 namespace('generate', function() {
