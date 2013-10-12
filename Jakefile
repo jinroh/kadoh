@@ -1,4 +1,3 @@
-var DOC_DIR     = __dirname + '/doc/jsdoc/';
 var LIB_DIR     = __dirname + '/lib/';
 var DIST_DIR    = __dirname + '/dist/';
 var JsDoc3_CONF = __dirname + '/doc/JsDocConf.json';
@@ -65,34 +64,6 @@ namespace('test', function() {
       cwd     : __dirname ,
       args    : []
     });
-  });
-});
-
-// ------------ DOC ------------
-desc('Generate documentation using JsDoc3');
-task('doc', ['default'], function(){
-  console.log('[Doc] Purging the doc folder');
-  var rm = 'rm -rf '+DOC_DIR;
-  console.log(rm);
-  PROC.exec(rm, function (error, stdout, stderr) {
-    console.log('[Doc] ' + stdout);
-    console.error('[Doc] Error :' + stderr);
-    if (error !== null) {
-      console.error('[Doc] Error : ' + error);
-    }
-  });
-
-  console.log('[Doc] Generating documentation..');
-
-  var cmd = JsDoc3_EXEC+' --recurse '+LIB_DIR +' --destination '+DOC_DIR +' -c '+JsDoc3_CONF;
-  console.log(cmd);
-
-  PROC.exec(cmd, function (error, stdout, stderr) {
-    console.log('[Doc] ' + stdout);
-    console.error('[Doc] Error :' + stderr);
-    if (error !== null) {
-      console.error('[Doc] Error : ' + error);
-    }
   });
 });
 
