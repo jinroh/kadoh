@@ -15,6 +15,9 @@ module.exports = function(grunt) {
     },
 
     kadohBuild: {
+      options: {
+        debug: grunt.option('debug')
+      },
       xmpp: {
         options: {
           flags: ['xmpp', 'lawchair'],
