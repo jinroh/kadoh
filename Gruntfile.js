@@ -6,7 +6,28 @@ var UIGenerator = require('./UI/generator');
 
 module.exports = function(grunt) {
 
-  // Project configuration.
+  // defautl task
+  grunt.registerTask('default', ['ascii']);
+
+  // tests tasks aliases
+  grunt.registerTask('test:node', ['ascii', 'mochaTest:test']);
+
+  // build tasks aliases
+  grunt.registerTask('build:xmpp', ['ascii', 'kadohBuild:xmpp']);
+  grunt.registerTask('build:simudp', ['ascii', 'kadohBuild:simudp']);
+
+  // generate tasks aliases
+  grunt.registerTask('generate:xmpp', ['ascii', 'generateUI:xmpp']);
+  grunt.registerTask('generate:simudp', ['ascii', 'generateUI:simudp']);
+  grunt.registerTask('generate:mainline', ['ascii', 'generateUI:mainline']);
+
+  // run tasks aliases
+  grunt.registerTask('run:xmpp', ['ascii', 'generateUI:xmpp', 'runServer:xmpp:keepalive']);
+  grunt.registerTask('run:udp', ['ascii', 'generateUI:udp', 'runServer:udp:keepalive']);
+  grunt.registerTask('run:mainline', ['ascii', 'generateUI:mainline', 'runServer:mainline:keepalive']);
+  grunt.registerTask('run:boilerplate', ['ascii', 'runServer:boilerplate:keepalive']);
+
+  // project configuration
   grunt.initConfig({
     mochaTest: {
       test: {
@@ -148,27 +169,6 @@ module.exports = function(grunt) {
 
     });
   });
-
-  // defautl task
-  grunt.registerTask('default', ['ascii']);
-
-  // tests tasks aliases
-  grunt.registerTask('test:node', ['ascii', 'mochaTest:test']);
-
-  // build tasks aliases
-  grunt.registerTask('build:xmpp', ['ascii', 'kadohBuild:xmpp']);
-  grunt.registerTask('build:simudp', ['ascii', 'kadohBuild:simudp']);
-
-  // generate tasks aliases
-  grunt.registerTask('generate:xmpp', ['ascii', 'generateUI:xmpp']);
-  grunt.registerTask('generate:simudp', ['ascii', 'generateUI:simudp']);
-  grunt.registerTask('generate:mainline', ['ascii', 'generateUI:mainline']);
-
-  // run tasks aliases
-  grunt.registerTask('run:xmpp', ['ascii', 'generateUI:xmpp', 'runServer:xmpp:keepalive']);
-  grunt.registerTask('run:udp', ['ascii', 'generateUI:udp', 'runServer:udp:keepalive']);
-  grunt.registerTask('run:mainline', ['ascii', 'generateUI:mainline', 'runServer:mainline:keepalive']);
-  grunt.registerTask('run:boilerplate', ['ascii', 'runServer:boilerplate:keepalive']);
 
   // load npm tasks
   grunt.loadNpmTasks('grunt-mocha-test');
