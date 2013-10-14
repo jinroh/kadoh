@@ -45,29 +45,3 @@ namespace('test', function() {
     });
   });
 });
-
-
-// ------------ RUN SERVER ------------
-
-namespace('run', function() {
-  
-  function run(type) {
-    return function(port) {
-      port = parseInt(port, 10) || 8080 ;
-      require(UI_FILES[type].app).server.listen(port);
-      console.log('Server running on http://localhost:'+port);
-    }
-  }
-
-  desc('Run the mainline proxy app server');
-  task('mainline', ['generate:mainline'], run('mainline'));
-
-  desc('Run the udp proxy app server');
-  task('udp', ['generate:udp'], run('udp'));
-
-  desc('Run the xmpp app server');
-  task('xmpp', ['generate:xmpp'], run('xmpp'));
-
-  desc('Run the boilerplate app server');
-  task('boilerplate', run('boilerplate'));
-});

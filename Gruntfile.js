@@ -51,6 +51,21 @@ module.exports = function(grunt) {
           'apps/xmpp/index.html': ['apps/xmpp/conf.json']
         }
       }
+    },
+
+    runServer: {
+      mainline: {
+        src: './apps/mainline/app.js'
+      },
+      udp: {
+        src: ['./apps/udp/app.js']
+      },
+      xmpp: {
+        src: ['./apps/xmpp/app.js']
+      },
+      boilerplate: {
+        src: ['./apps/boilerplate/app.js']
+      }
     }
   });
 
@@ -96,6 +111,44 @@ module.exports = function(grunt) {
     });
   });
 
+  // run servers tasks
+  grunt.registerMultiTask('runServer', 'Run server', function() {
+
+    var task = this;
+    var done = task.async();
+
+    this.files.forEach(function(file) {
+      if(file.src.length !== 1)
+        return grunt.fail.warn('You should specify one app file');
+
+      var options = task.options({
+        port: 8080,
+        keepalive: false
+      });
+
+      // can pass --port=%port%
+      if(grunt.option('port'))
+        options.port = parseInt(grunt.option('port'), 10);
+
+      // can pass --port=keepalive
+      if(grunt.option('keepalive'))
+        options.keepalive = grunt.option('keepalive');
+
+      // can do runServer:mainline:keepalive
+      if(typeof task.flags.keepalive == 'boolean')
+        options.keepalive = task.flags.keepalive;
+      
+      var app = file.src[0];
+      require(app).server.listen(options.port)
+                  .on('listening', function() {
+                    if(!options.keepalive) done();
+                  });
+
+      grunt.log.ok('Server running on http://localhost:'+options.port);
+
+    });
+  });
+
   // defautl task
   grunt.registerTask('default', ['ascii']);
 
@@ -110,6 +163,12 @@ module.exports = function(grunt) {
   grunt.registerTask('generate:xmpp', ['ascii', 'generateUI:xmpp']);
   grunt.registerTask('generate:simudp', ['ascii', 'generateUI:simudp']);
   grunt.registerTask('generate:mainline', ['ascii', 'generateUI:mainline']);
+
+  // run tasks aliases
+  grunt.registerTask('run:xmpp', ['ascii', 'generateUI:xmpp', 'runServer:xmpp:keepalive']);
+  grunt.registerTask('run:udp', ['ascii', 'generateUI:udp', 'runServer:udp:keepalive']);
+  grunt.registerTask('run:mainline', ['ascii', 'generateUI:mainline', 'runServer:mainline:keepalive']);
+  grunt.registerTask('run:boilerplate', ['ascii', 'runServer:boilerplate:keepalive']);
 
   // load npm tasks
   grunt.loadNpmTasks('grunt-mocha-test');
