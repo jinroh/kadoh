@@ -46,30 +46,6 @@ namespace('test', function() {
   });
 });
 
-// ------------ UI GENERATE ------------
-
-namespace('generate', function() {
-  
-  function generate(type) {
-    return function() {
-      process.stdout.write('Creating '+type+' UI');
-      fs.writeFileSync(
-        UI_FILES[type].index,
-        UI.generate(UI_FILES[type].conf)
-      );
-      process.stdout.write(checked);
-    }
-  }
-
-  desc('Generate the mainline proxy app UI');
-  task('mainline', generate('mainline'));
-
-  desc('Generate the udp proxy app UI');
-  task('udp', generate('udp'));
-
-  desc('Generate the xmpp app UI');
-  task('xmpp', generate('xmpp'));
-});
 
 // ------------ RUN SERVER ------------
 

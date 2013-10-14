@@ -2,6 +2,7 @@ require('colors');
 var browserify = require('browserify');
 var tagify = require('tagify');
 var path = require('path');
+var UIGenerator = require('./UI/generator');
 
 module.exports = function(grunt) {
 
@@ -28,6 +29,24 @@ module.exports = function(grunt) {
         },
         src: ['lib/index-browserify.js'],
         dest: 'dist/KadOH.simudp.js'
+      }
+    },
+
+    generateUI: {
+      mainline: {
+        files: {
+          'apps/mainline/index.html': ['apps/mainline/conf.json']
+        }
+      },
+      udp: {
+        files: {
+          'apps/udp/index.html': ['apps/udp/conf.json']
+        }
+      },
+      xmpp: {
+        files: {
+          'apps/xmpp/index.html': ['apps/xmpp/conf.json']
+        }
       }
     }
   });
@@ -62,6 +81,18 @@ module.exports = function(grunt) {
       grunt.file.write(file.dest, build.bundle());
     });
   });
+
+  // gnerate UI task
+  grunt.registerMultiTask('generateUI', 'Generate UI', function() {
+    this.files.forEach(function(file) {
+      if(file.src.length !== 1)
+        return grunt.fail.warn('You should specify one conf file');
+      
+      var conf = file.src[0];
+      grunt.file.write(file.dest, UIGenerator.generate(conf));
+    });
+  });
+
   // defautl task
   grunt.registerTask('default', ['ascii']);
 
@@ -71,6 +102,11 @@ module.exports = function(grunt) {
   // build tasks aliases
   grunt.registerTask('build:xmpp', ['ascii', 'kadohBuild:xmpp']);
   grunt.registerTask('build:simudp', ['ascii', 'kadohBuild:simudp']);
+
+  // generate tasks aliases
+  grunt.registerTask('generate:xmpp', ['ascii', 'generateUI:xmpp']);
+  grunt.registerTask('generate:simudp', ['ascii', 'generateUI:simudp']);
+  grunt.registerTask('generate:mainline', ['ascii', 'generateUI:mainline']);
 
   // load npm tasks
   grunt.loadNpmTasks('grunt-mocha-test');
