@@ -43,7 +43,7 @@
     "Strophe.js": "https://github.com/alexstrat/strophejs/tarball/for-kadoh"
   },
   "scripts": {
-    "test": "jake test:node[spec]"
+    "test": "grunt test:node"
   },
   "devDependencies": {
     "mocha": "~1.0",
