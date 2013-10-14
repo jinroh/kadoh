@@ -76,7 +76,7 @@ module.exports = function(grunt) {
 
     runServer: {
       mainline: {
-        src: './apps/mainline/app.js'
+        src: ['./apps/mainline/app.js']
       },
       udp: {
         src: ['./apps/udp/app.js']
