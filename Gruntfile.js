@@ -38,6 +38,9 @@ module.exports = function(grunt) {
     grunt.log.writeln(logo.yellow);
   });
 
+  // build kadoh task
+  // TODO: replace me with proper browserify task ASA
+  // we switch to browserify v2
   grunt.registerMultiTask('kadohBuild', 'Build kadoh file', function() {
     var task = this;
     this.files.forEach(function(file, next) {
