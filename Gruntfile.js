@@ -41,7 +41,7 @@ module.exports = function(grunt) {
       },
       xmpp: {
         options: {
-          flags: ['xmpp', 'lawchair'],
+          flags: ['xmpp', 'lawnchair'],
         },
         src: ['lib/index-browserify.js'],
         dest: 'dist/KadOH.xmpp.js'
@@ -49,7 +49,7 @@ module.exports = function(grunt) {
 
       simudp: {
         options: {
-          flags: ['simudp', 'lawchair'],
+          flags: ['simudp', 'lawnchair'],
         },
         src: ['lib/index-browserify.js'],
         dest: 'dist/KadOH.simudp.js'
