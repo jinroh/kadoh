@@ -20,9 +20,6 @@ Gemfile.lock
 # hookio
 config.json
 
-# jake
-.jake_tasks
-
 # jasmine-node
 .monitor
 

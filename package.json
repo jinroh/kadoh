@@ -30,7 +30,6 @@
     "connect": "~2.0",
     "express": "~2.5",
     "ifconfig.me": "https://github.com/alexstrat/ifconfig.me-node/tarball/master",
-    "jake": "~0.1",
     "klass": "~1.2",
     "ltx": ">= 0.2.0",
     "node-xmpp": "~0.3",

@@ -24,10 +24,10 @@ First you can start a little DHT based on UDP transport using this command :
 bin/dht udp.default
 ```
 
-Then in an other terminal, start the web-based [debug UI](/jinroh/kadoh/wiki/Debug-UI) using the following Jake command and go to `localhost:8080` :
+Then in an other terminal, start the web-based [debug UI](/jinroh/kadoh/wiki/Debug-UI) using the following grunt task and go to `localhost:8080` :
 
 ```sh
-jake run:udp
+grunt run:udp
 ```
 
 See the wiki for more informations on how to [launch your own DHT](/jinroh/kadoh/wiki/DHT-simulation) from scratch and on different environments.
@@ -47,10 +47,10 @@ cd kadoh
 npm install
 ```
 
-You may also want to install the Jake module globally :
+If not already done, you may also want to install the [grunt](gruntjs.com) command line:
 
 ```
-npm install -g jake
+npm install -g grunt-cli
 ```
 
 *For Linux users*, if the installation of KadOH's dependencies fails, you may need to install the `libexpat-dev` package. For Ubuntu/Debian users, run the following command :
@@ -63,10 +63,10 @@ sudo apt-get install libexpat-dev
 
 #### Browser
 
-To build the source inside the `dist` folder run one of the following Jake command :
+To build the source inside the `dist` folder run one of the following grunt task :
 
 ```sh
-jake build
+grunt build
 ```
 
 This will build two versions of KadOH supporting different transports :
@@ -102,6 +102,6 @@ KadOH is built on top of many open-source libraries and projects:
 *For the moment, tests are not running anymore.. But we hope that will be fixed as soon as we migrate to Mocha.*
 
 ```
-jake test:node
-jake test:browser
+grunt test:node
+grunt test:browser
 ```
