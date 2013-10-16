@@ -13,6 +13,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test:node', ['ascii', 'mochaTest:test']);
 
   // build tasks aliases
+  grunt.registerTask('build', ['build:xmpp', 'build:simudp']);
   grunt.registerTask('build:xmpp', ['ascii', 'kadohBuild:xmpp']);
   grunt.registerTask('build:simudp', ['ascii', 'kadohBuild:simudp']);
 
